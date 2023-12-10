@@ -1,2 +1,4 @@
 .venvs/
 dist/
+
+__pycache__/

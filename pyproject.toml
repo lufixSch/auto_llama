@@ -18,6 +18,9 @@ classifiers = [
    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
    "Operating System :: OS Independent",
 ]
+dependencies = [
+  "openai"
+]
 
 [project.optional-dependencies]
 research = [
@@ -32,3 +35,17 @@ memory = [
   "nltk",
   "num2words"
 ]
+
+[tool.hatch.build]
+packages = [
+  "pkg/auto_llama/",
+  "pkg/auto_llama_agents/"
+]
+
+[tool.black]
+line-length = 120
+include = '\.pyi?$'
+
+[tool.isort]
+profile = 'black'
+extend_skip = ['__init__.py']
