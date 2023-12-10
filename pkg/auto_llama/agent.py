@@ -32,9 +32,13 @@ class AgentResponse:
         self._responses = responses
 
     def get(self):
+        """List of agent responses and the response type"""
+
         self._responses
 
     def filter(self, filter: RESPONSE_TYPE) -> list[tuple[RESPONSE_TYPE, str]]:
+        """Filters the responses by the response type"""
+
         return [r for r in self._responses if r[0] == filter]
 
 
@@ -45,27 +49,32 @@ class Agent(ABC):
         self._verbose = verbose
 
     @abstractmethod
-    def _run(self, prompt: str) -> AgentResponse:
-        """Run agent with an input prompt
+    def _run(self, input: str) -> AgentResponse:
+        """Run agent with an input text
 
-        This should be implemented by the inheriting agent class.
+        This must be implemented by the inheriting agent class.
         """
 
         raise NotImplementedError()
 
-    def run(self, prompt: str) -> AgentResponse:
-        """Run agent with an input prompt"""
+    def run(self, input: str) -> AgentResponse:
+        """Run agent with an input text"""
 
-        self.print("Running ...", verbose=True, verbose_alt=f"Running ...\nPrompt: {prompt}")
-        self._run(prompt)
+        self.print("Running ...", verbose=True, verbose_alt=f"Running ...\nPrompt: {input}")
+        self._run(input)
 
     @abstractmethod
     def _chat(self, chat_history: Chat) -> AgentResponse:
-        """Run agent with an input prompt"""
+        """Run agent with chat history (conversation)
+
+        This must be implemented by the inheriting agent class.
+        """
 
         raise NotImplementedError()
 
     def chat(self, chat_history: Chat) -> AgentResponse:
+        """Run agent with chat history (conversation)"""
+
         self.print("Running ...", verbose=True, verbose_alt=f"Running ...\nPrompt: {chat_history.prompt}")
         self._chat(chat_history)
 
