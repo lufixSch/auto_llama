@@ -60,7 +60,7 @@ class Agent(ABC):
     def run(self, input: str) -> AgentResponse:
         """Run agent with an input text"""
 
-        self.print("Running ...", verbose=True, verbose_alt=f"Running ...\nPrompt: {input}")
+        self.print("Running ...", seperator="=", verbose=True, verbose_alt=f"Running ...\nPrompt: {input}")
         self._run(input)
 
     @abstractmethod
@@ -75,7 +75,9 @@ class Agent(ABC):
     def chat(self, chat_history: Chat) -> AgentResponse:
         """Run agent with chat history (conversation)"""
 
-        self.print("Running ...", verbose=True, verbose_alt=f"Running ...\nPrompt: {chat_history.prompt}")
+        self.print(
+            "Running ...", seperator="=", verbose=True, verbose_alt=f"Running ...\nPrompt: {chat_history.prompt}"
+        )
         self._chat(chat_history)
 
     def print(
@@ -89,7 +91,7 @@ class Agent(ABC):
 
         Arguments:
             msg (str): Message, which will be printed
-            separator (str): Symbol based on which a separator will be printed after the message
+            separator (str): Symbol based on which a separator will be printed before the message
             verbose (bool): Wether this is a verbose message. If True, this message will only be printed if the agent is in verbose mode
             verbose_alt (str): An alternative message to be printed if the agent is in verbose mode
         """
@@ -101,8 +103,8 @@ class Agent(ABC):
             if verbose_alt:
                 msg = verbose_alt
 
-        name = self.__class__.__name__
-        print(f"{name}: {msg}")
-
         if seperator:
             print("f{seperator * 10}")
+
+        name = self.__class__.__name__
+        print(f"{name}: {msg}")

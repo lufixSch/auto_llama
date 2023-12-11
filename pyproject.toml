@@ -28,7 +28,9 @@ research = [
   "duckduckgo_search"
 ]
 code = [
-  "docker"
+  "docker",
+  "pandas",
+  "requests"
 ]
 memory = [
   "txtai",
