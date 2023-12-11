@@ -1,11 +1,17 @@
 from abc import abstractmethod
 from typing import Literal
+from itertools import islice
 
-from auto_llama import Agent, AgentResponse, PromptTemplate, LLMInterface, nlp
+from auto_llama import Agent, AgentResponse, PromptTemplate, LLMInterface, nlp, exceptions
 
 AGENT_NAME = "SearchAgent"
 
 # Agent specific dependencies
+try:
+    import wikipedia
+    from duckduckgo_search import DDGS
+except ImportError:
+    raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
 
 
 class SearchPromptTemplate(PromptTemplate):
@@ -30,6 +36,7 @@ class SearchAgent(Agent):
 
     def __init__(self, max_results: int = 1, verbose=False) -> None:
         self.max_results = max_results
+        super().__init__(verbose)
 
     @classmethod
     def with_llm_query(
@@ -80,3 +87,51 @@ class SearchAgent(Agent):
             query = self._nlp_preprocessor(input)
 
         return self._search(query)
+
+
+class WikipediaSearchAgent(SearchAgent):
+    """Search Wikipedia for Information"""
+
+    def _search(self, query: str) -> AgentResponse:
+        articles = wikipedia.search(query)[: self.max_articles]
+
+        responses: list[tuple[AgentResponse.RESPONSE_TYPE, str]] = []
+        for article in articles:
+            try:
+                summary = wikipedia.summary(article, auto_suggest=False)
+            except wikipedia.PageError:
+                continue
+
+            responses.append((AgentResponse.RESPONSE_TYPE.CONTEXT, f"{article}\n{summary}"))
+
+        if len(responses) <= 0:
+            self.print("No good Search Result was found", verbose=True)
+
+            # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
+            responses.append(
+                AgentResponse.RESPONSE_TYPE.CONTEXT, "Unable to find results regarding this topic on Wikipedia"
+            )
+
+        return AgentResponse(responses)
+
+
+class DuckDuckGoSearchAgent(SearchAgent):
+    """Search DuckDuckGo for Information"""
+
+    def _search(self, query: str) -> AgentResponse:
+        with DDGS() as ddgs:
+            responses: list[tuple[AgentResponse.RESPONSE_TYPE, str]] = []
+            for t in islice(ddgs.text(query), self.max_results):
+                responses.append(
+                    AgentResponse.RESPONSE_TYPE.CONTEXT, t["title"] + "\n" + t["body"] + "\nSource: " + t["href"]
+                )
+
+            if len(responses) <= 0:
+                self.print("No good Search Result was found", verbose=True)
+
+                # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
+                responses.append(
+                    AgentResponse.RESPONSE_TYPE.CONTEXT, "Unable to find results regarding this topic on DuckDuckGo"
+                )
+
+            return AgentResponse(responses)
