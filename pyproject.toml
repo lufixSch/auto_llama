@@ -27,8 +27,10 @@ dependencies = [
   "num2words",
   "nltk"
 ]
+"module.react" = []
 module = [
-  "auto-llama[module.nlp]"
+  "auto-llama[module.nlp]",
+  "auto-llama[module.react]"
 ]
 "agent.research" = [
   "wikipedia",
