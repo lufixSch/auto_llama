@@ -23,7 +23,7 @@ except docker.errors.DockerClientException:
 
 
 class CodePromptTemplate(PromptTemplate):
-    """Prompt template for the CodeAgent
+    """Prompt template for writing code based on a given objective.
 
     Parameters:
         objective (str): Objective of the code, which should be generated
