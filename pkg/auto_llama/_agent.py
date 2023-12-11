@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 
-from .chat import Chat
+from ._chat import Chat
 
 
 class AgentResponse:

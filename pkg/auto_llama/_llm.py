@@ -8,16 +8,18 @@ class LLMInterface(ABC):
     """Generic  LLM Interface"""
 
     @abstractmethod
-    def completion(self, prompt: str) -> str:
-        """Run LLM completion on a given prompt"""
+    def completion(self, prompt: str, stopping_strings: list[str] = [], max_new_tokens: int = None) -> str:
+        """Run LLM completion on a given prompt
 
-        raise NotImplementedError()
+        stopping_strings will extend the default stopping strings,
+        max_new_tokens will overwrite  the default configuration
+        """
 
-    def chat(self, chat: Chat) -> Chat:
+    def chat(self, chat: Chat, stopping_strings: list[str] = [], max_new_tokens: int = None) -> Chat:
         """Generate next message in a chat"""
 
         prompt = chat.prompt
-        res = self.completion(prompt)
+        res = self.completion(prompt, stopping_strings, max_new_tokens)
         chat.append("assistant", res)
 
         return chat
@@ -43,7 +45,10 @@ class LLMLocalOpenAI(LLMInterface):
 
         self.client = OpenAIClient(base_url=base_url, api_key="NONE")
 
-    def completion(self, prompt: str) -> str:
+    def completion(self, prompt: str, stopping_strings: list[str] = [], max_new_tokens: int = None) -> str:
+        self.config["stop"] = [*stopping_strings, *self.config.get("stop", [])]
+        self.config["max_tokens"] = max_new_tokens or self.config.get("max_tokens", 200)
+
         res = self.client.completions.create(prompt=prompt, model="NONE", **self.config)
         return res.choices[0].text
 

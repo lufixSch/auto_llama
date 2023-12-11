@@ -23,19 +23,35 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-research = [
-  "wikipedia",
-  "duckduckgo_search"
+"module.nlp" = [
+  "num2words",
+  "nltk"
 ]
-code = [
+module = [
+  "auto-llama[module.nlp]"
+]
+"agent.research" = [
+  "wikipedia",
+  "duckduckgo_search",
+  "auto-llama[module.nlp]"
+]
+"agent.code" = [
   "docker",
   "pandas",
   "requests"
 ]
-memory = [
+agent = [
+  'auto-llama[agent.research,  agent.code]'
+]
+"memory.txtai" = [
   "txtai",
-  "nltk",
-  "num2words"
+  "auto-llama[module.nlp]"
+]
+memory = [
+  "auto-llama[memory.txtai]"
+]
+all = [
+  "auto-llama[module, agent, memory]"
 ]
 
 [tool.hatch.build]

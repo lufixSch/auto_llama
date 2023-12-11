@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from .agent import AgentResponse
-from .chat import Chat
+from ._agent import AgentResponse
+from ._chat import Chat
 
 
 class AgentManager(ABC):
@@ -10,8 +10,6 @@ class AgentManager(ABC):
     @abstractmethod
     def _run(self, input: str) -> AgentResponse:
         """Run agents based on text input"""
-
-        raise NotImplementedError()
 
     @abstractmethod
     def _run_chat(self, chat: Chat) -> AgentResponse:
