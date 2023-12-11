@@ -40,8 +40,8 @@ class CodeExecAgent(Agent):
         self.container_name = container_name
         self.data: dict[str, str] = {}
         self.executor_endpoint = f"http://localhost:{executor_port}"
-        self.verbose = verbose
 
+        super().__init__(verbose)
         self._mount_container(executor_port)
 
     def _mount_container(self, port: int):
