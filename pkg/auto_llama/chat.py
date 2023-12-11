@@ -44,3 +44,12 @@ class Chat:
         """Add message to the chat history"""
 
         self._history.append(ChatMessage(role, message))
+
+    def last(self, role: ChatRoles) -> str:
+        """Return last chat message of a given role"""
+
+        for chat_msg in reversed(self.history):
+            if chat_msg.role == role:
+                return chat_msg.message
+
+        raise ValueError(f"No message found for role '{role}'")

@@ -2,14 +2,14 @@ import os
 import shutil
 import re
 
-from auto_llama import Agent, AgentResponse, LLMInterface, PromptTemplate, exceptions
+from auto_llama import Agent, AgentResponse, exceptions
+from auto_llama.chat import Chat
 
-AGENT_NAME = "CodeAgent"
+AGENT_NAME = "CodeExecAgent"
 
 # Agent specific dependencies
 try:
     import docker
-    import pandas as pd
     from requests import post
 except ModuleNotFoundError:
     exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
@@ -20,37 +20,24 @@ except docker.errors.DockerClientException:
     exceptions.AgentUnavailableError(AGENT_NAME, error="Unable  to connect to docker daemon!")
 
 
-class CodePromptTemplate(PromptTemplate):
-    """Prompt template for the CodeAgent
+class CodeExecAgent(Agent):
+    """Agent which is able to execute code written in a code block"""
 
-    Parameters:
-        objective (str): Objective of the code, which should be generated
-        files (list[str]):  list of files which can be accessed by the CodeAgent with file preview
-        packages (list[str]): list of packages which the CodeAgent can access
-    """
-
-    def format(self, objective: str, files: list[str], packages: list[str]) -> str:
-        return super().format(objective=objective, files="\n".join(files), packages=", ".join(packages))
-
-
-class CodeAgent(Agent):
-    """Agent which is able to generate and execute code based on a objective"""
-
-    CONTAINER_PATH: str  # = os.path.abspath(os.path.join(os.path.dirname(__file__), "code_exec"))
+    container_path: str  # = os.path.abspath(os.path.join(os.path.dirname(__file__), "code_exec"))
     allowed_filetypes = ["csv"]
     allowed_languages = ["python"]
 
     def __init__(
         self,
-        prompt_template: CodePromptTemplate,
-        llm: LLMInterface,
         pkg: list[str],
+        container_path: str,
+        container_name="code_sandbox",
         executor_port: int = 6000,
         verbose: bool = False,
     ) -> None:
-        self.prompt_template = prompt_template
-        self.llm = llm
         self.pkg = pkg
+        self.container_path = container_path
+        self.container_name = container_name
         self.data: dict[str, str] = {}
         self.executor_endpoint = f"http://localhost:{executor_port}"
         self.verbose = verbose
@@ -59,8 +46,6 @@ class CodeAgent(Agent):
 
     def _mount_container(self, port: int):
         """Build docker image and mount container if it doesn't run already"""
-
-        self.container_name = f"{self.name.lower()}_sandbox"
 
         try:
             container = docker_client.containers.get(self.container_name)
@@ -77,7 +62,7 @@ class CodeAgent(Agent):
 
         self.print("> Building Docker Image", verbose=True)
 
-        docker_client.images.build(path=self.CONTAINER_PATH, tag=self.container_name)
+        docker_client.images.build(path=self.container_path, tag=self.container_name)
 
         self.print("> Image built successfully!", verbose=True)
 
@@ -89,7 +74,7 @@ class CodeAgent(Agent):
             ports={5000: port},
             name=self.container_name,
             volumes={
-                os.path.join(self.CONTAINER_PATH, "static"): {
+                os.path.join(self.container_path, "static"): {
                     "bind": "/app/static",
                     "mode": "rw",
                 }
@@ -104,7 +89,7 @@ class CodeAgent(Agent):
 
         self.print("Adding Data!")
 
-        data_path = os.path.join(self.CONTAINER_PATH, "static", "files")
+        data_path = os.path.join(self.container_path, "static", "files")
 
         for path in paths:
             basename = os.path.basename(path)
@@ -126,20 +111,6 @@ class CodeAgent(Agent):
         self.pkg.extend(packages)
 
         # TODO: Add to requirements.txt and install in container
-
-    def _generate_file_prompt(self, file: tuple[str, str]):
-        """Generate prompt for file with example"""
-
-        prompt = f"{file[0]}:"
-
-        if file[1] == "csv":
-            df = pd.read_csv(os.path.join(self.CONTAINER_PATH, "static", "files", file[0]))
-
-            # Load header and data types of each column in the csv
-            cols = [f"{col}: {df[col].dtype}" for col in df.columns]
-
-            prompt += " | ".join(cols)
-            return prompt
 
     def _extract_code(self, text: str):
         """Extract code from llm response"""
@@ -167,23 +138,9 @@ class CodeAgent(Agent):
 
         return (res_dict["response"], res_dict["images"])
 
-    def _run(self, objective: str) -> AgentResponse:
-        prompt = self.prompt_template.template.format(
-            objective=objective,
-            files="\n".join([self._generate_file_prompt(file) for file in self.data.items()]),
-            packages=", ".join(self.pkg),
-        )
-
-        self.print("Prompting LLM:", seperator="-", verbose=True)
-        self.print(prompt, verbose=True)
-
-        result = self.llm.completion(prompt, max_new_tokens=800)
-
-        self.print("Response:", seperator="-", verbose=True)
-        self.print(result)
-
+    def _run(self, input_txt: str) -> AgentResponse:
         try:
-            lang, code = self._extract_code(prompt + result)
+            lang, code = self._extract_code(input_txt)
         except ValueError:
             self.print("No valid code found in response")
             return AgentResponse((AgentResponse.RESPONSE_TYPE.CHAT, "No valid code found in response"))
@@ -215,6 +172,14 @@ class CodeAgent(Agent):
                 *[(AgentResponse.RESPONSE_TYPE.IMG, f"{self.executor_endpoint}/static/images/{img}") for img in images],
             ]
         )
+
+    def _chat(self, chat_history: Chat) -> AgentResponse:
+        try:
+            input_txt = chat_history.last("user")
+        except ValueError:
+            raise exceptions.AgentExecutionFailed(AGENT_NAME, "No user message found in chat history")
+
+        return self.run(input_txt)
 
     def __del__(self):
         self.print("Stopping Docker Container!")
