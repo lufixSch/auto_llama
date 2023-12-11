@@ -31,10 +31,19 @@ class AgentResponse:
 
         self._responses = responses
 
-    def get(self):
+    @classmethod
+    def with_same_type(cls, type: RESPONSE_TYPE, responses: list[str]):
+        """Initializes AgetnResponse with the same type for all the responses"""
+
+    def items(self):
         """List of agent responses and the response type"""
 
-        self._responses
+        return self._responses
+
+    def values(self):
+        """List of agent responses (Without the response type)"""
+
+        return [response[1] for response in self._responses]
 
     def filter(self, filter: RESPONSE_TYPE) -> list[tuple[RESPONSE_TYPE, str]]:
         """Filters the responses by the response type"""

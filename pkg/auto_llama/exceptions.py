@@ -1,3 +1,5 @@
+"""Custom exceptions for AutoLLaMa"""
+
 class AgentUnavailableError(Exception):
     def __init__(self, agent_name: str, error: str):
         super().__init__(f"{agent_name} is unavailable.\n{error}")
