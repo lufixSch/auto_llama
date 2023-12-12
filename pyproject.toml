@@ -18,9 +18,7 @@ classifiers = [
    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
    "Operating System :: OS Independent",
 ]
-dependencies = [
-  "openai"
-]
+dependencies = []
 
 [project.optional-dependencies]
 "module.nlp" = [
@@ -45,6 +43,12 @@ module = [
 agent = [
   'auto-llama[agent.research,  agent.code]'
 ]
+"llm.openai" = [
+  "openai"
+]
+llm = [
+  'auto-llama[llm.openai]'
+]
 "memory.txtai" = [
   "txtai",
   "auto-llama[module.nlp]"
@@ -53,13 +57,12 @@ memory = [
   "auto-llama[memory.txtai]"
 ]
 all = [
-  "auto-llama[module, agent, memory]"
+  "auto-llama[module, agent, llm, memory]"
 ]
 
 [tool.hatch.build]
 packages = [
   "pkg/auto_llama/",
-  "pkg/auto_llama_agents/"
 ]
 
 [tool.black]

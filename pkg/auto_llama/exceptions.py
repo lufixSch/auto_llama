@@ -1,15 +1,9 @@
 """Custom exceptions for AutoLLaMa"""
 
+
 class AgentUnavailableError(Exception):
     def __init__(self, agent_name: str, error: str):
         super().__init__(f"{agent_name} is unavailable.\n{error}")
-
-
-class AgentDependenciesMissing(Exception):
-    def __init__(self, agent_name: str, optional_dep: str):
-        super().__init__(
-            f"{agent_name} is missing a dependency.\nMake sure to install optional dependencies for this agent: `pip install auto-llama[agent.{optional_dep}]`"
-        )
 
 
 class AgentExecutionFailed(Exception):
@@ -17,8 +11,28 @@ class AgentExecutionFailed(Exception):
         super().__init__(f"{agent_name}: {error}")
 
 
-class ModuleDependenciesMissing(Exception):
-    def __init__(self, module_name: str, optional_dep: str):
+class DependenciesMissing(Exception):
+    def __init__(self, name: str, group_name: str, dep_name: str) -> None:
         super().__init__(
-            f"{module_name} is missing a dependency.\nMake sure to install optional dependencies for this module: `pip install auto-llama[module.{optional_dep}]`"
+            f"{name} is missing a dependency.\nMake sure to install optional dependencies for this agent: `pip install auto-llama[{group_name}.{dep_name}]`"
         )
+
+
+class AgentDependenciesMissing(DependenciesMissing):
+    def __init__(self, agent_name: str, dep_name: str):
+        super().__init__(agent_name, "agent", dep_name)
+
+
+class ModuleDependenciesMissing(DependenciesMissing):
+    def __init__(self, module_name: str, dep_name: str) -> None:
+        super().__init__(module_name, "module", dep_name)
+
+
+class LLMDependenciesMissing(DependenciesMissing):
+    def __init__(self, llm_name: str, dep_name: str) -> None:
+        super().__init__(f"{llm_name}", "llm", dep_name)
+
+
+class MemoryDependenciesMissing(DependenciesMissing):
+    def __init__(self, memory_name: str, dep_name: str) -> None:
+        super().__init__(memory_name, "memory", dep_name)

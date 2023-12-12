@@ -4,16 +4,16 @@ Supercharge your local LLM with different agents
 
 This project is a union off different smaller ideas I had/build to improve the capabilities of LLMs, build into a modular framework. The framework is built to be extendable, so feel free to experiment with it.
 
-> NOTE: Maybe you also found my text_generation_webui_auto_llama repository on GitHub. This is **NOT** (yet) a extension of auto-llama for oobabooga/text-generation-webui!
+> **ℹ️ NOTE:** Maybe you also found my text_generation_webui_auto_llama repository on GitHub. This is **NOT** (yet) a extension of auto-llama for oobabooga/text-generation-webui!
 
-> **WARNING: This project is still in early development. To be honest I haven't executed the code once since I rebuild it into this framework xD.**
+> **⚠️ WARNING: This project is still in early development!**
 
 ## Framework
 
 At the moment the framework is based on four main ideas:
 
 1. Agents - Agent that uses an LLM and/or other tools to perform a specific task derived from a single prompt or a chat history.
-2. Managers - A system that decides which agent to use for a given prompt or chat history. However, the boundaries between Agents and Managers are not clear cut (see for example `research.ResearchAgent`)
+2. Managers - A system that decides which agent to use for a given prompt or chat history. However, the boundaries between Agents and Managers are not clear cut (see for example `auto_llama.agents.research.ResearchAgent`)
 3. Memory - A system that stores information across agents and prompts to improve the performance of the system.
 4. LLMs - A interface to interact with a LLM for regular text generation and chat.
 
@@ -26,7 +26,7 @@ Additionally the `auto_llama` module provides some submodules with helpful utili
 
 ### Agents
 
-There are a few agents implemented currently. They are accessible over the `auto_llama_agents` module:
+There are a few agents implemented currently. They are accessible over the `auto_llama.agents` module:
 
 - code - Agents based around executing code in a sandbox environment (Docker container)
   - CodeExecAgent - Executes code included in the prompt or last chat message
@@ -53,7 +53,7 @@ pip install .[module.nlp]
 
 To install all dependencies, run `pip install .[all]`. This will install all optional dependencies for the project.
 
-> NOTE: Optional dependencies including the `nlp` module (e.g. `module.nlp`, `agent.research` ...) will install torch. Depending on you system you might want to install it beforehand.
+> **ℹ️ NOTE:** Optional dependencies including the `nlp` module (e.g. `module.nlp`, `agent.research` ...) will install torch. Depending on you system you might want to install it beforehand.
 
 ### Development
 
