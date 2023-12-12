@@ -19,6 +19,16 @@ class DataSegments:
         return cls(cls._text_to_segments(text))
 
     @classmethod
+    def from_fragments(cls, fragments: list[str]):
+        """Initialize with a list of text fragments by spliting thme at ', '"""
+
+        segments: list[str] = []
+        for fragment in fragments:
+            segments.extend(cls._text_to_segments(fragment))
+
+        return cls(segments)
+
+    @classmethod
     def _text_to_segments(cls, text: str, token_start: int = 0):
         """
         Convert text to segments

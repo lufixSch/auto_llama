@@ -6,8 +6,7 @@ from ._chat import Chat
 class Memory(ABC):
     """Base class for Long term memory implementations"""
 
-    @abstractmethod
-    def save(self, data: str):
+    def save(self, data: str | list[str]):
         """Add new data to the memory"""
 
     def save_conversation(self, chat: Chat):

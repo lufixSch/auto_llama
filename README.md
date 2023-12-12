@@ -69,7 +69,6 @@ pip install -e .[<opional_dependencies>]
   - CommandManager - Select agent based on a command (e.g. /code, /search ...)
   - KeywordManager - Select agent based on keywords in the input
   - AutoManager - Automaically decides which agent to use based on the context
-- Add (optional) memory injection to Agent base class
-  - Implement memory usage for different agents
 - Improve agent response system
   - Rework response types -> don't force a position, just give information about the response
+- Improve agent `run_chat` default

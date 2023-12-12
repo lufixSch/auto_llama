@@ -96,7 +96,21 @@ class SearchAgent(Agent):
         elif self.query_generator == "nlp":
             query = self._nlp_preprocessor(input)
 
-        return self._search(query)
+        try:
+            res = self._search(query)
+
+            # Save results, if memory interface is provided
+            if self.memory:
+                self.memory.save(res.values())
+        except exceptions.AgentUnavailableError:
+            self.print("No good Search Result was found", verbose=True)
+
+            # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
+            res = AgentResponse(
+                AgentResponse.RESPONSE_TYPE.CONTEXT, "Unable to find results regarding this topic on DuckDuckGo"
+            )
+
+        return res
 
 
 class WikipediaSearchAgent(SearchAgent):
@@ -115,12 +129,7 @@ class WikipediaSearchAgent(SearchAgent):
             responses.append((AgentResponse.RESPONSE_TYPE.CONTEXT, f"{article}\n{summary}"))
 
         if len(responses) <= 0:
-            self.print("No good Search Result was found", verbose=True)
-
-            # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
-            responses.append(
-                (AgentResponse.RESPONSE_TYPE.CONTEXT, "Unable to find results regarding this topic on Wikipedia")
-            )
+            raise exceptions.AgentExecutionFailed(AGENT_NAME, "No results found for the given query")
 
         return AgentResponse(responses)
 

@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 
 from ._chat import Chat
+from ._memory import Memory
 
 
 class AgentResponse:
@@ -54,6 +55,8 @@ class AgentResponse:
 class Agent(ABC):
     """Agent baseclass"""
 
+    memory: Memory = None
+
     def __init__(self, verbose=False, *args, **kwargs) -> None:
         self._verbose = verbose
 
@@ -63,8 +66,6 @@ class Agent(ABC):
 
         This must be implemented by the inheriting agent class.
         """
-
-        raise NotImplementedError()
 
     def run(self, input: str) -> AgentResponse:
         """Run agent with an input text"""
@@ -117,3 +118,8 @@ class Agent(ABC):
 
         name = self.__class__.__name__
         print(f"{name}: {msg}")
+
+    def add_memory(self, memory: Memory):
+        """Adds long term memory to the agent"""
+
+        self.memory = memory

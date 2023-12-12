@@ -76,10 +76,13 @@ class TxtAIMemory(Memory):
 
         return text
 
-    def save(self, data: str):
-        processed = self._preprocess(data)
+    def save(self, data: str | list[str]):
+        if isinstance(data, str):
+            data = [data]
 
-        seg_data = DataSegments.from_text(processed)
+        processed = [self._preprocess(el) for el in data]
+
+        seg_data = DataSegments.from_fragments(processed)
         segments = seg_data.segments
         paragraphs = seg_data.paragraphs(self._paragraph_len)
 

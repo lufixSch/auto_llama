@@ -1,4 +1,5 @@
 from auto_llama import Agent, AgentResponse, LLMInterface, PromptTemplate, exceptions
+from auto_llama._memory import Memory
 from auto_llama.react import ReActRunner, ReActStep
 
 AGENT_NAME = "ResearchAgent"
@@ -69,5 +70,12 @@ class ResearchAgent(Agent):
 
         if steps[-1].is_final:
             return AgentResponse(AgentResponse.RESPONSE_TYPE.CONTEXT, steps[-1].observation)
+
+        # Generate final answer from context, if memory is present
+        # WARNING Possibly redundant with RAG in Manager
+
+        if self.memory:
+            res = self.memory.remember("input", max_items=30)
+            return AgentResponse(AgentResponse.RESPONSE_TYPE.CONTEXT, res)
 
         return AgentResponse.with_same_type(AgentResponse.RESPONSE_TYPE.CONTEXT, [step.observation for step in steps])
