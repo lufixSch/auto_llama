@@ -7,6 +7,8 @@ try:
     from .search import SearchAgent
 except ImportError:
     raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
+except exceptions.AgentDependenciesMissing:
+    raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
 
 
 class ResearchPromptTemplate(PromptTemplate):

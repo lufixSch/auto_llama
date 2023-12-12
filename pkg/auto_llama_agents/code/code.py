@@ -1,25 +1,14 @@
-import os
-
-from auto_llama import AgentResponse, LLMInterface, PromptTemplate, exceptions
-from auto_llama.chat import Chat
+from auto_llama import AgentResponse, LLMInterface, PromptTemplate, exceptions, Chat
 
 AGENT_NAME = "CodeAgent"
 
 # Agent specific dependencies
 try:
-    import docker
-    import pandas as pd
-
     from .code_exec import CodeExecAgent
 except ModuleNotFoundError:
-    exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
+    raise exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
 except exceptions.AgentDependenciesMissing:
-    exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
-
-try:
-    docker_client = docker.from_env()
-except docker.errors.DockerClientException:
-    exceptions.AgentUnavailableError(AGENT_NAME, error="Unable  to connect to docker daemon!")
+    raise exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
 
 
 class CodePromptTemplate(PromptTemplate):
@@ -53,20 +42,6 @@ class CodeAgent(CodeExecAgent):
 
         super().__init__(pkg, container_path, container_name, executor_port, verbose)
 
-    def _generate_file_prompt(self, file: tuple[str, str]):
-        """Generate prompt for file with example"""
-
-        prompt = f"{file[0]}:"
-
-        if file[1] == "csv":
-            df = pd.read_csv(os.path.join(self.CONTAINER_PATH, "static", "files", file[0]))
-
-            # Load header and data types of each column in the csv
-            cols = [f"{col}: {df[col].dtype}" for col in df.columns]
-
-            prompt += " | ".join(cols)
-            return prompt
-
     def _run(self, objective: str) -> AgentResponse:
         prompt = self.prompt_template.template.format(
             objective=objective,
@@ -91,11 +66,3 @@ class CodeAgent(CodeExecAgent):
             raise exceptions.AgentExecutionFailed(AGENT_NAME, "No user message found in chat history")
 
         return self.run(objective)
-
-    def __del__(self):
-        self.print("Stopping Docker Container!")
-        try:
-            container = docker_client.containers.get(self.container_name)
-            container.kill()
-        except docker.errors.NotFound:
-            pass

@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Literal
 from itertools import islice
 
-from auto_llama import Agent, AgentResponse, PromptTemplate, LLMInterface, nlp, exceptions
+from auto_llama import Agent, AgentResponse, PromptTemplate, LLMInterface, exceptions
 
 AGENT_NAME = "SearchAgent"
 
@@ -10,7 +10,10 @@ AGENT_NAME = "SearchAgent"
 try:
     import wikipedia
     from duckduckgo_search import DDGS
+    from auto_llama import nlp
 except ImportError:
+    raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
+except exceptions.ModuleDependenciesMissing:
     raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
 
 
@@ -63,7 +66,11 @@ class SearchAgent(Agent):
         """Generate search query from text input using LLM Model"""
 
         prompt = self.prompt_template.format(tool=self.SEARCH_TOOL, request=request)
-        return self.llm.completion(prompt, stopping_strings=["\n"], max_new_tokens=100)
+        res = self.llm.completion(prompt, stopping_strings=["\n"], max_new_tokens=100)
+        res = res.strip().strip('"').strip("'")
+
+        self.print(f"Preprocessed query: {res}", verbose=True)
+        return res
 
     def _nlp_preprocessor(self, request: str):
         """Generate search query from text input using NLP preprocessing"""
@@ -71,6 +78,9 @@ class SearchAgent(Agent):
         res = nlp.to_lower(request)
         res = nlp.merge_spaces(res)
         res = nlp.remove_specific_pos(res)
+        res = nlp.lemmatize(res)
+
+        self.print(f"Preprocessed query: {res}", verbose=True)
 
         return res
 
@@ -93,7 +103,7 @@ class WikipediaSearchAgent(SearchAgent):
     """Search Wikipedia for Information"""
 
     def _search(self, query: str) -> AgentResponse:
-        articles = wikipedia.search(query)[: self.max_articles]
+        articles = wikipedia.search(query)[: self.max_results]
 
         responses: list[tuple[AgentResponse.RESPONSE_TYPE, str]] = []
         for article in articles:
@@ -109,7 +119,7 @@ class WikipediaSearchAgent(SearchAgent):
 
             # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
             responses.append(
-                AgentResponse.RESPONSE_TYPE.CONTEXT, "Unable to find results regarding this topic on Wikipedia"
+                (AgentResponse.RESPONSE_TYPE.CONTEXT, "Unable to find results regarding this topic on Wikipedia")
             )
 
         return AgentResponse(responses)
@@ -123,7 +133,7 @@ class DuckDuckGoSearchAgent(SearchAgent):
             responses: list[tuple[AgentResponse.RESPONSE_TYPE, str]] = []
             for t in islice(ddgs.text(query), self.max_results):
                 responses.append(
-                    AgentResponse.RESPONSE_TYPE.CONTEXT, t["title"] + "\n" + t["body"] + "\nSource: " + t["href"]
+                    (AgentResponse.RESPONSE_TYPE.CONTEXT, t["title"] + "\n" + t["body"] + "\nSource: " + t["href"])
                 )
 
             if len(responses) <= 0:
@@ -131,7 +141,7 @@ class DuckDuckGoSearchAgent(SearchAgent):
 
                 # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
                 responses.append(
-                    AgentResponse.RESPONSE_TYPE.CONTEXT, "Unable to find results regarding this topic on DuckDuckGo"
+                    (AgentResponse.RESPONSE_TYPE.CONTEXT, "Unable to find results regarding this topic on DuckDuckGo")
                 )
 
             return AgentResponse(responses)

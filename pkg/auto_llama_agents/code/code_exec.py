@@ -2,22 +2,22 @@ import os
 import shutil
 import re
 
-from auto_llama import Agent, AgentResponse, exceptions
-from auto_llama.chat import Chat
+from auto_llama import Agent, AgentResponse, exceptions, Chat
 
 AGENT_NAME = "CodeExecAgent"
 
 # Agent specific dependencies
 try:
     import docker
+    import pandas as pd
     from requests import post
 except ModuleNotFoundError:
-    exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
+    raise exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
 
 try:
     docker_client = docker.from_env()
-except docker.errors.DockerClientException:
-    exceptions.AgentUnavailableError(AGENT_NAME, error="Unable  to connect to docker daemon!")
+except docker.errors.DockerException:
+    raise exceptions.AgentUnavailableError(AGENT_NAME, error="Unable  to connect to docker daemon!")
 
 
 class CodeExecAgent(Agent):
@@ -36,7 +36,7 @@ class CodeExecAgent(Agent):
         verbose: bool = False,
     ) -> None:
         self.pkg = pkg
-        self.container_path = container_path
+        self.container_path = os.path.abspath(container_path)
         self.container_name = container_name
         self.data: dict[str, str] = {}
         self.executor_endpoint = f"http://localhost:{executor_port}"
@@ -50,7 +50,7 @@ class CodeExecAgent(Agent):
         try:
             container = docker_client.containers.get(self.container_name)
             if container.status == "running":
-                self.print(f"Container for {self.name} already running")
+                self.print("Container already running")
                 return
 
             container.remove()
@@ -71,7 +71,7 @@ class CodeExecAgent(Agent):
         # Run the container with volume mounts for data and code files
         docker_client.containers.run(
             self.container_name,
-            ports={5000: port},
+            ports={80: port},
             name=self.container_name,
             volumes={
                 os.path.join(self.container_path, "static"): {
@@ -125,6 +125,20 @@ class CodeExecAgent(Agent):
         code = match.group("code").strip()
 
         return (language, code)
+
+    def _generate_file_prompt(self, file: tuple[str, str]):
+        """Generate prompt for file with example"""
+
+        prompt = f"{file[0]}:"
+
+        if file[1] == "csv":
+            df = pd.read_csv(os.path.join(self.CONTAINER_PATH, "static", "files", file[0]))
+
+            # Load header and data types of each column in the csv
+            cols = [f"{col}: {df[col].dtype}" for col in df.columns]
+
+            prompt += " | ".join(cols)
+            return prompt
 
     def _execute_code(self, code: str):
         """Execute code in sandboxed environment and return output"""

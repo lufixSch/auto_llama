@@ -70,16 +70,16 @@ class Agent(ABC):
         """Run agent with an input text"""
 
         self.print("Running ...", seperator="=", verbose=True, verbose_alt=f"Running ...\nPrompt: {input}")
-        self._run(input)
+        return self._run(input)
 
-    @abstractmethod
     def _chat(self, chat_history: Chat) -> AgentResponse:
         """Run agent with chat history (conversation)
 
-        This must be implemented by the inheriting agent class.
+        This can be implemented by the inheriting agent class.
         """
 
-        raise NotImplementedError()
+        last_msg = chat_history.last("user")
+        return self._run(last_msg)
 
     def chat(self, chat_history: Chat) -> AgentResponse:
         """Run agent with chat history (conversation)"""
@@ -105,15 +105,15 @@ class Agent(ABC):
             verbose_alt (str): An alternative message to be printed if the agent is in verbose mode
         """
 
-        if verbose:
-            if not self._verbose:
+        if self._verbose:
+            if not verbose:
                 return
 
             if verbose_alt:
                 msg = verbose_alt
 
         if seperator:
-            print("f{seperator * 10}")
+            print(f"{seperator * 30}")
 
         name = self.__class__.__name__
         print(f"{name}: {msg}")

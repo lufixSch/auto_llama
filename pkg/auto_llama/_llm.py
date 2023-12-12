@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from openai import OpenAI as OpenAIClient
 
-from .chat import Chat
+from ._chat import Chat
 
 
 class LLMInterface(ABC):
