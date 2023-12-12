@@ -1,0 +1,5 @@
+flask
+waitress
+matplotlib
+pandas
+numpy

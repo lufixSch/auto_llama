@@ -1,0 +1,10 @@
+# Keep static folder structure but ignore files in it
+static/code/*
+!static/code/.keep
+
+static/files/*
+!static/files/.keep
+
+static/images/*
+!static/images/.keep
+!static/images/demo.png

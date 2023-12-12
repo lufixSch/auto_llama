@@ -1,0 +1,16 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+#RUN mkdir images && mkdir data && mkdir code
+
+COPY requirements.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+CMD ["python", "server.py" ]
+EXPOSE 80
+
+# CMD [ "flask", "--app", "server", "run", "--debug", "--host", "0.0.0.0"]
+# EXPOSE 5000
