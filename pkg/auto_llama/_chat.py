@@ -45,7 +45,18 @@ class Chat:
 
         self._history.append(ChatMessage(role, message))
 
-    def last(self, role: ChatRoles) -> str:
+    def filter(
+        self, include_roles: list[ChatRoles] = ["user", "assistant", "system"], exclude_roles: list[ChatRoles] = []
+    ) -> list[ChatMessage]:
+        """Filter chat history based on roles"""
+
+        return [
+            chat_msg
+            for chat_msg in self.history
+            if chat_msg.role in include_roles and chat_msg.role not in exclude_roles
+        ]
+
+    def last_from(self, role: ChatRoles) -> str:
         """Return last chat message of a given role"""
 
         for chat_msg in reversed(self.history):
@@ -53,3 +64,14 @@ class Chat:
                 return chat_msg.message
 
         raise ValueError(f"No message found for role '{role}'")
+
+    def clone(self, start: int = 0, end: int = -1) -> "Chat":
+        """Clone chat from start to end
+
+        WARNING: No deep copy of ChatMessages
+        """
+
+        new_chat = Chat(self._names)
+        new_chat._history = self._history[start:end]
+
+        return new_chat

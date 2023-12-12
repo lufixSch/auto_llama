@@ -61,7 +61,7 @@ class CodeAgent(CodeExecAgent):
 
     def _chat(self, chat_history: Chat) -> AgentResponse:
         try:
-            objective = chat_history.last("user")
+            objective = chat_history.last_from("user")
         except ValueError:
             raise exceptions.AgentExecutionFailed(AGENT_NAME, "No user message found in chat history")
 

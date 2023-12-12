@@ -65,7 +65,6 @@ pip install -e .[<opional_dependencies>]
 
 ## ToDo
 
-- Add TxtaiMemory implementation
 - Add Manager implementations
   - CommandManager - Select agent based on a command (e.g. /code, /search ...)
   - KeywordManager - Select agent based on keywords in the input

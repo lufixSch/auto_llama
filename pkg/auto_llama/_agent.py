@@ -78,7 +78,7 @@ class Agent(ABC):
         This can be implemented by the inheriting agent class.
         """
 
-        last_msg = chat_history.last("user")
+        last_msg = chat_history.last_from("user")
         return self._run(last_msg)
 
     def chat(self, chat_history: Chat) -> AgentResponse:
