@@ -1,5 +1,4 @@
 from auto_llama import Agent, AgentResponse, LLMInterface, PromptTemplate, exceptions
-from auto_llama._memory import Memory
 from auto_llama.react import ReActRunner, ReActStep
 
 AGENT_NAME = "ResearchAgent"

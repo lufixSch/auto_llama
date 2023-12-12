@@ -72,6 +72,6 @@ pip install -e .[<opional_dependencies>]
 - Improve agent response system
   - Rework response types -> don't force a position, just give information about the response
 - Improve agent `run_chat` default
-- Add time aware memory (No Idea how >\_<)
+- Add time aware memory (No Idea how \>\_\<)
   - Idea: _Fetch x recent memory's and y memory's (time independent) and mark them as recent/general_
 - Add image/multimodal memory (Supported by txtai out of the box)
