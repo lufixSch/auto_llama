@@ -35,6 +35,12 @@ There are a few agents implemented currently. They are accessible over the `auto
   - SearchAgent: Retrieves information using a single tool (e.g. WikipediaSearchAgent, DuckDuckGoSearchAgent)
   - ResearchAgent: Thoroughly researchs a given topic using multiple SearchAgents and ReAct
 
+There are also some implementeds of text input or chat preprocessors available:
+
+- TemplateInputPreprocessor - Extract an objective from a prompt using _begin_ and _end_ keywords.
+- nlp - Improved preprocessing using nlp
+  - CorefResChatPreprocessor - Extract objective from chat history using the last message and coreference resolution to improve context
+
 ## Installation
 
 At the moment it is not possible to install AutoLLaMa using `pip`. You need to install it from source.
@@ -54,6 +60,8 @@ pip install .[module.nlp]
 To install all dependencies, run `pip install .[all]`. This will install all optional dependencies for the project.
 
 > **ℹ️ NOTE:** Optional dependencies including the `nlp` module (e.g. `module.nlp`, `agent.research` ...) will install torch. Depending on you system you might want to install it beforehand.
+
+> **ℹ️ NOTE:** Modules using the `nlp` optional dependency group (e.g. `module.nlp`, `agent.research`, `agent.preprocessor.nlp`) might need you to download _spaCy_ or _nltk_ models. Use `bin/nltk_ressources.py` and `bin/spacy_ressources.py` for easy installation of necessary ressources.
 
 ### Development
 

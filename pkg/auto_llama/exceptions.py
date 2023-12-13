@@ -36,3 +36,8 @@ class LLMDependenciesMissing(DependenciesMissing):
 class MemoryDependenciesMissing(DependenciesMissing):
     def __init__(self, memory_name: str, dep_name: str) -> None:
         super().__init__(memory_name, "memory", dep_name)
+
+
+class ModelMissing(Exception):
+    def __init__(self, model_group: str) -> None:
+        super().__init__(f"Ressources missing!\nMake sure to download all neccessary ressources for {model_group}: `python bin/{model_group}_ressources`")

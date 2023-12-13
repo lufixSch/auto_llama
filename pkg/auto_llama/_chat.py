@@ -65,13 +65,17 @@ class Chat:
 
         raise ValueError(f"No message found for role '{role}'")
 
-    def clone(self, start: int = 0, end: int = -1) -> "Chat":
+    def clone(self, start: int = 0, end: int = None) -> "Chat":
         """Clone chat from start to end
 
         WARNING: No deep copy of ChatMessages
         """
 
         new_chat = Chat(self._names)
-        new_chat._history = self._history[start:end]
+
+        if end:
+            new_chat._history = self._history[start:end]
+        else:
+            new_chat._history = self._history[start:]
 
         return new_chat

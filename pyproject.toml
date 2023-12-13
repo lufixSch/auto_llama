@@ -23,7 +23,9 @@ dependencies = []
 [project.optional-dependencies]
 "module.nlp" = [
   "num2words",
-  "nltk"
+  "nltk",
+  "spacy",
+  "coreferee"
 ]
 "module.react" = []
 module = [
