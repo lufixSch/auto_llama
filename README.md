@@ -79,7 +79,6 @@ pip install -e .[<opional_dependencies>]
   - AutoManager - Automatically decides which agent to use based on the context
 - Improve agent response system
   - Rework response types -> don't force a position, just give information about the response
-- Improve agent `run_chat` default
 - Add time aware memory (No Idea how to do this!)
   - Idea: _Fetch x recent memory's and y memory's (time independent) and mark them as recent/general_
 - Add image/multimodal memory (Supported by txtai out of the box)
