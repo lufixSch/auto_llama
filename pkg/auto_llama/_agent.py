@@ -52,32 +52,10 @@ class AgentResponse:
 
         return [r for r in self._responses if r[0] == filter]
 
-class AgentInputPreprocessor(ABC):
-    """
-    Preprocessor for Agent text inputs which are executed before running the agent
-    """
-
-    @abstractmethod
-    def __call__(self, input: str) -> str:
-        """Run preprocessor with inpput text"""
-
-
-class AgentChatPreprocessor(ABC):
-    """
-    Preprocessor for Agent chat inputs which generates a text input from the given history
-    """
-
-    @abstractmethod
-    def __call__(self, chat: Chat) -> str:
-        """Run preprocessor with input chat"""
-
-
 class Agent(ABC):
     """Agent baseclass"""
 
     memory: Memory = None
-    _preprocessor: AgentInputPreprocessor = None
-    _chat_preprocessor: AgentChatPreprocessor = None
 
     def __init__(self, verbose=False, *args, **kwargs) -> None:
         self._verbose = verbose
@@ -93,36 +71,9 @@ class Agent(ABC):
         """Run agent with an input text"""
 
         self.print("Running ...", seperator="=")
-
-        if self._preprocessor:
-            input = self._preprocessor(input)
-
         self.print(f"Prompt: {input}", verbose=True)
 
         return self._run(input)
-
-    def _chat(self, chat: Chat) -> AgentResponse:
-        """Run agent with chat history (conversation)
-
-        Generates prompt using given preprocessor (default: last message) and exectues `_run()` with this input
-
-        Can be implemented by an inheriting Agent if more frredom in handling chats is needed
-        """
-
-        if self._chat_preprocessor:
-            prompt = self._preprocessor(chat)
-        else:
-            prompt = chat.history[-1].message
-
-        self.print(f"Prompt: {prompt}", verbose=True)
-
-        return self._run(prompt)
-
-    def chat(self, chat: Chat) -> AgentResponse:
-        """Run agent with chat history (conversation)"""
-
-        self.print("Running ...", seperator="=")
-        self._chat(chat)
 
     def print(
         self,
@@ -157,12 +108,4 @@ class Agent(ABC):
         """Set long term memory for the agent"""
 
         self.memory = memory
-        return self
-
-    def set_preprocessor(self, input: AgentInputPreprocessor = None, chat: AgentChatPreprocessor = None):
-        """Set preprocessor for regular text and chat inputs"""
-
-        self._preprocessor = input or self._preprocessor
-        self._chat_preprocessor = chat or self._chat_preprocessor
-
         return self

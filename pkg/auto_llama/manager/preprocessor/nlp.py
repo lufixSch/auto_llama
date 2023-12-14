@@ -1,6 +1,6 @@
 """NLP driven agent preprocessor"""
 
-from auto_llama import exceptions, AgentChatPreprocessor
+from auto_llama import exceptions, ChatPreprocessor
 from auto_llama._chat import Chat
 
 from string import punctuation

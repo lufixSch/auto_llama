@@ -1,4 +1,4 @@
-from auto_llama import AgentInputPreprocessor
+from auto_llama import InputPreprocessor
 
 
 class TemplateInputPreprocessor(AgentInputPreprocessor):
