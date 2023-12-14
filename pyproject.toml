@@ -25,7 +25,8 @@ dependencies = []
   "num2words",
   "nltk",
   "spacy",
-  "coreferee"
+  "coreferee",
+  "txtai"
 ]
 "module.react" = []
 module = [
@@ -52,11 +53,16 @@ llm = [
   'auto-llama[llm.openai]'
 ]
 "memory.txtai" = [
-  "txtai",
   "auto-llama[module.nlp]"
 ]
 memory = [
   "auto-llama[memory.txtai]"
+]
+"manager.txtai" = [
+  "auto-llama[module.nlp]"
+]
+manager = [
+  "auto_llama[manager.txtai]
 ]
 all = [
   "auto-llama[module, agent, llm, memory]"

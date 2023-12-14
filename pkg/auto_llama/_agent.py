@@ -34,8 +34,16 @@ class AgentResponse:
         self._responses = responses
 
     @classmethod
+    def empty(cls):
+        """Initializes empty Response"""
+
+        return cls([])
+
+    @classmethod
     def with_same_type(cls, type: RESPONSE_TYPE, responses: list[str]):
-        """Initializes AgetnResponse with the same type for all the responses"""
+        """Initializes AgentResponse with the same type for all the responses"""
+
+        return cls([(type, res) for res in responses])
 
     def items(self):
         """List of agent responses and the response type"""

@@ -30,7 +30,7 @@ class AgentManager(ABC):
     _chat_preprocessor: ChatPreprocessor = None
 
     @abstractmethod
-    def _run(self, input: str) -> AgentResponse:
+    def _run(self, prompt: str) -> AgentResponse:
         """Run agents based on text input"""
 
     def run_agents(self, input: str | Chat) -> AgentResponse:

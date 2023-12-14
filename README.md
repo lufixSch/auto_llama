@@ -41,6 +41,15 @@ There are also some implementeds of text input or chat preprocessors available:
 - nlp - Improved preprocessing using nlp
   - CorefResChatPreprocessor - Extract objective from chat history using the last message and coreference resolution to improve context
 
+## Manager
+
+The managers are accessible over the `auto_llama.manager` module:
+
+- CommandAgentManager - Decides which Agent to use by checking for a command at the start of the prompt
+- txtai - Manager using the txtai framework
+  - SimilarityAgentManager - Classifies prompt using keywords for each tool. The results determine which tool is used
+
+
 ## Installation
 
 At the moment it is not possible to install AutoLLaMa using `pip`. You need to install it from source.

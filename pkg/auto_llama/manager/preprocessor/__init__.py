@@ -1,3 +1,3 @@
-""" Custom text input and chat preprocessor for agents"""
+""" Custom text input and chat preprocessors"""
 
 from .general import TemplateInputPreprocessor

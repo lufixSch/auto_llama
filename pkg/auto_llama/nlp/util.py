@@ -1,19 +1,15 @@
-"""Different usefull methods for text processing"""
-
 import re
 
-from .exceptions import ModuleDependenciesMissing
+from auto_llama.exceptions import ModuleDependenciesMissing
 
 # Module specific dependencies
 try:
     import num2words
     import nltk
-    from nltk.stem import WordNetLemmatizer
+
+    from ._models import models
 except ImportError:
     raise ModuleDependenciesMissing("nlp", "nlp")
-
-_lemmatizer: WordNetLemmatizer = None
-
 
 def str_to_list(input: str | list[str]):
     """Take str or list[str] as input and return list[str]"""
@@ -86,12 +82,7 @@ def remove_specific_pos(text: str):
 
 def lemmatize(text: str):
     """Reduce inflected or derived words to their base or dictionary forms."""
-    global _lemmatizer
-
-    if not _lemmatizer:
-        _lemmatizer = WordNetLemmatizer()
-
-    return "".join([_lemmatizer.lemmatize(word) for word in tokens_from_str(text)])
+    return "".join([models.lemmatizer.lemmatize(word) for word in tokens_from_str(text)])
 
 
 def num_to_word(text: str, min_len: int = 1):
