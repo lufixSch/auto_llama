@@ -58,6 +58,9 @@ class Assistant:
 
         self._run = True
         while self._run:
+            # TODO Add chat memory (save, remember)
+            # TODO Add facts memory (remember)
+
             objective = self._converter(self._chat)
             agent = self._selector.run(objective)
 

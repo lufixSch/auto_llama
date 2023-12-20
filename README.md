@@ -98,6 +98,7 @@ pip install -e .[<opional_dependencies>]
   - [ ] Rework response types -> don't force a position, just give information about the response
 - [ ] Add time aware memory (No Idea how to do this!)
   - [ ] Idea: _Fetch x recent memory's and y memory's (time independent) and mark them as recent/general_
+  - [x] add time tracking to chat messages
 - [ ] Add image/multimodal memory (Supported by txtai out of the box)
 - [ ] Improve Chat class
   - [ ] Multi user chat
