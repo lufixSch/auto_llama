@@ -62,7 +62,7 @@ memory = [
   "auto-llama[module.nlp]"
 ]
 manager = [
-  "auto_llama[manager.txtai]
+  "auto_llama[manager.txtai]"
 ]
 all = [
   "auto-llama[module, agent, llm, memory]"

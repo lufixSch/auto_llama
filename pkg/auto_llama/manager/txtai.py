@@ -3,12 +3,13 @@
 from auto_llama import AgentManager, Agent, AgentResponse
 from auto_llama.nlp import models
 
+
 class KeywordMapping:
     """Bidirectional one-to-many, many-to-one mapping"""
 
     def __init__(self, assistant: list[str], **keywords: list[str]) -> None:
         self._keywords = keywords
-        self._keywords['assistant'] = assistant
+        self._keywords["assistant"] = assistant
 
     @property
     def names(self):
@@ -40,10 +41,16 @@ class KeywordMapping:
 
         raise ValueError(f"No matching name found for keyword: {keyword}")
 
+
 class SimilarityAgentManager(AgentManager):
     """Automatically detect which agent is needed using similarity models"""
 
-    def __init__(self, tools: dict[str, Agent], keywords: dict[str, list[str]], none_keywords: list[str] = ['communication', 'assistant']):
+    def __init__(
+        self,
+        tools: dict[str, Agent],
+        keywords: dict[str, list[str]],
+        none_keywords: list[str] = ["communication", "assistant"],
+    ):
         """
         Arguments:
             tools (dict[str, Agent]): Dictionary of available tools with their name as key
@@ -54,14 +61,13 @@ class SimilarityAgentManager(AgentManager):
         self._tools = tools
         self._keyword_mapping = KeywordMapping(assistant=none_keywords, **keywords)
 
-
     def _run(self, prompt: str) -> AgentResponse:
         similarities = models.similarity(prompt, self._keyword_mapping.keywords_flat)
 
         keyword = self._keyword_mapping.keywords_flat[similarities[0][0]]
         tool = self._keyword_mapping.name(keyword)
 
-        if tool == 'assistant':
+        if tool == "assistant":
             return AgentResponse.empty()
 
         return self._tools[tool].run(prompt)

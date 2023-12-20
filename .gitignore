@@ -1,4 +1,5 @@
 .venvs/
 dist/
+.vscode
 
 __pycache__/
