@@ -1,4 +1,4 @@
 """Write and execute code in a sandbox environment"""
 
-from .code import CodeAgent, CodePromptTemplate
-from .code_exec import CodeExecAgent
+from ._code import CodeAgent, CodePromptTemplate
+from ._code_exec import CodeExecAgent

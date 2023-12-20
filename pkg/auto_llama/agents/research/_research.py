@@ -4,7 +4,7 @@ from auto_llama.react import ReActRunner, ReActStep
 AGENT_NAME = "ResearchAgent"
 
 try:
-    from .search import SearchAgent
+    from ._search import SearchAgent
 except ImportError:
     raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
 except exceptions.AgentDependenciesMissing:

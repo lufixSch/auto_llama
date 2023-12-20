@@ -3,4 +3,4 @@ from ._agent import Agent, AgentResponse, AgentChatPreprocessor, AgentInputPrepr
 from ._llm import LLMInterface
 from ._template import PromptTemplate
 from ._memory import Memory
-from ._manager import AgentManager, ChatPreprocessor, InputPreprocessor
+from ._selector import AgentSelector, ChatPreprocessor, InputPreprocessor

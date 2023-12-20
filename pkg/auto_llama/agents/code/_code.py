@@ -4,7 +4,7 @@ AGENT_NAME = "CodeAgent"
 
 # Agent specific dependencies
 try:
-    from .code_exec import CodeExecAgent
+    from ._code_exec import CodeExecAgent
 except ModuleNotFoundError:
     raise exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
 except exceptions.AgentDependenciesMissing:

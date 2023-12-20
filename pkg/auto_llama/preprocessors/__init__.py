@@ -1,3 +1,3 @@
 """ Custom text input and chat preprocessors"""
 
-from .general import TemplateInputPreprocessor
+from ._general import TemplateInputPreprocessor

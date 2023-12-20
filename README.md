@@ -10,10 +10,10 @@ This project is a union off different smaller ideas I had/build to improve the c
 
 ## Framework
 
-At the moment the framework is based on four main ideas:
+At the moment the framework is based on the following main ideas:
 
 1. Agents - Agent that uses an LLM and/or other tools to perform a specific task derived from a single prompt or a chat history.
-2. Managers - A system that decides which agent to use for a given prompt or chat history. However, the boundaries between Agents and Managers are not clear cut (see for example `auto_llama.agents.research.ResearchAgent`)
+2. Selectors - A system that decides which agent to use for a given prompt or chat history.
 3. Memory - A system that stores information across agents and prompts to improve the performance of the system.
 4. LLMs - A interface to interact with a LLM for regular text generation and chat.
 
@@ -35,20 +35,22 @@ There are a few agents implemented currently. They are accessible over the `auto
   - SearchAgent: Retrieves information using a single tool (e.g. WikipediaSearchAgent, DuckDuckGoSearchAgent)
   - ResearchAgent: Thoroughly researchs a given topic using multiple SearchAgents and ReAct
 
+### Selectors
+
+The selectors are accessible over the `auto_llama.selectors` module:
+
+- CommandAgentSelector - Decides which Agent to use by checking for a command at the start of the prompt
+- KeywordAgentSelector - Decides which Agent to use by checking for keywords in the prompt
+- txtai - Manager using the txtai framework
+  - SimilarityAgentManager - Classifies prompt using keywords for each tool. The results determine which tool is used
+
+### Preprocessors
+
 There are also some implementeds of text input or chat preprocessors available:
 
 - TemplateInputPreprocessor - Extract an objective from a prompt using _begin_ and _end_ keywords.
 - nlp - Improved preprocessing using nlp
   - CorefResChatPreprocessor - Extract objective from chat history using the last message and coreference resolution to improve context
-
-## Manager
-
-The managers are accessible over the `auto_llama.manager` module:
-
-- CommandAgentManager - Decides which Agent to use by checking for a command at the start of the prompt
-- txtai - Manager using the txtai framework
-  - SimilarityAgentManager - Classifies prompt using keywords for each tool. The results determine which tool is used
-
 
 ## Installation
 
@@ -82,12 +84,15 @@ pip install -e .[<opional_dependencies>]
 
 ## ToDo
 
-- Add Manager implementations
-  - CommandManager - Select agent based on a command (e.g. /code, /search ...)
-  - KeywordManager - Select agent based on keywords in the input
-  - AutoManager - Automatically decides which agent to use based on the context
-- Improve agent response system
-  - Rework response types -> don't force a position, just give information about the response
-- Add time aware memory (No Idea how to do this!)
-  - Idea: _Fetch x recent memory's and y memory's (time independent) and mark them as recent/general_
-- Add image/multimodal memory (Supported by txtai out of the box)
+- [ ] Add Manager implementations
+  - [ ] CommandManager - Select agent based on a command (e.g. /code, /search ...)
+  - [ ] KeywordManager - Select agent based on keywords in the input
+  - [ ] AutoManager - Automatically decides which agent to use based on the context
+- [ ] Improve agent response system
+  - [ ] Rework response types -> don't force a position, just give information about the response
+- [ ] Add time aware memory (No Idea how to do this!)
+  - [ ] Idea: _Fetch x recent memory's and y memory's (time independent) and mark them as recent/general_
+- [ ] Add image/multimodal memory (Supported by txtai out of the box)
+- [ ] Improve Chat class
+  - [ ] Multi user chat
+  - [ ] Load/Save chat to database (possibly Embeddings DB)

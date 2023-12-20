@@ -11,6 +11,7 @@ try:
 except ImportError:
     raise ModuleDependenciesMissing("nlp", "nlp")
 
+
 def str_to_list(input: str | list[str]):
     """Take str or list[str] as input and return list[str]"""
 

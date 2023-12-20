@@ -22,7 +22,7 @@ except OSError:
     raise exceptions.ModelMissing("spacy")
 
 
-class CorefResChatPreprocessor(AgentChatPreprocessor):
+class CorefResChatPreprocessor(ChatPreprocessor):
     """Extract objective from chat history using the last message and coreference resolution to improve context"""
 
     def __init__(self, msg_cnt: int | "all" = 3) -> None:

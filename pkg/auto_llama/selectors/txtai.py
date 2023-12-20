@@ -1,6 +1,6 @@
 """txtai based manager"""
 
-from auto_llama import AgentManager, Agent, AgentResponse
+from auto_llama import AgentSelector, Agent, AgentResponse
 from auto_llama.nlp import models
 
 
@@ -42,7 +42,7 @@ class KeywordMapping:
         raise ValueError(f"No matching name found for keyword: {keyword}")
 
 
-class SimilarityAgentManager(AgentManager):
+class SimilarityAgentSelector(AgentSelector):
     """Automatically detect which agent is needed using similarity models"""
 
     def __init__(

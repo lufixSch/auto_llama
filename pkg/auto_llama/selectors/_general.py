@@ -1,7 +1,7 @@
-from auto_llama import AgentManager, Agent, AgentResponse
+from auto_llama import AgentSelector, Agent, AgentResponse
 
 
-class CommandAgentManager(AgentManager):
+class CommandAgentSelector(AgentSelector):
     """Detect requested agent using a command. Prompt has to start with it"""
 
     def __init__(self, tools: dict[str, Agent], commands: dict[str, str]):
@@ -22,7 +22,7 @@ class CommandAgentManager(AgentManager):
         return AgentResponse.empty()
 
 
-class KeywordAgentManager(AgentManager):
+class KeywordAgentSelector(AgentSelector):
     """Detect requested agent by searching for a keyword"""
 
     def __init__(self, tools: dict[str, Agent], keywords: dict[str, str]) -> None:
