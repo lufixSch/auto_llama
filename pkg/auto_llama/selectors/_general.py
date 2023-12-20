@@ -1,4 +1,4 @@
-from auto_llama import AgentSelector, Agent, AgentResponse
+from auto_llama import AgentSelector, Agent
 
 
 class CommandAgentSelector(AgentSelector):
@@ -6,7 +6,7 @@ class CommandAgentSelector(AgentSelector):
 
     def __init__(self, tools: dict[str, Agent], commands: dict[str, str]):
         """
-        Arguments:
+        Args:
             tools (dict[str, Agent]): Dictionary of available tools with their name as key
             commands (dict[str, str]): Command for each tool with the tool name as key.
         """
@@ -14,12 +14,12 @@ class CommandAgentSelector(AgentSelector):
         self._tools = tools
         self._commands = commands
 
-    def _run(self, prompt: str) -> AgentResponse:
+    def _run(self, prompt: str) -> Agent:
         for tool, c in self._commands.items():
             if prompt.startswith(c):
-                return self._tools[tool].run(prompt)
+                return self._tools[tool]
 
-        return AgentResponse.empty()
+        return None
 
 
 class KeywordAgentSelector(AgentSelector):
@@ -27,7 +27,7 @@ class KeywordAgentSelector(AgentSelector):
 
     def __init__(self, tools: dict[str, Agent], keywords: dict[str, str]) -> None:
         """
-        Arguments:
+        Args:
             tools (dict[str, Agent]): Dictionary of available tools with their name as key
             keywords (dict[str, str]): Keywords for each tool with the tool name as key.
         """
@@ -35,9 +35,9 @@ class KeywordAgentSelector(AgentSelector):
         self._tools = tools
         self._keywords = keywords
 
-    def _run(self, prompt: str) -> AgentResponse:
+    def _run(self, prompt: str) -> Agent:
         for tool, keyword in self._keywords.items():
             if keyword.lower() in prompt.lower():
-                return self._tools[tool].run(prompt)
+                return self._tools[tool]
 
-        return AgentResponse.empty()
+        return None

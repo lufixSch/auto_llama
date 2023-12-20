@@ -5,3 +5,4 @@ from ._template import PromptTemplate
 from ._memory import Memory
 from ._selector import AgentSelector
 from ._preprocessors import ChatToObjectiveConverter, PromptPreprocessor, ChatPreprocessor
+from ._assistant import Assistant

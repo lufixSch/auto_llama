@@ -10,7 +10,7 @@ class AgentSelector(ABC):
     def _run(self, prompt: str) -> Agent:
         """Run agents based on text input"""
 
-    def run(self, prompt: str) -> Agent:
+    def run(self, prompt: str) -> Agent | None:
         """Run agents based on text input"""
 
         return self._run(prompt)

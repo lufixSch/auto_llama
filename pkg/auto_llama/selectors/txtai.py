@@ -52,7 +52,7 @@ class SimilarityAgentSelector(AgentSelector):
         none_keywords: list[str] = ["communication", "assistant"],
     ):
         """
-        Arguments:
+        Args:
             tools (dict[str, Agent]): Dictionary of available tools with their name as key
             keywords (dict[str, list[str]]): Keywords for each tool with the tool name as key.
             none_keywords (list[str]): Keywords which will map to no tool (e.g. no tool should be used)

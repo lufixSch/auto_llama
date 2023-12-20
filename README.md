@@ -10,7 +10,7 @@ This project is a union off different smaller ideas I had/build to improve the c
 
 ## Framework
 
-At the moment the framework is based on the following main ideas:
+The framework is based on the following main ideas:
 
 1. Agents - Agent that uses an LLM and/or other tools to perform a specific task derived from a single prompt or a chat history.
 2. Selectors - A system that decides which agent to use for a given prompt or chat history.
@@ -46,11 +46,17 @@ The selectors are accessible over the `auto_llama.selectors` module:
 
 ### Preprocessors
 
-There are also some implementeds of text input or chat preprocessors available:
+There are also some implementations of text input or chat preprocessors available (`auto_llama.preprocessors`):
 
 - TemplateInputPreprocessor - Extract an objective from a prompt using _begin_ and _end_ keywords.
 - nlp - Improved preprocessing using nlp
   - CorefResChatPreprocessor - Extract objective from chat history using the last message and coreference resolution to improve context
+
+### Memory
+
+Memory implementations are available in `auto_llama.memory`
+
+- TxtAIMemory - Embeddings database for text or chat using the python `txtai` package
 
 ## Installation
 

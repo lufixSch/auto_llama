@@ -107,7 +107,7 @@ class ReActRunner:
         },
     ) -> None:
         """
-        Arguments:
+        Args:
             llm (LLMInterface): The LLM model to use for generating responses.
             step_cb (Callable[[int, list[ReActStep]], ReActStepStep]): Callback function to implement custom logic on each ReAct loop step.
             Will also be called on the final step!

@@ -19,8 +19,21 @@ class Chat:
     _history: list[ChatMessage] = []
     _names: dict[ChatRoles, str]
 
-    def __init__(self, names: dict[ChatRoles, str] = {"system": "system", "user": "user", "assistant": "assistant"}):
+    def __init__(
+        self,
+        system_message: str = None,
+        names: dict[ChatRoles, str] = {"system": "system", "user": "user", "assistant": "assistant"},
+    ):
+        """
+        Args:
+            system_message (str): Initial system message (First message in the chat). Defaults to None.
+            names (dict[ChatRoles, str]): Mapping from generic chat roles to displayed names.
+        """
+
         self._names = names
+        self._has_system_message = bool(system_message)
+        self.append("system", system_message)
+        self._system_template = system_message
 
     @property
     def prompt(self) -> str:
@@ -36,6 +49,12 @@ class Chat:
         """chat history"""
 
         return self._history
+
+    @property
+    def last(self) -> ChatMessage:
+        """last chat message"""
+
+        return self.history[-1]
 
     def name(self, role: str):
         """Return name base on role"""
@@ -55,7 +74,7 @@ class Chat:
     ) -> list[ChatMessage]:
         """Filter chat history based on roles
 
-        Arguments:
+        Args:
             include_roles (list[ChatRoles]): List of roles to include
             exclude_roles (list[ChatRoles]): List of roles not to include
             filter_cb (Callable[[ChatMessage], bool]): Custom filter function. Will be called for each message.
@@ -67,6 +86,23 @@ class Chat:
             for chat_msg in self.history
             if (chat_msg.role in include_roles) and (chat_msg.role not in exclude_roles) and filter_cb(chat_msg)
         ]
+
+    def format_system_message(self, assistant: str, name: str, context: list[str], old_chat: "Chat"):
+        """Format system message and overwrite current system message (e.g. chat.history[0])"""
+
+        if not self._has_system_message:
+            return ""
+
+        system_message = self._system_template.format(
+            assistant=assistant, name=name, context="\n".join(context), old_chat=old_chat.prompt
+        )
+
+        if self._history[0].role != "system":
+            raise ValueError("Could not find system message")
+
+        self._history[0] = ChatMessage("system", system_message)
+
+        return system_message
 
     def last_from(self, role: ChatRoles) -> str:
         """Return last chat message of a given role"""

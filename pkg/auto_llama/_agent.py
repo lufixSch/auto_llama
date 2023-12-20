@@ -91,7 +91,7 @@ class Agent(ABC):
     ):
         """Print a formatted  message to the console
 
-        Arguments:
+        Args:
             msg (str): Message, which will be printed
             separator (str): Symbol based on which a separator will be printed before the message
             verbose (bool): Wether this is a verbose message. If True, this message will only be printed if the agent is in verbose mode
