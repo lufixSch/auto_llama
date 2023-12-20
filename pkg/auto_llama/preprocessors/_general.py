@@ -1,7 +1,7 @@
-from auto_llama import InputPreprocessor
+from auto_llama import PromptPreprocessor
 
 
-class TemplateInputPreprocessor(InputPreprocessor):
+class TemplateInputPreprocessor(PromptPreprocessor):
     """Process input by using placeholder strings
 
     Placeholder:

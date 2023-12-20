@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any
 
-from ._chat import Chat
 from ._memory import Memory
 
 
@@ -59,6 +57,7 @@ class AgentResponse:
         """Filters the responses by the response type"""
 
         return [r for r in self._responses if r[0] == filter]
+
 
 class Agent(ABC):
     """Agent baseclass"""

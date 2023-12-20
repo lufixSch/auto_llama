@@ -3,19 +3,29 @@ from abc import ABC, abstractmethod
 from ._chat import Chat
 
 
-class InputPreprocessor(ABC):
+class PromptPreprocessor(ABC):
     """
-    Preprocessor for Agent text inputs which are executed before running the agent
+    Preprocessor for text prompts
     """
 
     @abstractmethod
-    def __call__(self, input: str) -> str:
+    def __call__(self, prompt: str) -> str:
         """Run preprocessor with inpput text"""
 
 
 class ChatPreprocessor(ABC):
     """
-    Preprocessor for Agent chat inputs which generates a text input from the given history
+    Preprocessor for chats
+    """
+
+    @abstractmethod
+    def __call__(self, chat: Chat) -> Chat:
+        """Run preprocessor with inpput chat"""
+
+
+class ChatToObjectiveConverter(ABC):
+    """
+    Convert a chat into a objective/prompt
     """
 
     @abstractmethod

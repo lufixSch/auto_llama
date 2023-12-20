@@ -96,3 +96,6 @@ pip install -e .[<opional_dependencies>]
 - [ ] Improve Chat class
   - [ ] Multi user chat
   - [ ] Load/Save chat to database (possibly Embeddings DB)
+- [ ] Improve logging interface
+  - [ ] Add logging base class
+  - [ ] Allow submodules to log as the Agent from which they where called

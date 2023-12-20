@@ -1,6 +1,6 @@
 """NLP driven agent preprocessor"""
 
-from auto_llama import exceptions, ChatPreprocessor
+from auto_llama import exceptions, ChatToObjectiveConverter
 from auto_llama._chat import Chat
 
 from string import punctuation
@@ -22,7 +22,7 @@ except OSError:
     raise exceptions.ModelMissing("spacy")
 
 
-class CorefResChatPreprocessor(ChatPreprocessor):
+class CorefResChatConverter(ChatToObjectiveConverter):
     """Extract objective from chat history using the last message and coreference resolution to improve context"""
 
     def __init__(self, msg_cnt: int | "all" = 3) -> None:
@@ -70,18 +70,3 @@ class CorefResChatPreprocessor(ChatPreprocessor):
             last_msg_str = last_msg_str.replace(original, resolved)
 
         return last_msg_str
-
-
-if __name__ == "__main__":
-    chat = Chat()
-    chat.append("assistant", "Hi!")
-    chat.append("user", "Hi how are you?")
-    chat.append("assistant", "I'm good thank you")
-    chat.append("user", "Explain this code:\n ```python\na = 'Some string'\na += '!'\nprint('Hello World!')\n```")
-    chat.append("assistant", "This python code prints 'Hello World!' into the console")
-    chat.append("user", "Do you know about Aikido?")
-    chat.append("assistant", "Yes! It is a Marshal Art")
-    chat.append("user", "Do you like it?")
-
-    prpro = CorefResChatPreprocessor(10)
-    print(prpro(chat))
