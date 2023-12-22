@@ -36,21 +36,23 @@ class Assistant:
         selector: AgentSelector,
         chat_converter: ChatToObjectiveConverter,
         chat: Chat,
-        chat_memory: ConversationMemory,
-        facts_memory: Memory,
+        conversation_memory: ConversationMemory,
+        information_memory: Memory,
         llm: LLMInterface,
     ):
         self._selector = selector
         self._converter = chat_converter
         self._chat = chat
-        self._chat_memory = chat_memory
-        self._facts_memory = facts_memory
+        self._conversation_memory = conversation_memory
+        self._information_memory = information_memory
         self._llm = llm
 
+    # TODO Limit chat history to x items (or tokens)
+    # TODO Rework this to only save mesages which are not in the history
     def _conversation_memory_handler(self, message: ChatMessage, chat: Chat):
         """Will be registerd as new chat listener to add every new chat to the conversation memory"""
 
-        self._chat_memory.save(Chat.from_history([message], names=chat.names))
+        self._conversation_memory.save(Chat.from_history([message], names=chat.names))
 
     def start(
         self, input_handler: Callable[[Chat, "Assistant"], Chat], message_handler: Callable[[ChatMessage, Chat], None]
@@ -95,8 +97,8 @@ class Assistant:
                     continue
 
             # TODO Customize max tokens and max_items
-            remembered_facts = self._facts_memory.remember(objective)
-            remembered_conv = self._chat_memory.remember(objective)
+            remembered_facts = self._information_memory.remember(objective)
+            remembered_conv = self._conversation_memory.remember(objective)
 
             context += "\n" + remembered_facts
             self._chat.format_system_message(context, remembered_conv)
