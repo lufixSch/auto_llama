@@ -16,6 +16,7 @@ The framework is based on the following main ideas:
 2. Selectors - A system that decides which agent to use for a given prompt or chat history.
 3. Memory - A system that stores information across agents and prompts to improve the performance of the system.
 4. LLMs - A interface to interact with a LLM for regular text generation and chat.
+5. Assistant - A class that combines the above to provide an easy to use but configurable chat bot interface
 
 Additionally the `auto_llama` module provides some submodules with helpful utilities.
 
@@ -90,10 +91,6 @@ pip install -e .[<opional_dependencies>]
 
 ## ToDo
 
-- [ ] Add Manager implementations
-  - [ ] CommandManager - Select agent based on a command (e.g. /code, /search ...)
-  - [ ] KeywordManager - Select agent based on keywords in the input
-  - [ ] AutoManager - Automatically decides which agent to use based on the context
 - [ ] Improve agent response system
   - [ ] Rework response types -> don't force a position, just give information about the response
 - [ ] Add time aware memory (No Idea how to do this!)
