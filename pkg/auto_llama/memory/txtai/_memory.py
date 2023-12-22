@@ -5,6 +5,7 @@ from auto_llama import Memory, ConversationMemory, exceptions, Chat, ChatMessage
 
 try:
     from txtai import Embeddings
+    from txtai.embeddings import errors as txtai_errors
     from auto_llama import nlp
 
     from .data import DataSegments
@@ -99,9 +100,15 @@ class TxtAIMemory(Memory):
         """Finds matching facts and conversations based on the query"""
 
         processed = self._preprocess(query)
-        res: list[dict[str, str]] = self.embeddings.search(
-            f"select text, type, source, timestamp FROM txtai where similar({processed})", max_items
-        )
+
+        try:
+            res: list[dict[str, str]] = self.embeddings.search(
+                "select text, type, source, timestamp FROM txtai where similar(:q)",
+                max_items,
+                parameters={"q": processed},
+            )
+        except txtai_errors.IndexNotFoundError:
+            return ""
 
         segments = [el["text"] for el in res]
         data_seg = DataSegments(segments)
@@ -155,20 +162,31 @@ class TxtAIConversationMemory(ConversationMemory):
 
         self.embeddings.save(path)
 
-    def save(self, chat: Chat | list[ChatMessage]):
+    def _preprocess(self, text: str) -> str:
+        """
+        Apply all preprocessing steps to the given text.
+        """
+
+        text = nlp.to_lower(text)
+        text = nlp.merge_spaces(text)
+        text = nlp.remove_punctuation(text)
+        text = nlp.remove_specific_pos(text)
+        text = nlp.lemmatize(text)
+        text = nlp.num_to_word(text)
+
+        return text
+
+    def save(self, chat: Chat):
         """Saves each 'user' and 'assistant' message to conversation memory
 
         WARNING: No dublication checking is done. Use `chat.clone(start, end)` to provide only new messages.
         """
 
-        if isinstance(chat, Chat):
-            messages = chat.filter(exclude_roles=["system"])
-        else:
-            messages = chat
+        messages = chat.filter(exclude_roles=["system"])
 
         data = [
             {
-                "message": msg.message,
+                "text": msg.message,
                 "name": chat.name(msg.role),
                 "timestamp": msg.date.isoformat(),
             }
@@ -177,15 +195,14 @@ class TxtAIConversationMemory(ConversationMemory):
 
         self.embeddings.upsert(data)
 
-    def remember(self, query: str, max_tokens: int = 500, max_items: int = 10) -> Chat:
+    def remember(self, query: str, max_tokens: int = 500, max_items: int = 10) -> dict[str, ChatMessage]:
         processed = self._preprocess(query)
-        res: list[dict[str, str]] = self.embeddings.search(
-            f"select message, name, timestamp FROM txtai where similar({processed})", max_items
-        )
 
-        segments = [
-            ChatMessage(None, el["message"], datetime.fromisoformat(el["timestamp"])).to_string(el["name"])
-            for el in res
-        ]
-        data_seg = DataSegments(segments)
-        return data_seg.merge(self._data_split, max_tokens)
+        try:
+            res: list[dict[str, str]] = self.embeddings.search(
+                "select text, name, timestamp FROM txtai where similar(:q)", max_items, parameters={"q": processed}
+            )
+        except txtai_errors.IndexNotFoundError:
+            return {}
+
+        return {el["name"]: ChatMessage(None, el["text"], datetime.fromisoformat(el["timestamp"])) for el in res}

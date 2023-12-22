@@ -20,9 +20,9 @@ class ChatMessage:
 class Chat:
     """Chat history"""
 
-    _history: list[ChatMessage] = []
+    _history: list[ChatMessage]
     _names: dict[ChatRoles, str]
-    _listeners: dict[str, Callable[[ChatMessage, "Chat"], None]] = {}
+    _listeners: dict[str, Callable[[ChatMessage, "Chat"], None]]
 
     def __init__(
         self,
@@ -35,6 +35,8 @@ class Chat:
             names (dict[ChatRoles, str]): Mapping from generic chat roles to displayed names.
         """
 
+        self._history = []
+        self._listeners = {}
         self._names = names
         self._has_system_message = bool(system_message)
         self.append("system", system_message)
@@ -74,6 +76,12 @@ class Chat:
 
         return self.history[-1]
 
+    @property
+    def names(self) -> dict[ChatRoles, str]:
+        """Mapping from generic chat roles to displayed names"""
+
+        return self._names
+
     def name(self, role: ChatRoles):
         """Return name base on role"""
 
@@ -109,7 +117,7 @@ class Chat:
             if (chat_msg.role in include_roles) and (chat_msg.role not in exclude_roles) and filter_cb(chat_msg)
         ]
 
-    def format_system_message(self, context: str, old_chat: "Chat"):
+    def format_system_message(self, context: str, old_chat: dict[str, ChatMessage]):
         """Format system message and overwrite current system message (e.g. chat.history[0])"""
 
         if not self._has_system_message:
@@ -118,8 +126,8 @@ class Chat:
         system_message = self._system_template.format(
             assistant=self.name("assistant"),
             name=self.name("user"),
-            context="\n".join(context),
-            old_chat=old_chat.prompt,
+            context=context,
+            old_chat="\n".join([chat.to_string(name) for name, chat in old_chat.items()]),
         )
 
         if self._history[0].role != "system":

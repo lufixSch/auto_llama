@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Callable
 
 from ._agent import AgentResponse
@@ -49,7 +50,7 @@ class Assistant:
     def _conversation_memory_handler(self, message: ChatMessage, chat: Chat):
         """Will be registerd as new chat listener to add every new chat to the conversation memory"""
 
-        self._chat_memory.save([message])
+        self._chat_memory.save(Chat.from_history([message], names=chat.names))
 
     def start(
         self, input_handler: Callable[[Chat, "Assistant"], Chat], message_handler: Callable[[ChatMessage, Chat], None]

@@ -4,7 +4,7 @@ from auto_llama.exceptions import ModuleDependenciesMissing
 
 # Module specific dependencies
 try:
-    import num2words
+    from num2words import num2words
     import nltk
 
     from ._models import models

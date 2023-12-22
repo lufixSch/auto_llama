@@ -1,4 +1,4 @@
-from ._chat import Chat, ChatMessage
+from ._chat import Chat, ChatMessage, ChatRoles
 from ._agent import Agent, AgentResponse
 from ._llm import LLMInterface
 from ._template import PromptTemplate

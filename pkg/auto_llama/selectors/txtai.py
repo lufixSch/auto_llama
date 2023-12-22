@@ -22,7 +22,7 @@ class KeywordMapping:
         """Returns a flat array of all keywords"""
 
         values: list[str] = []
-        for words in self._keywords:
+        for words in self._keywords.values():
             values.extend(words)
 
         return values
@@ -68,6 +68,6 @@ class SimilarityAgentSelector(AgentSelector):
         tool = self._keyword_mapping.name(keyword)
 
         if tool == "assistant":
-            return AgentResponse.empty()
+            return None
 
-        return self._tools[tool].run(prompt)
+        return self._tools[tool]

@@ -19,9 +19,13 @@ class ConversationMemory(ABC):
     """ "Base class for Conversation memory implementations"""
 
     @abstractmethod
-    def save(self, chat: Chat | list[ChatMessage]) -> None:
+    def save(self, chat: Chat) -> None:
         """Saves a chat to memory"""
 
     @abstractmethod
-    def remember(self, query: str, max_tokens: int = 500, max_items: int = 10) -> Chat:
-        """Finds messages in memory related to the query"""
+    def remember(self, query: str, max_tokens: int = 500, max_items: int = 10) -> dict[str, ChatMessage]:
+        """Finds messages in memory related to the query
+
+        Returns:
+            old_messages (dict[str, ChatMessage]): A dictionary of messages found in memory and the name of the person who send them
+        """

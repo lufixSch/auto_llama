@@ -1,4 +1,4 @@
-"""NLP driven agent preprocessor"""
+from typing import Literal
 
 from auto_llama import exceptions, ChatToObjectiveConverter
 from auto_llama._chat import Chat
@@ -25,7 +25,7 @@ except OSError:
 class CorefResChatConverter(ChatToObjectiveConverter):
     """Extract objective from chat history using the last message and coreference resolution to improve context"""
 
-    def __init__(self, msg_cnt: int | "all" = 3) -> None:
+    def __init__(self, msg_cnt: int | Literal["all"] = 3) -> None:
         self._msg_cnt = msg_cnt
 
     def __call__(self, chat: Chat) -> str:
@@ -36,8 +36,6 @@ class CorefResChatConverter(ChatToObjectiveConverter):
 
         # Ensure punctuation at the end of a message to improve accuracy
         conversation = list((el if el.rstrip()[-1] in punctuation else f"{el}." for el in conversation))
-
-        print(conversation)
 
         doc = nlp(" ".join(conversation))
         last_msg = nlp(conversation[-1])
