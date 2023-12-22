@@ -1,5 +1,6 @@
 from typing import Literal, TypeAlias, Callable
 from datetime import datetime
+from uuid import uuid4
 
 ChatRoles: TypeAlias = Literal["system", "user", "assistant"]
 
@@ -12,12 +13,16 @@ class ChatMessage:
         self.message = message
         self.date = date or datetime.now()
 
+    def to_string(self, name: str = None):
+        return f"{self.date.isoformat()} - {name or self.role}: {self.message}"
+
 
 class Chat:
     """Chat history"""
 
     _history: list[ChatMessage] = []
     _names: dict[ChatRoles, str]
+    _listeners: dict[str, Callable[[ChatMessage, "Chat"], None]] = {}
 
     def __init__(
         self,
@@ -35,6 +40,19 @@ class Chat:
         self.append("system", system_message)
         self._system_template = system_message
 
+    @classmethod
+    def from_history(
+        cls,
+        history: list[ChatMessage],
+        system_message: str = None,
+        names: dict[ChatRoles, str] = {"system": "system", "user": "user", "assistant": "assistant"},
+    ):
+        """Initialize a new chat from a chat history"""
+
+        chat = cls(system_message, names)
+        chat._history = [*chat.history, *history]
+        return chat
+
     @property
     def prompt(self) -> str:
         """Formatted chat prompt
@@ -42,7 +60,7 @@ class Chat:
         NOTE: Instruction patterns are not supported yet!
         """
 
-        return "\n".join([f"{self._names[chat_msg.role]}: {chat_msg.message}" for chat_msg in self.history])
+        return "\n".join([chat_msg.to_string(self._names[chat_msg.role]) for chat_msg in self.history])
 
     @property
     def history(self) -> list[ChatMessage]:
@@ -56,7 +74,7 @@ class Chat:
 
         return self.history[-1]
 
-    def name(self, role: str):
+    def name(self, role: ChatRoles):
         """Return name base on role"""
 
         return self._names[role]
@@ -64,7 +82,11 @@ class Chat:
     def append(self, role: ChatRoles, message: str, date: datetime = None) -> "Chat":
         """Add message to the chat history"""
 
-        self._history.append(ChatMessage(role, message, date))
+        chat_message = ChatMessage(role, message, date)
+        self._history.append(chat_message)
+
+        for listener in self._listeners.values():
+            listener(chat_message, self)
 
     def filter(
         self,
@@ -87,14 +109,17 @@ class Chat:
             if (chat_msg.role in include_roles) and (chat_msg.role not in exclude_roles) and filter_cb(chat_msg)
         ]
 
-    def format_system_message(self, assistant: str, name: str, context: list[str], old_chat: "Chat"):
+    def format_system_message(self, context: str, old_chat: "Chat"):
         """Format system message and overwrite current system message (e.g. chat.history[0])"""
 
         if not self._has_system_message:
             return ""
 
         system_message = self._system_template.format(
-            assistant=assistant, name=name, context="\n".join(context), old_chat=old_chat.prompt
+            assistant=self.name("assistant"),
+            name=self.name("user"),
+            context="\n".join(context),
+            old_chat=old_chat.prompt,
         )
 
         if self._history[0].role != "system":
@@ -127,3 +152,20 @@ class Chat:
             new_chat._history = self._history[start:]
 
         return new_chat
+
+    def new_message_listener(self, listener: Callable[[ChatMessage, "Chat"], None]) -> str:
+        """Register a callback which will be called every time a new message is added to the chat
+
+        Returns:
+            id (str): listener id necessary for removing the listener
+        """
+
+        id = uuid4().hex
+        self._listeners[id] = listener
+
+        return id
+
+    def remove_new_message_listener(self, id: str):
+        """Remove listener by id"""
+
+        self._listeners.pop(id)

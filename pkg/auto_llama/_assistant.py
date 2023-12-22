@@ -4,8 +4,8 @@ from ._agent import AgentResponse
 from ._selector import AgentSelector
 from ._preprocessors import ChatToObjectiveConverter
 from ._template import PromptTemplate
-from ._chat import Chat
-from ._memory import Memory
+from ._chat import Chat, ChatMessage
+from ._memory import Memory, ConversationMemory
 from ._llm import LLMInterface
 
 
@@ -35,7 +35,7 @@ class Assistant:
         selector: AgentSelector,
         chat_converter: ChatToObjectiveConverter,
         chat: Chat,
-        chat_memory: Memory,
+        chat_memory: ConversationMemory,
         facts_memory: Memory,
         llm: LLMInterface,
     ):
@@ -46,7 +46,14 @@ class Assistant:
         self._facts_memory = facts_memory
         self._llm = llm
 
-    def start(self, chat_handler: Callable[[Chat, "Assistant", bool], Chat | None]):
+    def _conversation_memory_handler(self, message: ChatMessage, chat: Chat):
+        """Will be registerd as new chat listener to add every new chat to the conversation memory"""
+
+        self._chat_memory.save([message])
+
+    def start(
+        self, input_handler: Callable[[Chat, "Assistant"], Chat], message_handler: Callable[[ChatMessage, Chat], None]
+    ):
         """Start the assistant
 
         Args:
@@ -54,23 +61,23 @@ class Assistant:
             If `should_respond` a new message/response from the user is expected
         """
 
-        self._chat = chat_handler(self._chat, self, True)
+        msg_handler_id = self._chat.new_message_listener(message_handler)
+        memory_handler_id = self._chat.new_message_listener(self._conversation_memory_handler)
 
         self._run = True
         while self._run:
-            # TODO Add chat memory (save, remember)
-            # TODO Add facts memory (remember)
+            self._chat = input_handler(self._chat, self)
 
             objective = self._converter(self._chat)
             agent = self._selector.run(objective)
 
-            should_run_llm = True
+            context = ""
             if agent:
                 res = agent.run(objective)
 
-                context = ""
                 response = ""
 
+                # Interpret agent results
                 for res_type, content in res.items():
                     if res_type is AgentResponse.RESPONSE_TYPE.CONTEXT:
                         context += "\n" + content
@@ -81,14 +88,23 @@ class Assistant:
                     if res_type is AgentResponse.RESPONSE_TYPE.RESPONSE:
                         response += "\n" + content
 
+                # Generate response from agent results instead of llm response
                 if response:
                     self._chat.append("assistant", response)
-                    should_run_llm = False
+                    continue
 
-            if should_run_llm:
-                self._chat = self._llm.chat(self._chat)
+            # TODO Customize max tokens and max_items
+            remembered_facts = self._facts_memory.remember(objective)
+            remembered_conv = self._chat_memory.remember(objective)
 
-            self._chat = chat_handler(self._chat, True)
+            context += "\n" + remembered_facts
+            self._chat.format_system_message(context, remembered_conv)
+
+            self._chat = self._llm.chat(self._chat)
+
+        # Clear new message listener
+        self._chat.remove_new_message_listener(msg_handler_id)
+        self._chat.remove_new_message_listener(memory_handler_id)
 
     def stop(self):
         """Stops assistant in the next iteration"""
