@@ -64,8 +64,14 @@ memory = [
 manager = [
   "auto_llama[manager.txtai]"
 ]
+"speech.txtai" = [
+  "txtai[pipeline-audio]"
+]
+speech = [
+  "auto_llama[speech.txtai]"
+]
 all = [
-  "auto-llama[module, agent, llm, memory]"
+  "auto-llama[module, agent, llm, memory, speech]"
 ]
 
 [tool.hatch.build]

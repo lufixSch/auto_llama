@@ -40,4 +40,6 @@ class MemoryDependenciesMissing(DependenciesMissing):
 
 class ModelMissing(Exception):
     def __init__(self, model_group: str) -> None:
-        super().__init__(f"Ressources missing!\nMake sure to download all neccessary ressources for {model_group}: `python bin/{model_group}_ressources`")
+        super().__init__(
+            f"Ressources missing!\nMake sure to download all neccessary ressources for {model_group}: `python bin/{model_group}_ressources`"
+        )

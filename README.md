@@ -18,6 +18,10 @@ The framework is based on the following main ideas:
 4. LLMs - A interface to interact with a LLM for regular text generation and chat.
 5. Assistant - A class that combines the above to provide an easy to use but configurable chat bot interface
 
+This ideas can be expanded for more complex use cases with the following Tools:
+
+1. Speech - Tools/Interfaces for Speech recognition/TTS
+
 Additionally the `auto_llama` module provides some submodules with helpful utilities.
 
 1. nlp - Some functions for text processing
@@ -104,7 +108,7 @@ pip install -e .[<opional_dependencies>]
   - [ ] Allow submodules to log as the Agent from which they where called
 - [ ] Improve Memory
   - [ ] Fetch more information than necessary and filter with _similarity_ to improve accuracy
-  - [ ] Optionally pass source(s) on `Memory.save`
+  - [x] Optionally pass source(s) on `Memory.save`
   - [ ] Save original (unprocessed) data
   - [ ] Retrieve window of data around the matching segment
   - [ ] add sliding window paragraphing instead of splitting
@@ -112,3 +116,11 @@ pip install -e .[<opional_dependencies>]
 - [ ] Rework selectors to allow multiple agents to be used
 - [ ] Add trigger (e.g. interface for external sources to trigger an LLM response or agent)
 - [ ] Rework with multithreading
+- [ ] Speach
+  - [x] Add TTS
+    - [ ] Realtime/Stream TTS
+    - [ ] cuqoi-ai TTS
+    - [ ] vocoder or similar
+    - [ ] voice clone
+  - [x] Add transcription (realtime transscript)
+    - [ ] Realtime/Stream Transscript
