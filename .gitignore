@@ -6,3 +6,7 @@ __pycache__/
 
 /data/
 cli_config.json
+
+# Temporary ignore WIP files
+example_cli_config.json
+bin/assistant_cli.py
