@@ -1,17 +1,18 @@
 from abc import ABC, abstractmethod
 
 from ._chat import Chat, ChatMessage
+from .data import Content
 
 
 class Memory(ABC):
     """Base class for Long term memory implementations"""
 
     @abstractmethod
-    def save(self, data: str | list[str]):
+    def save(self, data: Content | list[Content]):
         """Add new data to the memory"""
 
     @abstractmethod
-    def remember(self, query: str, max_tokens: int = 500, max_items: int = 10) -> list[str]:
+    def remember(self, query: str, max_tokens: int = 500, max_items: int = 10) -> list[Content]:
         """Find data in memory related to the query"""
 
 

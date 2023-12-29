@@ -91,15 +91,24 @@ pip install -e .[<opional_dependencies>]
 
 ## ToDo
 
-- [ ] Improve agent response system
-  - [ ] Rework response types -> don't force a position, just give information about the response
 - [ ] Add time aware memory (No Idea how to do this!)
   - [ ] Idea: _Fetch x recent memory's and y memory's (time independent) and mark them as recent/general_
   - [x] add time tracking to chat messages
 - [ ] Add image/multimodal memory (Supported by txtai out of the box)
 - [ ] Improve Chat class
   - [ ] Multi user chat
-  - [ ] Load/Save chat to database (possibly Embeddings DB)
+  - [ ] Improve Chat memory interface
+    - [ ] Load/Save chat from/to database (possibly Embeddings DB)
 - [ ] Improve logging interface
   - [ ] Add logging base class
   - [ ] Allow submodules to log as the Agent from which they where called
+- [ ] Improve Memory
+  - [ ] Fetch more information than necessary and filter with _similarity_ to improve accuracy
+  - [ ] Optionally pass source(s) on `Memory.save`
+  - [ ] Save original (unprocessed) data
+  - [ ] Retrieve window of data around the matching segment
+  - [ ] add sliding window paragraphing instead of splitting
+- [ ] Add custom prompt templates
+- [ ] Rework selectors to allow multiple agents to be used
+- [ ] Add trigger (e.g. interface for external sources to trigger an LLM response or agent)
+- [ ] Rework with multithreading

@@ -1,6 +1,6 @@
 """txtai based manager"""
 
-from auto_llama import AgentSelector, Agent, AgentResponse
+from auto_llama import AgentSelector, Agent
 from auto_llama.nlp import models
 
 
@@ -61,7 +61,7 @@ class SimilarityAgentSelector(AgentSelector):
         self._tools = tools
         self._keyword_mapping = KeywordMapping(assistant=none_keywords, **keywords)
 
-    def _run(self, prompt: str) -> AgentResponse:
+    def _run(self, prompt: str) -> Agent:
         similarities = models.similarity(prompt, self._keyword_mapping.keywords_flat)
 
         keyword = self._keyword_mapping.keywords_flat[similarities[0][0]]

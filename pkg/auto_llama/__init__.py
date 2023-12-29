@@ -1,5 +1,5 @@
 from ._chat import Chat, ChatMessage, ChatRoles
-from ._agent import Agent, AgentResponse
+from ._agent import Agent, AgentResponse, AgentResponseItem
 from ._llm import LLMInterface
 from ._template import PromptTemplate
 from ._memory import Memory, ConversationMemory

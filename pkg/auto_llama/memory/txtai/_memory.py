@@ -2,13 +2,14 @@ import os
 from datetime import datetime
 
 from auto_llama import Memory, ConversationMemory, exceptions, Chat, ChatMessage
+from auto_llama.data import Content
 
 try:
     from txtai import Embeddings
     from txtai.embeddings import errors as txtai_errors
     from auto_llama import nlp
 
-    from .data import DataSegments
+    from .data import DataSegments, metadata_from_content, db_fragments_to_content
 except ImportError:
     raise exceptions.MemoryDependenciesMissing("TxtAIMemory", "txtai")
 
@@ -76,43 +77,47 @@ class TxtAIMemory(Memory):
 
         return text
 
-    def save(self, data: str | list[str]):
-        if isinstance(data, str):
+    def save(self, data: Content | list[Content]):
+        if isinstance(data, Content):
             data = [data]
 
-        processed = [self._preprocess(el) for el in data]
-
-        seg_data = DataSegments.from_fragments(processed)
-        segments = seg_data.segments
-        paragraphs = seg_data.paragraphs(self._paragraph_len)
         timestamp = datetime.now().isoformat()
 
-        self.embeddings.upsert(
-            [{"text": seg, "type": "segment", "source": None, "timestamp": timestamp} for seg in segments]
-        )
-        self.embeddings.upsert(
-            [{"text": p, "type": "paragraph", "source": None, "timestamp": timestamp} for p in paragraphs]
-        )
+        for el in data:
+            metadata = metadata_from_content(el)
+
+            processed = self._preprocess(el.get_content())
+            seg_data = DataSegments.from_text(processed)
+            segments = seg_data.segments
+            paragraphs = seg_data.paragraphs(self._paragraph_len)
+
+            self.embeddings.upsert(
+                [{"text": seg, "type": "segment", "timestamp": timestamp, **metadata} for seg in segments]
+            )
+            self.embeddings.upsert(
+                [{"text": p, "type": "paragraph", "timestamp": timestamp, **metadata} for p in paragraphs]
+            )
 
         self.to_disk()
 
-    def remember(self, query: str, max_tokens: int = 500, max_items: int = 10) -> str:
+    def remember(self, query: str, max_tokens: int = 500, max_items: int = 10) -> list[Content]:
         """Finds matching facts and conversations based on the query"""
 
         processed = self._preprocess(query)
 
         try:
             res: list[dict[str, str]] = self.embeddings.search(
-                "select text, type, source, timestamp FROM txtai where similar(:q)",
+                "select text, src, title FROM txtai where similar(:q)",
                 max_items,
                 parameters={"q": processed},
             )
         except txtai_errors.IndexNotFoundError:
             return ""
 
-        segments = [el["text"] for el in res]
-        data_seg = DataSegments(segments)
-        return data_seg.merge(self._data_split, max_tokens)
+        if not res:
+            return []
+
+        return db_fragments_to_content(res, self._data_split, max_tokens)
 
 
 class TxtAIConversationMemory(ConversationMemory):

@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Callable
 
-from ._agent import AgentResponse
 from ._selector import AgentSelector
 from ._preprocessors import ChatToObjectiveConverter
 from ._template import PromptTemplate
@@ -39,6 +38,7 @@ class Assistant:
         conversation_memory: ConversationMemory,
         information_memory: Memory,
         llm: LLMInterface,
+        max_messages: int = 10,
     ):
         self._selector = selector
         self._converter = chat_converter
@@ -46,13 +46,18 @@ class Assistant:
         self._conversation_memory = conversation_memory
         self._information_memory = information_memory
         self._llm = llm
+        self._max_messages = max_messages
 
-    # TODO Limit chat history to x items (or tokens)
-    # TODO Rework this to only save mesages which are not in the history
     def _conversation_memory_handler(self, message: ChatMessage, chat: Chat):
         """Will be registerd as new chat listener to add every new chat to the conversation memory"""
 
-        self._conversation_memory.save(Chat.from_history([message], names=chat.names))
+        if self._max_messages <= 0:
+            return
+
+        removed = self._chat.trunc(self._max_messages)
+
+        if removed:
+            self._conversation_memory.save(Chat.from_history(removed, names=chat.names))
 
     def start(
         self, input_handler: Callable[[Chat, "Assistant"], Chat], message_handler: Callable[[ChatMessage, Chat], None]
@@ -81,15 +86,13 @@ class Assistant:
                 response = ""
 
                 # Interpret agent results
-                for res_type, content in res.items():
-                    if res_type is AgentResponse.RESPONSE_TYPE.CONTEXT:
-                        context += "\n" + content
-                    if res_type is AgentResponse.RESPONSE_TYPE.CHAT:
-                        self._chat.last.message += "\n" + content
-                    if res_type is AgentResponse.RESPONSE_TYPE.IMG:
-                        response += "\n" + f"![response image]({content})"
-                    if res_type is AgentResponse.RESPONSE_TYPE.RESPONSE:
-                        response += "\n" + content
+                for out in res.items():
+                    if out.position is out.POSITION.CONTEXT:
+                        context += "\n" + out.to_string()
+                    if out.position is out.POSITION.CHAT:
+                        self._chat.last.message += "\n" + out.to_string()
+                    if out.position is out.POSITION.RESPONSE:
+                        response += "\n" + out.to_string()
 
                 # Generate response from agent results instead of llm response
                 if response:
@@ -100,10 +103,18 @@ class Assistant:
             remembered_facts = self._information_memory.remember(objective)
             remembered_conv = self._conversation_memory.remember(objective)
 
-            context += "\n" + remembered_facts
+            context += "\n" + "\n".join([fact.get_formatted() for fact in remembered_facts])
+
+            print(context)
+
             self._chat.format_system_message(context, remembered_conv)
 
-            self._chat = self._llm.chat(self._chat)
+            # self._chat = self._llm.chat(self._chat)
+            prompt = self._chat.prompt + f"\n{datetime.now().isoformat()} - {self._chat.name('assistant')}:"
+            res = self._llm.completion(
+                prompt, stopping_strings=[f"\n{self._chat.name('user')}", f"\n{datetime.now().year}"]
+            )
+            self._chat.append("assistant", res.strip())
 
         # Clear new message listener
         self._chat.remove_new_message_listener(msg_handler_id)

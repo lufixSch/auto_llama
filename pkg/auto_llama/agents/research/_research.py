@@ -1,5 +1,6 @@
-from auto_llama import Agent, AgentResponse, LLMInterface, PromptTemplate, exceptions
+from auto_llama import Agent, AgentResponse, AgentResponseItem, LLMInterface, PromptTemplate, Memory, exceptions
 from auto_llama.react import ReActRunner, ReActStep
+from auto_llama.data import Article
 
 AGENT_NAME = "ResearchAgent"
 
@@ -68,13 +69,40 @@ class ResearchAgent(Agent):
         steps = self.runner.run(initial_prompt, self.max_iter)
 
         if steps[-1].is_final:
-            return AgentResponse(AgentResponse.RESPONSE_TYPE.CONTEXT, steps[-1].observation)
+            return AgentResponse(AgentResponseItem(AgentResponseItem.POSITION.CONTEXT, steps[-1].observation))
 
         # Generate final answer from context, if memory is present
         # WARNING Possibly redundant with RAG in Manager
 
         if self.memory:
             res = self.memory.remember("input", max_items=30)
-            return AgentResponse(AgentResponse.RESPONSE_TYPE.CONTEXT, res)
+            return AgentResponse.with_same_pos(AgentResponseItem.POSITION.CONTEXT, res)
 
-        return AgentResponse.with_same_type(AgentResponse.RESPONSE_TYPE.CONTEXT, [step.observation for step in steps])
+        return AgentResponse.with_same_pos(
+            AgentResponseItem.POSITION.CONTEXT, [Article(step.observation) for step in steps]
+        )
+
+
+class MultiSearchAgent(Agent):
+    """Search multiple sources for information"""
+
+    def __init__(self, sources: list[SearchAgent], verbose=False) -> None:
+        self.sources = sources
+
+        super().__init__(verbose)
+
+    def _run(self, query: str) -> AgentResponse:
+        response = AgentResponse.empty()
+
+        for source in self.sources:
+            response.append(source.run(query).items())
+
+        return response
+
+    def set_memory(self, memory: Memory):
+        """Set long term memory for all sources"""
+
+        for source in self.sources:
+            source.set_memory(memory)
+
+        return super().set_memory(memory)

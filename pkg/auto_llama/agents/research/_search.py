@@ -2,7 +2,8 @@ from abc import abstractmethod
 from typing import Literal
 from itertools import islice
 
-from auto_llama import Agent, AgentResponse, PromptTemplate, LLMInterface, exceptions
+from auto_llama import Agent, AgentResponse, AgentResponseItem, PromptTemplate, LLMInterface, exceptions
+from auto_llama.data import Article
 
 AGENT_NAME = "SearchAgent"
 
@@ -15,6 +16,12 @@ except ImportError:
     raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
 except exceptions.ModuleDependenciesMissing:
     raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
+
+
+class NoResultsException(Exception):
+    def __init__(self, msg: Article):
+        self.msg = msg
+        super().__init__(self.msg.get_formatted())
 
 
 class SearchPromptTemplate(PromptTemplate):
@@ -107,7 +114,17 @@ class SearchAgent(Agent):
 
             # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
             res = AgentResponse(
-                AgentResponse.RESPONSE_TYPE.CONTEXT, "Unable to find results regarding this topic on DuckDuckGo"
+                AgentResponseItem(
+                    AgentResponseItem.POSITION.CONTEXT,
+                    Article(text="Unable to find results regarding this topic", src="web-search"),
+                )
+            )
+        except NoResultsException as e:
+            res = AgentResponse(
+                AgentResponseItem(
+                    AgentResponseItem.POSITION.CONTEXT,
+                    e.msg,
+                )
             )
 
         return res
@@ -119,19 +136,26 @@ class WikipediaSearchAgent(SearchAgent):
     def _search(self, query: str) -> AgentResponse:
         articles = wikipedia.search(query)[: self.max_results]
 
-        responses: list[tuple[AgentResponse.RESPONSE_TYPE, str]] = []
+        responses = AgentResponse.empty()
         for article in articles:
             try:
                 summary = wikipedia.summary(article, auto_suggest=False)
             except wikipedia.PageError:
                 continue
 
-            responses.append((AgentResponse.RESPONSE_TYPE.CONTEXT, f"{article}\n{summary}"))
+            responses.append(
+                AgentResponseItem(
+                    AgentResponseItem.POSITION.CONTEXT, Article(text=summary, title=article, src="wikipedia")
+                )
+            )
 
-        if len(responses) <= 0:
-            raise exceptions.AgentExecutionFailed(AGENT_NAME, "No results found for the given query")
+        if len(responses.values()) <= 0:
+            self.print("No good Search Result was found", verbose=True)
 
-        return AgentResponse(responses)
+            # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
+            raise NoResultsException(Article(text="Unable to find results regarding this topic", src="wikipedia"))
+
+        return responses
 
 
 class DuckDuckGoSearchAgent(SearchAgent):
@@ -139,18 +163,18 @@ class DuckDuckGoSearchAgent(SearchAgent):
 
     def _search(self, query: str) -> AgentResponse:
         with DDGS() as ddgs:
-            responses: list[tuple[AgentResponse.RESPONSE_TYPE, str]] = []
+            responses = AgentResponse.empty()
             for t in islice(ddgs.text(query), self.max_results):
                 responses.append(
-                    (AgentResponse.RESPONSE_TYPE.CONTEXT, t["title"] + "\n" + t["body"] + "\nSource: " + t["href"])
+                    AgentResponseItem(
+                        AgentResponseItem.POSITION.CONTEXT, Article(text=t["body"], title=t["title"], src=t["href"])
+                    )
                 )
 
-            if len(responses) <= 0:
+            if len(responses.values()) <= 0:
                 self.print("No good Search Result was found", verbose=True)
 
                 # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
-                responses.append(
-                    (AgentResponse.RESPONSE_TYPE.CONTEXT, "Unable to find results regarding this topic on DuckDuckGo")
-                )
+                raise NoResultsException(Article(text="Unable to find results regarding this topic", src="duckduckgo"))
 
-            return AgentResponse(responses)
+            return responses

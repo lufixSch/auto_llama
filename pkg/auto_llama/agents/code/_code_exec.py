@@ -2,7 +2,8 @@ import os
 import shutil
 import re
 
-from auto_llama import Agent, AgentResponse, exceptions, Chat
+from auto_llama import Agent, AgentResponse, AgentResponseItem, exceptions, Chat
+from auto_llama.data import ImageSource
 
 AGENT_NAME = "CodeExecAgent"
 
@@ -157,33 +158,44 @@ class CodeExecAgent(Agent):
             lang, code = self._extract_code(input_txt)
         except ValueError:
             self.print("No valid code found in response")
-            return AgentResponse((AgentResponse.RESPONSE_TYPE.CHAT, "No valid code found in response"))
+            return AgentResponse(AgentResponseItem(AgentResponseItem.POSITION.CHAT, "No valid code found in response"))
 
         if lang not in self.allowed_languages:
             self.print(f"Unsupported language {lang}")
-            return AgentResponse(
+            return AgentResponse.with_same_pos(
+                AgentResponseItem.POSITION.CHAT,
                 [
-                    (AgentResponse.RESPONSE_TYPE.CHAT, code),
-                    (AgentResponse.RESPONSE_TYPE.CHAT, f"Unsupported language {lang}"),
-                ]
+                    code,
+                    f"Unsupported language {lang}",
+                ],
             )
 
         try:
             output, images = self._execute_code(code)
         except exceptions.AgentExecutionFailed:
             self.print("Failed to execute code")
-            return AgentResponse(
+            return AgentResponse.with_same_pos(
+                AgentResponseItem.POSITION.CHAT,
                 [
-                    (AgentResponse.RESPONSE_TYPE.CHAT, code),
-                    (AgentResponse.RESPONSE_TYPE.CHAT, "Failed to execute code"),
-                ]
+                    code,
+                    "Failed to execute code",
+                ],
             )
 
         return AgentResponse(
             [
-                (AgentResponse.RESPONSE_TYPE.CHAT, code),
-                (AgentResponse.RESPONSE_TYPE.CHAT, output),
-                *[(AgentResponse.RESPONSE_TYPE.IMG, f"{self.executor_endpoint}/static/images/{img}") for img in images],
+                AgentResponseItem(AgentResponseItem.POSITION.CHAT, code),
+                AgentResponseItem(AgentResponseItem.POSITION.CHAT, output),
+                *[
+                    AgentResponseItem(
+                        AgentResponseItem.POSITION.RESPONSE,
+                        ImageSource(
+                            src=f"{self.executor_endpoint}/static/images/{img}",
+                            caption=f"Output of code ```\n{code}\n```",
+                        ),
+                    )
+                    for img in images
+                ],
             ]
         )
 

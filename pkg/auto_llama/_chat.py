@@ -82,6 +82,18 @@ class Chat:
 
         return self._names
 
+    @property
+    def len(self) -> int:
+        """Length of chat history
+
+        Ignores the system message
+        """
+
+        cnt = len(self._history)
+        cnt -= 1 if self._has_system_message else 0
+
+        return cnt
+
     def name(self, role: ChatRoles):
         """Return name base on role"""
 
@@ -160,6 +172,21 @@ class Chat:
             new_chat._history = self._history[start:]
 
         return new_chat
+
+    def trunc(self, max_len: int) -> list[ChatMessage]:
+        """Truncate chat history to maximum length
+
+        Ignores the system message
+
+        Returns:
+            deleted (list[ChaMessage]): Deleted chat messages
+        """
+
+        if self.len <= max_len:
+            return []
+
+        start = 1 if self._has_system_message else 0
+        return [self._history.pop(start) for _ in range(start, start + (self.len - max_len))]
 
     def new_message_listener(self, listener: Callable[[ChatMessage, "Chat"], None]) -> str:
         """Register a callback which will be called every time a new message is added to the chat

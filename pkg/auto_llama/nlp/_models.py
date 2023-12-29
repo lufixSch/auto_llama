@@ -6,8 +6,9 @@ try:
 except ImportError:
     raise ModuleDependenciesMissing("nlp", "nlp")
 
+
 class ModelsLoader:
-    """ Shared source for NLP models to reduce VRAM usage """
+    """Shared source for NLP models to reduce VRAM usage"""
 
     _lemmatizer: WordNetLemmatizer = None
     _similarity: Similarity = None
@@ -26,9 +27,10 @@ class ModelsLoader:
         """txtai similarity pipeline"""
 
         if not self._similarity:
-            self._similarity = Similarity()
+            self._similarity = Similarity(path="facebook/bart-large-mnli")
 
         return self._similarity
+
 
 models = ModelsLoader()
 """ Shared source for NLP models to reduce VRAM usage """
