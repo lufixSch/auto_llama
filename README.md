@@ -63,6 +63,11 @@ Memory implementations are available in `auto_llama.memory`
 
 - TxtAIMemory - Embeddings database for text or chat using the python `txtai` package
 
+### Other
+
+- speech - Tools/Interfaces for Speech recognition/TTS
+  - txtai - Speech recognition and TTS using the txtai pipelines
+
 ## Installation
 
 At the moment it is not possible to install AutoLLaMa using `pip`. You need to install it from source.
