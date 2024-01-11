@@ -15,7 +15,7 @@ class _ModelLoader:
         Raises ValueError if model with this name already exists
         """
 
-        if not self._lazy.get(name, None):
+        if self._lazy.get(name, None):
             raise ValueError(f"Model with name '{name}' already exists")
 
         self._lazy[name] = lazy_loader

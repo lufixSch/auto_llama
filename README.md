@@ -8,7 +8,9 @@ This project is a union off different smaller ideas I had/build to improve the c
 
 > **⚠️ WARNING: This project is still in early development!**
 
-## Framework
+## Package
+
+### auto_llama
 
 The framework is based on the following main ideas:
 
@@ -18,18 +20,9 @@ The framework is based on the following main ideas:
 4. LLMs - A interface to interact with a LLM for regular text generation and chat.
 5. Assistant - A class that combines the above to provide an easy to use but configurable chat bot interface
 
-This ideas can be expanded for more complex use cases with the following Tools:
+#### Implementations
 
-1. Speech - Tools/Interfaces for Speech recognition/TTS
-
-Additionally the `auto_llama` module provides some submodules with helpful utilities.
-
-1. nlp - Some functions for text processing
-2. react - Small ReAct framework to make an implementation easier
-
-## Implementations
-
-### Agents
+##### Agents
 
 There are a few agents implemented currently. They are accessible over the `auto_llama.agents` module:
 
@@ -40,7 +33,7 @@ There are a few agents implemented currently. They are accessible over the `auto
   - SearchAgent: Retrieves information using a single tool (e.g. WikipediaSearchAgent, DuckDuckGoSearchAgent)
   - ResearchAgent: Thoroughly researchs a given topic using multiple SearchAgents and ReAct
 
-### Selectors
+##### Selectors
 
 The selectors are accessible over the `auto_llama.selectors` module:
 
@@ -49,7 +42,7 @@ The selectors are accessible over the `auto_llama.selectors` module:
 - txtai - Manager using the txtai framework
   - SimilarityAgentManager - Classifies prompt using keywords for each tool. The results determine which tool is used
 
-### Preprocessors
+##### Preprocessors
 
 There are also some implementations of text input or chat preprocessors available (`auto_llama.preprocessors`):
 
@@ -57,16 +50,20 @@ There are also some implementations of text input or chat preprocessors availabl
 - nlp - Improved preprocessing using nlp
   - CorefResChatPreprocessor - Extract objective from chat history using the last message and coreference resolution to improve context
 
-### Memory
+##### Memory
 
 Memory implementations are available in `auto_llama.memory`
 
 - TxtAIMemory - Embeddings database for text or chat using the python `txtai` package
 
-### Other
+### auto_llama_extras
 
-- speech - Tools/Interfaces for Speech recognition/TTS
+This package provides some extra modules and quality of life features to get started with your custom implementation
+
+- audio - Audio processing tools
   - txtai - Speech recognition and TTS using the txtai pipelines
+- text - Text processing tools
+- react - Small ReAct framework to make an implementation easier
 
 ## Installation
 
