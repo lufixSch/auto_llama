@@ -1,7 +1,14 @@
 """txtai based manager"""
 
-from auto_llama import AgentSelector, Agent
-from auto_llama.nlp import models
+from auto_llama import AgentSelector, Agent, ModelLoader
+from auto_llama.exceptions import ModuleDependenciesMissing
+
+try:
+    from txtai.pipeline import Similarity
+except ImportError:
+    raise ModuleDependenciesMissing("nlp", "nlp")
+
+ModelLoader.add("similarity", lambda: Similarity())
 
 
 class KeywordMapping:
@@ -62,7 +69,7 @@ class SimilarityAgentSelector(AgentSelector):
         self._keyword_mapping = KeywordMapping(assistant=none_keywords, **keywords)
 
     def _run(self, prompt: str) -> Agent:
-        similarities = models.similarity(prompt, self._keyword_mapping.keywords_flat)
+        similarities = ModelLoader.get("similarity", Similarity)(prompt, self._keyword_mapping.keywords_flat)
 
         keyword = self._keyword_mapping.keywords_flat[similarities[0][0]]
         tool = self._keyword_mapping.name(keyword)

@@ -3,7 +3,7 @@
 from typing import Callable, TypeAlias, Literal
 import re
 
-from ._llm import LLMInterface
+from auto_llama import LLMInterface
 
 ReActKeywords: TypeAlias = Literal["thought", "action", "input", "observation", "final"]
 
