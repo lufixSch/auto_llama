@@ -8,7 +8,7 @@ try:
 except ImportError:
     raise ModuleDependenciesMissing("nlp", "nlp")
 
-ModelLoader.add("similarity", lambda: Similarity())
+ModelLoader.add("txtai.similarity", lambda: Similarity())
 
 
 class KeywordMapping:
@@ -69,7 +69,7 @@ class SimilarityAgentSelector(AgentSelector):
         self._keyword_mapping = KeywordMapping(assistant=none_keywords, **keywords)
 
     def _run(self, prompt: str) -> Agent:
-        similarities = ModelLoader.get("similarity", Similarity)(prompt, self._keyword_mapping.keywords_flat)
+        similarities = ModelLoader.get("txtai.similarity", Similarity)(prompt, self._keyword_mapping.keywords_flat)
 
         keyword = self._keyword_mapping.keywords_flat[similarities[0][0]]
         tool = self._keyword_mapping.name(keyword)

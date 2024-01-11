@@ -1,25 +1,30 @@
 from typing import Literal
 
-from auto_llama import exceptions, ChatToObjectiveConverter
-from auto_llama._chat import Chat
+from auto_llama import exceptions, ChatToObjectiveConverter, Chat, ModelLoader
 
 from string import punctuation
 
 try:
     import spacy
     from spacy.tokens import Token
+    from spacy.language import Language
     import coreferee
     from coreferee.data_model import ChainHolder
 except ImportError:
     raise exceptions.ModuleDependenciesMissing("nlp", "nlp")
 
-try:
-    nlp = spacy.load("en_core_web_trf")
-    nlp.add_pipe("coreferee")
-except coreferee.errors.VectorsModelNotInstalledError:
-    raise exceptions.ModelMissing("spacy")
-except OSError:
-    raise exceptions.ModelMissing("spacy")
+
+def _load_spacy():
+    try:
+        nlp = spacy.load("en_core_web_trf")
+        nlp.add_pipe("coreferee")
+    except coreferee.errors.VectorsModelNotInstalledError:
+        raise exceptions.ModelMissing("spacy")
+    except OSError:
+        raise exceptions.ModelMissing("spacy")
+
+
+ModelLoader.add("spacy", _load_spacy)
 
 
 class CorefResChatConverter(ChatToObjectiveConverter):
@@ -29,6 +34,8 @@ class CorefResChatConverter(ChatToObjectiveConverter):
         self._msg_cnt = msg_cnt
 
     def __call__(self, chat: Chat) -> str:
+        nlp = ModelLoader.get("spacy", Language)
+
         if self._msg_cnt != "all":
             chat = chat.clone(-self._msg_cnt)
 
