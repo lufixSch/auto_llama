@@ -39,7 +39,7 @@ The selectors are accessible over the `auto_llama.selectors` module:
 - CommandAgentSelector - Decides which Agent to use by checking for a command at the start of the prompt
 - KeywordAgentSelector - Decides which Agent to use by checking for keywords in the prompt
 - txtai - Manager using the txtai framework
-  - SimilarityAgentManager - Classifies prompt using keywords for each tool. The results determine which tool is used
+  - SimilarityAgentSelector - Classifies prompt using keywords for each tool. The results determine which tool is used
 
 ##### Preprocessors
 
