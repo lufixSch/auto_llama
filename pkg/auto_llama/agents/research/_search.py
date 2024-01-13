@@ -14,7 +14,7 @@ try:
     from auto_llama import nlp
 except ImportError:
     raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
-except exceptions.ModuleDependenciesMissing:
+except exceptions.ExtrasDependenciesMissing:
     raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
 
 

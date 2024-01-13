@@ -21,22 +21,24 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-"module.nlp" = [
+"extras.text" = [
   "num2words",
   "nltk",
   "spacy",
   "coreferee",
   "txtai"
 ]
-"module.react" = []
-module = [
-  "auto-llama[module.nlp]",
-  "auto-llama[module.react]"
+"extras.audio" = [
+  "txtai[pipeline-audio]"
+]
+extras = [
+  "auto-llama[extras.text]",
+  "auto-llama[extras.audio]"
 ]
 "agent.research" = [
   "wikipedia",
   "duckduckgo_search",
-  "auto-llama[module.nlp]"
+  "auto-llama[text]"
 ]
 "agent.code" = [
   "docker",
@@ -58,25 +60,20 @@ llm = [
 memory = [
   "auto-llama[memory.txtai]"
 ]
-"manager.txtai" = [
-  "auto-llama[module.nlp]"
+"selector.txtai" = [
+  "auto-llama[text]"
 ]
-manager = [
-  "auto_llama[manager.txtai]"
-]
-"speech.txtai" = [
-  "txtai[pipeline-audio]"
-]
-speech = [
-  "auto_llama[speech.txtai]"
+selector = [
+  "auto-llama[selector.txtai]"
 ]
 all = [
-  "auto-llama[module, agent, llm, memory, speech]"
+  "auto-llama[extras, agent, llm, memory, selector]"
 ]
 
 [tool.hatch.build]
 packages = [
   "pkg/auto_llama/",
+  "pkg/auto_llama_extras/"
 ]
 
 [tool.black]

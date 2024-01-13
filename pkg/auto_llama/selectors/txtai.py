@@ -1,12 +1,12 @@
 """txtai based manager"""
 
 from auto_llama import AgentSelector, Agent, ModelLoader
-from auto_llama.exceptions import ModuleDependenciesMissing
+from auto_llama.exceptions import SelectorDependenciesMissing
 
 try:
     from txtai.pipeline import Similarity
 except ImportError:
-    raise ModuleDependenciesMissing("nlp", "nlp")
+    raise SelectorDependenciesMissing("txtai", "txtai")
 
 ModelLoader.add("txtai.similarity", lambda: Similarity())
 

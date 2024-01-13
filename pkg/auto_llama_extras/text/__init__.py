@@ -10,3 +10,5 @@ from ._util import (
     num_to_char_long,
     num_to_word,
 )
+
+# TODO add text chunking (with window?)

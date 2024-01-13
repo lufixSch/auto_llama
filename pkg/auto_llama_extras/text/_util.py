@@ -1,7 +1,7 @@
 import re
 
 from auto_llama import ModelLoader
-from auto_llama.exceptions import ModuleDependenciesMissing
+from auto_llama.exceptions import ExtrasDependenciesMissing
 
 # Module specific dependencies
 try:
@@ -9,7 +9,7 @@ try:
     import nltk
     from nltk.stem import WordNetLemmatizer
 except ImportError:
-    raise ModuleDependenciesMissing("nlp", "nlp")
+    raise ExtrasDependenciesMissing("text", "text")
 
 ModelLoader.add("lemmatizer", lambda: WordNetLemmatizer())
 

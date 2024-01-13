@@ -23,9 +23,9 @@ class AgentDependenciesMissing(DependenciesMissing):
         super().__init__(agent_name, "agent", dep_name)
 
 
-class ModuleDependenciesMissing(DependenciesMissing):
+class ExtrasDependenciesMissing(DependenciesMissing):
     def __init__(self, module_name: str, dep_name: str) -> None:
-        super().__init__(module_name, "module", dep_name)
+        super().__init__(module_name, "extras", dep_name)
 
 
 class LLMDependenciesMissing(DependenciesMissing):
@@ -36,6 +36,11 @@ class LLMDependenciesMissing(DependenciesMissing):
 class MemoryDependenciesMissing(DependenciesMissing):
     def __init__(self, memory_name: str, dep_name: str) -> None:
         super().__init__(memory_name, "memory", dep_name)
+
+
+class SelectorDependenciesMissing(DependenciesMissing):
+    def __init__(self, selector_name: str, dep_name: str) -> None:
+        super().__init__(selector_name, "selector", dep_name)
 
 
 class ModelMissing(Exception):

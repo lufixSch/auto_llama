@@ -11,7 +11,7 @@ try:
     import coreferee
     from coreferee.data_model import ChainHolder
 except ImportError:
-    raise exceptions.ModuleDependenciesMissing("nlp", "nlp")
+    raise exceptions.ExtrasDependenciesMissing("nlp", "nlp")
 
 
 def _load_spacy():

@@ -5,7 +5,7 @@ from numpy.typing import NDArray
 try:
     from txtai.pipeline import Transcription, TextToSpeech
 except ImportError:
-    raise exceptions.DependenciesMissing("speech", "speech", "txtai")
+    raise exceptions.ExtrasDependenciesMissing("audio.txtai", "audio")
 
 ModelLoader.add("txtai.tts", lambda: TextToSpeech())
 ModelLoader.add("txtai.transcribe", lambda: Transcription(path="distil-whisper/distil-large-v2"))
