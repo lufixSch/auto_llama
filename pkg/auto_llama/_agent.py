@@ -168,9 +168,3 @@ class Agent(ABC):
 
         name = self.__class__.__name__
         print(f"{name}: {msg}")
-
-    def set_memory(self, memory: Memory):
-        """Set long term memory for the agent"""
-
-        self.memory = memory
-        return self

@@ -2,20 +2,22 @@ from abc import abstractmethod
 from typing import Literal
 from itertools import islice
 
-from auto_llama import Agent, AgentResponse, AgentResponseItem, PromptTemplate, LLMInterface, exceptions
+from auto_llama import Agent, AgentResponse, AgentResponseItem, PromptTemplate, LLMInterface, Memory, exceptions
 from auto_llama.data import Article
 
 AGENT_NAME = "SearchAgent"
+HAS_DEPENDENCIES = True
+HAS_EXTRAS_DEPENDENCIES = True
 
 # Agent specific dependencies
 try:
     import wikipedia
     from duckduckgo_search import DDGS
-    from auto_llama import nlp
+    from auto_llama_extras import text
 except ImportError:
-    raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
-except exceptions.ModuleDependenciesMissing:
-    raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
+    HAS_DEPENDENCIES = False
+except exceptions.ExtrasDependenciesMissing:
+    HAS_EXTRAS_DEPENDENCIES = False
 
 
 class NoResultsException(Exception):
@@ -44,17 +46,26 @@ class SearchAgent(Agent):
     llm: LLMInterface = None
     prompt_template: SearchPromptTemplate = None
 
-    def __init__(self, max_results: int = 1, verbose=False) -> None:
+    def __init__(self, memory: Memory = None, max_results: int = 1, verbose=False) -> None:
+        if not HAS_DEPENDENCIES:
+            raise exceptions.AgentDependenciesMissing(self.__class__.__name__, "research")
+
         self.max_results = max_results
+        self.memory = memory
         super().__init__(verbose)
 
     @classmethod
     def with_llm_query(
-        cls, llm: LLMInterface, prompt_template: SearchPromptTemplate, max_results: int = 1, verbose=False
+        cls,
+        llm: LLMInterface,
+        prompt_template: SearchPromptTemplate,
+        memory: Memory = None,
+        max_results: int = 1,
+        verbose=False,
     ) -> "SearchAgent":
         """Init SearchAgent with LLM Model for generating search queries from text input"""
 
-        instance = cls(max_results, verbose)
+        instance = cls(memory, max_results, verbose)
         instance.llm = llm
         instance.prompt_template = prompt_template
         instance.query_generator = "llm"
@@ -62,10 +73,14 @@ class SearchAgent(Agent):
         return instance
 
     @classmethod
-    def with_nlp_query(cls, max_results: int = 1, verbose=False):
+    def with_nlp_query(cls, memory: Memory = None, max_results: int = 1, verbose=False):
         """Init SearchAgent with NLP preprocessing  for generating search queries from text input"""
 
-        instance = cls(max_results, verbose)
+        instance = cls(memory, max_results, verbose)
+
+        if not HAS_EXTRAS_DEPENDENCIES:
+            raise exceptions.AgentDependenciesMissing(instance.__class__.__name__, "research")
+
         instance.query_generator = "nlp"
         return instance
 
@@ -82,10 +97,10 @@ class SearchAgent(Agent):
     def _nlp_preprocessor(self, request: str):
         """Generate search query from text input using NLP preprocessing"""
 
-        res = nlp.to_lower(request)
-        res = nlp.merge_spaces(res)
-        res = nlp.remove_specific_pos(res)
-        res = nlp.lemmatize(res)
+        res = text.to_lower(request)
+        res = text.merge_spaces(res)
+        res = text.remove_specific_pos(res)
+        res = text.lemmatize(res)
 
         self.print(f"Preprocessed query: {res}", verbose=True)
 

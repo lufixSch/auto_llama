@@ -4,14 +4,20 @@ from datetime import datetime
 from auto_llama import Memory, ConversationMemory, exceptions, Chat, ChatMessage
 from auto_llama.data import Content
 
+HAS_DEPENDENCIES = True
+
 try:
     from txtai import Embeddings
     from txtai.embeddings import errors as txtai_errors
-    from auto_llama import nlp
+    from auto_llama_extras import text as nlp
 
     from .data import DataSegments, metadata_from_content, db_fragments_to_content
 except ImportError:
-    raise exceptions.MemoryDependenciesMissing("TxtAIMemory", "txtai")
+    HAS_DEPENDENCIES = False
+except exceptions.ExtrasDependenciesMissing:
+    HAS_DEPENDENCIES = False
+except exceptions.MemoryDependenciesMissing:
+    HAS_DEPENDENCIES = False
 
 
 class TxtAIMemory(Memory):
@@ -25,6 +31,9 @@ class TxtAIMemory(Memory):
 
         If no path is given, changes will not be saved to disk
         """
+
+        if not HAS_DEPENDENCIES:
+            raise exceptions.MemoryDependenciesMissing(self.__class__.__name__, "txtai")
 
         self.permanent = True if path is not None else False
         self.location = path

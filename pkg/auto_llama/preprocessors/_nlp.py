@@ -1,34 +1,48 @@
 from typing import Literal
 
-from auto_llama import exceptions, ChatToObjectiveConverter
-from auto_llama._chat import Chat
+from auto_llama import exceptions, ChatToObjectiveConverter, Chat, ModelLoader
 
 from string import punctuation
+
+HAS_DEPENDENCIES = True
 
 try:
     import spacy
     from spacy.tokens import Token
+    from spacy.language import Language
     import coreferee
     from coreferee.data_model import ChainHolder
 except ImportError:
-    raise exceptions.ModuleDependenciesMissing("nlp", "nlp")
+    #    raise exceptions.ExtrasDependenciesMissing("nlp", "nlp")
+    HAS_DEPENDENCIES = False
 
-try:
-    nlp = spacy.load("en_core_web_trf")
-    nlp.add_pipe("coreferee")
-except coreferee.errors.VectorsModelNotInstalledError:
-    raise exceptions.ModelMissing("spacy")
-except OSError:
-    raise exceptions.ModelMissing("spacy")
+
+def _load_spacy():
+    try:
+        nlp = spacy.load("en_core_web_trf")
+        nlp.add_pipe("coreferee")
+    except coreferee.errors.VectorsModelNotInstalledError:
+        raise exceptions.ModelMissing("spacy")
+    except OSError:
+        raise exceptions.ModelMissing("spacy")
+
+
+if HAS_DEPENDENCIES:
+    ModelLoader.add("spacy", _load_spacy)
 
 
 class CorefResChatConverter(ChatToObjectiveConverter):
     """Extract objective from chat history using the last message and coreference resolution to improve context"""
 
     def __init__(self, msg_cnt: int | Literal["all"] = 3) -> None:
+        if not HAS_DEPENDENCIES:
+            raise exceptions.PreprocessorDependenciesMissing(self.__class__.__name__, "coref")
+
         self._msg_cnt = msg_cnt
 
     def __call__(self, chat: Chat) -> str:
+        nlp = ModelLoader.get("spacy", Language)
+
         if self._msg_cnt != "all":
             chat = chat.clone(-self._msg_cnt)
 

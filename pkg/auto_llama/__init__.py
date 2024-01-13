@@ -6,4 +6,4 @@ from ._memory import Memory, ConversationMemory
 from ._selector import AgentSelector
 from ._preprocessors import ChatToObjectiveConverter, PromptPreprocessor, ChatPreprocessor
 from ._assistant import Assistant
-from ._speech import TTS, STT
+from ._models import ModelLoader

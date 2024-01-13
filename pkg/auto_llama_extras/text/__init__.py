@@ -1,5 +1,3 @@
-"""Different usefull methods for text processing"""
-
 from ._util import (
     str_to_list,
     tokens_from_str,
@@ -13,4 +11,4 @@ from ._util import (
     num_to_word,
 )
 
-from ._models import models
+# TODO add text chunking (with window?)

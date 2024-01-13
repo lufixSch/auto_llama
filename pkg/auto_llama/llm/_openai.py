@@ -1,12 +1,14 @@
 from auto_llama import LLMInterface, Chat, exceptions
 
+HAS_DEPENDENCIES = True
+
 try:
     from openai import OpenAI as OpenAIClient
 except ImportError:
-    raise exceptions.LLMDependenciesMissing("OpenAI LLM", "openai")
+    HAS_DEPENDENCIES = False
 
 
-class LLMLocalOpenAI(LLMInterface):
+class LocalOpenAILLM(LLMInterface):
     """Implementation of the LLM Interface for local LLMs using OpenAI API"""
 
     def __init__(
@@ -16,6 +18,9 @@ class LLMLocalOpenAI(LLMInterface):
         temperature: float = None,
         max_new_tokens: int = 200,
     ) -> None:
+        if not HAS_DEPENDENCIES:
+            raise exceptions.LLMDependenciesMissing(self.__class__.__name__, "openai")
+
         self.config = {}
         if stopping_strings:
             self.config["stop"] = stopping_strings

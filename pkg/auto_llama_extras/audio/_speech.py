@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from numpy.typing import NDArray
 
 
-class TTS(ABC):
+class TTSInterface(ABC):
     """Base class for Text to speech tools"""
 
     @abstractmethod
@@ -16,7 +16,7 @@ class TTS(ABC):
         """
 
 
-class STT(ABC):
+class STTInterface(ABC):
     """Base class for Speach to text tools"""
 
     @abstractmethod
