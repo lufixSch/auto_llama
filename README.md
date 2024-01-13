@@ -18,7 +18,6 @@ The framework is based on the following main ideas:
 2. Selectors - A system that decides which agent to use for a given prompt or chat history.
 3. Memory - A system that stores information across agents and prompts to improve the performance of the system.
 4. LLMs - A interface to interact with a LLM for regular text generation and chat.
-5. Assistant - A class that combines the above to provide an easy to use but configurable chat bot interface
 
 #### Implementations
 
@@ -54,7 +53,9 @@ There are also some implementations of text input or chat preprocessors availabl
 
 Memory implementations are available in `auto_llama.memory`
 
-- TxtAIMemory - Embeddings database for text or chat using the python `txtai` package
+- txtai
+  - TxtAIMemory - Embeddings database for text or chat using the python `txtai` package
+  - TxtAIConversationMemory - Embeddings database for old conversations using the python `txtai` package
 
 ### auto_llama_extras
 
@@ -64,6 +65,12 @@ This package provides some extra modules and quality of life features to get sta
   - txtai - Speech recognition and TTS using the txtai pipelines
 - text - Text processing tools
 - react - Small ReAct framework to make an implementation easier
+
+### auto_llama_cli
+
+Provides a simple chat CLI which can be used to interact with AutoLLaMa. The CLI can be accessed using the `auto-llama` command.
+
+Note that the command requires an argument `--config` with your config file. The config file should be a python file with at least a `config` variable which is an instance of `CLIConfig`. Refer to `example_config.py` for an example.
 
 ## Installation
 
@@ -95,7 +102,7 @@ Install the package in editable mode
 pip install -e .[<opional_dependencies>]
 ```
 
-## ToDo
+## Ideas
 
 - [ ] Add time aware memory (No Idea how to do this!)
   - [ ] Idea: _Fetch x recent memory's and y memory's (time independent) and mark them as recent/general_

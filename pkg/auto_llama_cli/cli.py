@@ -66,6 +66,8 @@ def main():
     parser.add_argument(
         "-c", "--config", type=str, help="Path to config file (Python file with `config=CLIConfig(...)`)"
     )
+
+    # TODO Add verbose argument
     # parser.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
 
     args = parser.parse_args()
@@ -76,4 +78,6 @@ def main():
     try:
         run(config, chat)
     except KeyboardInterrupt:
+        # TODO Save chat history to conversation memory
+        # TODO temporary save of chat history when crash
         print("\nExiting ...")
