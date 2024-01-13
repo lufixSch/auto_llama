@@ -1,7 +1,15 @@
 import importlib.util
 import sys
 
-from auto_llama import LLMInterface, ConversationMemory, Memory, Agent, AgentSelector, ChatToObjectiveConverter
+from auto_llama import (
+    LLMInterface,
+    ConversationMemory,
+    Memory,
+    Agent,
+    AgentSelector,
+    ChatToObjectiveConverter,
+    ChatRoles,
+)
 from .exceptions import ConfigError
 
 
@@ -16,6 +24,9 @@ class CLIConfig:
         chat_converter: ChatToObjectiveConverter,
         memory: Memory,
         conversation_memory: ConversationMemory,
+        roles: dict[ChatRoles, str],
+        system_prompt: str,
+        start_message: str = None,
     ) -> None:
         self.llm = llm
         self.conversation_memory = conversation_memory
@@ -23,6 +34,9 @@ class CLIConfig:
         self.agents = agents
         self.selector = selector
         self.chat_converter = chat_converter
+        self.system_prompt = system_prompt
+        self.roles = roles
+        self.start_message = start_message
 
     @classmethod
     def load(cls, config_path: str) -> "CLIConfig":

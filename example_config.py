@@ -1,4 +1,5 @@
 from auto_llama_cli import CLIConfig
+from auto_llama import ChatRoles
 from auto_llama.llm import LocalOpenAILLM
 from auto_llama.agents import MultiSearchAgent, WikipediaSearchAgent, DuckDuckGoSearchAgent
 from auto_llama.preprocessors import CorefResChatConverter
@@ -16,7 +17,7 @@ conversation_memory = TxtAIConversationMemory()
 search_agent = MultiSearchAgent(
     [DuckDuckGoSearchAgent(facts_memory, max_results=3), WikipediaSearchAgent(facts_memory, 2)]
 )
-agents = {"search", search_agent}
+agents = {"search": search_agent}
 
 # Selector -----------------------------------------------------
 agent_keywords = {
@@ -28,4 +29,17 @@ selector = SimilarityAgentSelector(agents, agent_keywords, assistant_keywords)
 # Preprocessor -----------------------------------------------------
 chat_converter = CorefResChatConverter()
 
-config = CLIConfig(llm, agents, selector, chat_converter, facts_memory, conversation_memory)
+# System Prompt -----------------------------------------------------
+roles: dict[ChatRoles, str] = {"system": "System", "assistant": "AutoLLaMa", "user": "User"}
+system_prompt = """
+You are {assistant} a friendly and helpfull AI Assistant. You are talking to {name}
+
+Consider the following context when answering questions: {context}
+
+You remember the following segments of an old conversation: {old_chat}
+"""
+start_message = "Hello! My name is AutoLLaMa. How can I help you?"
+
+config = CLIConfig(
+    llm, agents, selector, chat_converter, facts_memory, conversation_memory, roles, system_prompt, start_message
+)

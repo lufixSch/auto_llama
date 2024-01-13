@@ -99,7 +99,7 @@ class Chat:
 
         return self._names[role]
 
-    def append(self, role: ChatRoles, message: str, date: datetime = None) -> "Chat":
+    def append(self, role: ChatRoles, message: str, date: datetime = None):
         """Add message to the chat history"""
 
         chat_message = ChatMessage(role, message, date)
@@ -107,6 +107,8 @@ class Chat:
 
         for listener in self._listeners.values():
             listener(chat_message, self)
+
+        return chat_message
 
     def filter(
         self,

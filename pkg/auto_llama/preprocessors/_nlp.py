@@ -21,6 +21,8 @@ def _load_spacy():
     try:
         nlp = spacy.load("en_core_web_trf")
         nlp.add_pipe("coreferee")
+
+        return nlp
     except coreferee.errors.VectorsModelNotInstalledError:
         raise exceptions.ModelMissing("spacy")
     except OSError:

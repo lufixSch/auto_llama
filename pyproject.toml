@@ -78,6 +78,9 @@ all = [
   "auto-llama[extras, agent, llm, memory, selector]"
 ]
 
+[project.scripts]
+auto-llama = "auto_llama_cli:main"
+
 [tool.hatch.build]
 packages = [
   "pkg/auto_llama/",
