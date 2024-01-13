@@ -61,10 +61,16 @@ memory = [
   "auto-llama[memory.txtai]"
 ]
 "selector.txtai" = [
-  "auto-llama[text]"
+  "auto-llama[extras.text]"
 ]
 selector = [
   "auto-llama[selector.txtai]"
+]
+"preprocessor.coref" = [
+  "auto-llama[extras.text]"
+]
+preprocessor = [
+  "auto-llama[preprocessor.coref]"
 ]
 all = [
   "auto-llama[extras, agent, llm, memory, selector]"

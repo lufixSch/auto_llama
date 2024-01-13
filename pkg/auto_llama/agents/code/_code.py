@@ -1,14 +1,13 @@
 from auto_llama import AgentResponse, LLMInterface, PromptTemplate, exceptions, Chat
 
 AGENT_NAME = "CodeAgent"
+HAS_DEPENDENCIES = True
 
 # Agent specific dependencies
 try:
-    from ._code_exec import CodeExecAgent
+    from ._code_exec import CodeExecAgent, HAS_DEPENDENCIES
 except ModuleNotFoundError:
-    raise exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
-except exceptions.AgentDependenciesMissing:
-    raise exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
+    HAS_DEPENDENCIES = False
 
 
 class CodePromptTemplate(PromptTemplate):
@@ -37,6 +36,9 @@ class CodeAgent(CodeExecAgent):
         executor_port: int = 6000,
         verbose: bool = False,
     ) -> None:
+        if not HAS_DEPENDENCIES:
+            raise exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
+
         self.prompt_template = prompt_template
         self.llm = llm
 

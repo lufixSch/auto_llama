@@ -4,6 +4,8 @@ from auto_llama import exceptions, ChatToObjectiveConverter, Chat, ModelLoader
 
 from string import punctuation
 
+HAS_DEPENDENCIES = True
+
 try:
     import spacy
     from spacy.tokens import Token
@@ -11,7 +13,8 @@ try:
     import coreferee
     from coreferee.data_model import ChainHolder
 except ImportError:
-    raise exceptions.ExtrasDependenciesMissing("nlp", "nlp")
+    #    raise exceptions.ExtrasDependenciesMissing("nlp", "nlp")
+    HAS_DEPENDENCIES = False
 
 
 def _load_spacy():
@@ -24,13 +27,17 @@ def _load_spacy():
         raise exceptions.ModelMissing("spacy")
 
 
-ModelLoader.add("spacy", _load_spacy)
+if HAS_DEPENDENCIES:
+    ModelLoader.add("spacy", _load_spacy)
 
 
 class CorefResChatConverter(ChatToObjectiveConverter):
     """Extract objective from chat history using the last message and coreference resolution to improve context"""
 
     def __init__(self, msg_cnt: int | Literal["all"] = 3) -> None:
+        if not HAS_DEPENDENCIES:
+            raise exceptions.PreprocessorDependenciesMissing(self.__class__.__name__, "coref")
+
         self._msg_cnt = msg_cnt
 
     def __call__(self, chat: Chat) -> str:

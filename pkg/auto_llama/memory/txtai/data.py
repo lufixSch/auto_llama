@@ -4,7 +4,7 @@ from auto_llama import exceptions
 from auto_llama.data import Content, Image, ImageSource, Article
 
 try:
-    from auto_llama import nlp
+    from auto_llama_extras import text as nlp
 except ImportError:
     raise exceptions.MemoryDependenciesMissing("TxtAIMemory", "txtai")
 

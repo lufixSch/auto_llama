@@ -3,12 +3,15 @@
 from auto_llama import AgentSelector, Agent, ModelLoader
 from auto_llama.exceptions import SelectorDependenciesMissing
 
+HAS_DEPENDENCIES = True
+
 try:
     from txtai.pipeline import Similarity
 except ImportError:
-    raise SelectorDependenciesMissing("txtai", "txtai")
+    HAS_DEPENDENCIES = False
 
-ModelLoader.add("txtai.similarity", lambda: Similarity())
+if HAS_DEPENDENCIES:
+    ModelLoader.add("txtai.similarity", lambda: Similarity())
 
 
 class KeywordMapping:
@@ -64,6 +67,9 @@ class SimilarityAgentSelector(AgentSelector):
             keywords (dict[str, list[str]]): Keywords for each tool with the tool name as key.
             none_keywords (list[str]): Keywords which will map to no tool (e.g. no tool should be used)
         """
+
+        if not HAS_DEPENDENCIES:
+            raise SelectorDependenciesMissing(self.__class__.__name__, "txtai")
 
         self._tools = tools
         self._keyword_mapping = KeywordMapping(assistant=none_keywords, **keywords)

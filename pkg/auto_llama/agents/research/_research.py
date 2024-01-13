@@ -2,14 +2,12 @@ from auto_llama import Agent, AgentResponse, AgentResponseItem, LLMInterface, Pr
 from auto_llama_extras.react import ReActRunner, ReActStep
 from auto_llama.data import Article
 
-AGENT_NAME = "ResearchAgent"
+HAS_DEPENDENCIES = True
 
 try:
     from ._search import SearchAgent
 except ImportError:
-    raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
-except exceptions.AgentDependenciesMissing:
-    raise exceptions.AgentDependenciesMissing(AGENT_NAME, "research")
+    HAS_DEPENDENCIES = False
 
 
 class ResearchPromptTemplate(PromptTemplate):
@@ -35,6 +33,9 @@ class ResearchAgent(Agent):
         max_iterations: int = 10,
         verbose=False,
     ) -> None:
+        if not HAS_DEPENDENCIES:
+            raise exceptions.AgentDependenciesMissing(self.__class__.__name__, "research")
+
         self.prompt_template = prompt_template
         self.llm = llm
         self.tools = tools
@@ -83,6 +84,9 @@ class MultiSearchAgent(Agent):
     """Search multiple sources for information"""
 
     def __init__(self, sources: list[SearchAgent], verbose=False) -> None:
+        if not HAS_DEPENDENCIES:
+            raise exceptions.AgentDependenciesMissing(self.__class__.__name__, "research")
+
         self.sources = sources
 
         super().__init__(verbose)

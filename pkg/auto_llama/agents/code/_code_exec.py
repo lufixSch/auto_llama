@@ -6,6 +6,7 @@ from auto_llama import Agent, AgentResponse, AgentResponseItem, exceptions, Chat
 from auto_llama.data import ImageSource
 
 AGENT_NAME = "CodeExecAgent"
+HAS_DEPENDENCIES = True
 
 # Agent specific dependencies
 try:
@@ -13,12 +14,13 @@ try:
     import pandas as pd
     from requests import post
 except ModuleNotFoundError:
-    raise exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
+    HAS_DEPENDENCIES = False
 
-try:
-    docker_client = docker.from_env()
-except docker.errors.DockerException:
-    raise exceptions.AgentUnavailableError(AGENT_NAME, error="Unable  to connect to docker daemon!")
+if HAS_DEPENDENCIES:
+    try:
+        docker_client = docker.from_env()
+    except docker.errors.DockerException:
+        raise exceptions.AgentUnavailableError(AGENT_NAME, error="Unable  to connect to docker daemon!")
 
 
 class CodeExecAgent(Agent):
@@ -36,6 +38,9 @@ class CodeExecAgent(Agent):
         executor_port: int = 6000,
         verbose: bool = False,
     ) -> None:
+        if not HAS_DEPENDENCIES:
+            raise exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
+
         self.pkg = pkg
         self.container_path = os.path.abspath(container_path)
         self.container_name = container_name

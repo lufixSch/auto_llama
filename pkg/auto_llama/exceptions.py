@@ -43,6 +43,11 @@ class SelectorDependenciesMissing(DependenciesMissing):
         super().__init__(selector_name, "selector", dep_name)
 
 
+class PreprocessorDependenciesMissing(DependenciesMissing):
+    def __init__(self, preprocessor_name: str, dep_name: str) -> None:
+        super().__init__(preprocessor_name, "preprocessor", dep_name)
+
+
 class ModelMissing(Exception):
     def __init__(self, model_group: str) -> None:
         super().__init__(
