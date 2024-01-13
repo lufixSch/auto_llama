@@ -1,13 +1,9 @@
 from auto_llama import AgentResponse, LLMInterface, PromptTemplate, exceptions, Chat
 
-AGENT_NAME = "CodeAgent"
-HAS_DEPENDENCIES = True
-
 # Agent specific dependencies
-try:
-    from ._code_exec import CodeExecAgent, HAS_DEPENDENCIES
-except ModuleNotFoundError:
-    HAS_DEPENDENCIES = False
+from ._code_exec import CodeExecAgent, HAS_DEPENDENCIES, HAS_DOCKER
+
+AGENT_NAME = "CodeAgent"
 
 
 class CodePromptTemplate(PromptTemplate):
@@ -38,6 +34,8 @@ class CodeAgent(CodeExecAgent):
     ) -> None:
         if not HAS_DEPENDENCIES:
             raise exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
+        if not HAS_DOCKER:
+            raise exceptions.AgentUnavailableError(AGENT_NAME, error="Unable  to connect to docker daemon!")
 
         self.prompt_template = prompt_template
         self.llm = llm

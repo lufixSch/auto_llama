@@ -7,6 +7,7 @@ from auto_llama.data import ImageSource
 
 AGENT_NAME = "CodeExecAgent"
 HAS_DEPENDENCIES = True
+HAS_DOCKER = True
 
 # Agent specific dependencies
 try:
@@ -20,7 +21,7 @@ if HAS_DEPENDENCIES:
     try:
         docker_client = docker.from_env()
     except docker.errors.DockerException:
-        raise exceptions.AgentUnavailableError(AGENT_NAME, error="Unable  to connect to docker daemon!")
+        HAS_DOCKER = False
 
 
 class CodeExecAgent(Agent):
@@ -40,6 +41,8 @@ class CodeExecAgent(Agent):
     ) -> None:
         if not HAS_DEPENDENCIES:
             raise exceptions.AgentDependenciesMissing(AGENT_NAME, "code")
+        if not HAS_DOCKER:
+            raise exceptions.AgentUnavailableError(AGENT_NAME, error="Unable to connect to docker daemon!")
 
         self.pkg = pkg
         self.container_path = os.path.abspath(container_path)
