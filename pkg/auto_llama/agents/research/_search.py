@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Literal
 from itertools import islice
 
-from auto_llama import Agent, AgentResponse, AgentResponseItem, PromptTemplate, LLMInterface, exceptions
+from auto_llama import Agent, AgentResponse, AgentResponseItem, PromptTemplate, LLMInterface, Memory, exceptions
 from auto_llama.data import Article
 
 AGENT_NAME = "SearchAgent"
@@ -44,17 +44,23 @@ class SearchAgent(Agent):
     llm: LLMInterface = None
     prompt_template: SearchPromptTemplate = None
 
-    def __init__(self, max_results: int = 1, verbose=False) -> None:
+    def __init__(self, memory: Memory = None, max_results: int = 1, verbose=False) -> None:
         self.max_results = max_results
+        self.memory = memory
         super().__init__(verbose)
 
     @classmethod
     def with_llm_query(
-        cls, llm: LLMInterface, prompt_template: SearchPromptTemplate, max_results: int = 1, verbose=False
+        cls,
+        llm: LLMInterface,
+        prompt_template: SearchPromptTemplate,
+        memory: Memory = None,
+        max_results: int = 1,
+        verbose=False,
     ) -> "SearchAgent":
         """Init SearchAgent with LLM Model for generating search queries from text input"""
 
-        instance = cls(max_results, verbose)
+        instance = cls(memory, max_results, verbose)
         instance.llm = llm
         instance.prompt_template = prompt_template
         instance.query_generator = "llm"
@@ -62,10 +68,10 @@ class SearchAgent(Agent):
         return instance
 
     @classmethod
-    def with_nlp_query(cls, max_results: int = 1, verbose=False):
+    def with_nlp_query(cls, memory: Memory = None, max_results: int = 1, verbose=False):
         """Init SearchAgent with NLP preprocessing  for generating search queries from text input"""
 
-        instance = cls(max_results, verbose)
+        instance = cls(memory, max_results, verbose)
         instance.query_generator = "nlp"
         return instance
 

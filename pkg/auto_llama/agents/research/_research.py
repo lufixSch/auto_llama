@@ -74,10 +74,6 @@ class ResearchAgent(Agent):
         # Generate final answer from context, if memory is present
         # WARNING Possibly redundant with RAG in Manager
 
-        if self.memory:
-            res = self.memory.remember("input", max_items=30)
-            return AgentResponse.with_same_pos(AgentResponseItem.POSITION.CONTEXT, res)
-
         return AgentResponse.with_same_pos(
             AgentResponseItem.POSITION.CONTEXT, [Article(step.observation) for step in steps]
         )
