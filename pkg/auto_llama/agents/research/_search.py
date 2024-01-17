@@ -12,6 +12,7 @@ HAS_EXTRAS_DEPENDENCIES = True
 # Agent specific dependencies
 try:
     import wikipedia
+    import arxiv
     from duckduckgo_search import DDGS
     from auto_llama_extras import text
 except ImportError:
@@ -193,3 +194,31 @@ class DuckDuckGoSearchAgent(SearchAgent):
                 raise NoResultsException(Article(text="Unable to find results regarding this topic", src="duckduckgo"))
 
             return responses
+
+
+class ArxivSearchAgent(SearchAgent):
+    """Search Arxiv for papers"""
+
+    def __init__(self, memory: Memory = None, max_results: int = 1, verbose=False) -> None:
+        super().__init__(memory, max_results, verbose)
+        self._client = arxiv.Client()
+
+    def _search(self, query: str) -> AgentResponse:
+        search = arxiv.Search(query, max_results=self.max_results, sort_by=arxiv.SortCriterion.Relevance)
+
+        responses = AgentResponse.empty()
+        for res in self._client.results(search):
+            responses.append(
+                AgentResponseItem(
+                    AgentResponseItem.POSITION.CONTEXT,
+                    Article(text=res.summary.replace("\n", " "), title=res.title, src=res.pdf_url),
+                )
+            )
+
+        if len(responses.values()) <= 0:
+            self.print("No good Search Result was found", verbose=True)
+
+            # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
+            raise NoResultsException(Article(text="Unable to find results regarding this topic", src="arxiv"))
+
+        return responses
