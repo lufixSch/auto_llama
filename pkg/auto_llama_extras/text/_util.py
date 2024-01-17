@@ -48,6 +48,12 @@ def merge_spaces(text: str):
     return re.sub(" +", " ", text)
 
 
+def merge_symbols(text: str, symbol: str):
+    """Merge symbols into a single symbol"""
+
+    return re.sub(f"{symbol}+", f"{symbol}", text)
+
+
 def remove_punctuation(text: str):
     """
     Replace all sentence splitting punctuation with ', '

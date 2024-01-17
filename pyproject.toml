@@ -28,7 +28,8 @@ dependencies = [
   "nltk",
   "spacy",
   "coreferee",
-  "txtai"
+  "txtai",
+  "beautifulsoup4"
 ]
 "extras.audio" = [
   "txtai[pipeline-audio]"
