@@ -40,6 +40,7 @@ extras = [
 "agent.research" = [
   "wikipedia",
   "duckduckgo_search",
+  "arxiv",
   "auto-llama[text]"
 ]
 "agent.code" = [
