@@ -76,18 +76,23 @@ selector = [
 preprocessor = [
   "auto-llama[preprocessor.coref]"
 ]
+gui = [
+  "gradio"
+]
 all = [
-  "auto-llama[extras, agent, llm, memory, selector]"
+  "auto-llama[extras, agent, llm, memory, selector, gui]"
 ]
 
 [project.scripts]
 auto-llama = "auto_llama_cli:main"
+auto-llama-gui = "auto_llama_gui:main"
 
 [tool.hatch.build]
 packages = [
   "pkg/auto_llama/",
   "pkg/auto_llama_extras/",
-  "pkg/auto_llama_cli/"
+  "pkg/auto_llama_cli/",
+  "pkg/auto_llama_gui/"
 ]
 
 [tool.black]
