@@ -64,7 +64,7 @@ def main():
     parser = ArgumentParser(description="AutoLLaMa CLI Assistant")
 
     parser.add_argument(
-        "-c", "--config", type=str, help="Path to config file (Python file with `config=CLIConfig(...)`)"
+        "-c", "--config", type=str, help="Path to config file (Python file with `config=CLIConfig(...)`)", required=True
     )
 
     # TODO Add verbose argument

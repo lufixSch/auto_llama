@@ -53,3 +53,7 @@ class ModelMissing(Exception):
         super().__init__(
             f"Ressources missing!\nMake sure to download all neccessary ressources for {model_group}: `python bin/{model_group}_ressources`"
         )
+
+
+class ConfigError(Exception):
+    """Error raised when loading the config fails"""
