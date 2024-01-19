@@ -50,9 +50,9 @@ class LocalOpenAILLM(LLMInterface):
 
         try:
             for chunk in res:
-                yield chunk.choices[0].text
+                yield chunk.choices[0].text or ""
         finally:
-            res.close()
+            res.response.close()
 
     def chat(self, chat: Chat) -> Chat:
         opain_chat_history = [{"role": chat_msg.role, "content": chat_msg.message} for chat_msg in chat.history]

@@ -9,7 +9,7 @@ from ._config import CLIConfig
 def print_message(message: ChatMessage, chat: Chat):
     """Print new message to console"""
 
-    print(f"{chat.name(message.role)}: {message.message}")
+    print(f"{chat.name(message.role)}: {message.message}", end="\n" if message.message else "")
 
 
 def run(config: CLIConfig, chat: Chat):
@@ -21,6 +21,7 @@ def run(config: CLIConfig, chat: Chat):
 
     while True:
         new_message = input(f"{chat.name('user')}: ")
+        print("Got message!")
         chat.append("user", new_message)
 
         objective = config.chat_converter(chat)
@@ -55,9 +56,21 @@ def run(config: CLIConfig, chat: Chat):
 
         # self._chat = self._llm.chat(self._chat)
         prompt = chat.prompt + f"\n{datetime.now().isoformat()} - {chat.name('assistant')}:"
-        res = config.llm.completion(prompt, stopping_strings=[f"\n{chat.name('user')}", f"\n{datetime.now().year}"])
-        msg = chat.append("assistant", res.strip())
+        stream = config.llm.completion_stream(
+            prompt, stopping_strings=[f"\n{chat.name('user')}", f"\n{datetime.now().year}"]
+        )
+
+        msg = chat.append("assistant", "")
         print_message(msg, chat)
+
+        try:
+            for chunk in stream:
+                msg.message += chunk
+                print(chunk, end="")
+        except KeyboardInterrupt:
+            stream.close()
+
+        print("")  # Newline after message
 
 
 def main():
