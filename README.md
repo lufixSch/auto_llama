@@ -104,27 +104,37 @@ pip install -e .[<opional_dependencies>]
 
 ## Ideas
 
-- [ ] Add time aware memory (No Idea how to do this!)
-  - [ ] Idea: _Fetch x recent memory's and y memory's (time independent) and mark them as recent/general_
-  - [x] add time tracking to chat messages
-- [ ] Add image/multimodal memory (Supported by txtai out of the box)
+- [ ] Improve logging interface
+  - [ ] Add logging base class
+  - [ ] Allow submodules to log as the Agent from which they where called
+- [ ] Text processing
+  - [ ] Propper sentence spliting
+  - [ ] Grouping of adjacent and related sentences
+- [ ] Improve Memory
+  - [ ] Fetch more information than necessary and filter with _similarity_ to improve accuracy
+  - [x] Optionally pass source(s) on `Memory.save`
+  - [ ] Save original (unprocessed) data *Optional*
+  - [ ] Retrieve window of data around the matching segment
+  - [ ] add sliding window paragraphing instead of splitting
+- [ ] Text loader
+  - [ ] ImageTextLoader -> Get text from image
+  - [ ] PdfTextLoader -> Get text from PDF (maybe try to get equations in some way)
+- [ ] More Agents
 - [ ] Improve Chat class
   - [ ] Multi user chat
   - [ ] Improve Chat memory interface
     - [ ] Load/Save chat from/to database (possibly Embeddings DB)
-- [ ] Improve logging interface
-  - [ ] Add logging base class
-  - [ ] Allow submodules to log as the Agent from which they where called
-- [ ] Improve Memory
-  - [ ] Fetch more information than necessary and filter with _similarity_ to improve accuracy
-  - [x] Optionally pass source(s) on `Memory.save`
-  - [ ] Save original (unprocessed) data
-  - [ ] Retrieve window of data around the matching segment
-  - [ ] add sliding window paragraphing instead of splitting
-- [ ] Add custom prompt templates
 - [ ] Rework selectors to allow multiple agents to be used
+  - [ ] Multi Agent selector
+  - [ ] Generate multiple objectives from one input
+  - [ ] Run multiple agents with their corresponding objective
 - [ ] Add trigger (e.g. interface for external sources to trigger an LLM response or agent)
 - [ ] Rework with multithreading
+- [ ] Add time aware memory (No Idea how to do this!)
+  - [ ] Idea: _Fetch x recent memory's and y memory's (time independent) and mark them as recent/general_
+  - [x] add time tracking to chat messages
+- [ ] Add custom prompt templates
+- [ ] Add image/multimodal memory (Supported by txtai out of the box)
 - [ ] Speach
   - [x] Add TTS
     - [ ] Realtime/Stream TTS
