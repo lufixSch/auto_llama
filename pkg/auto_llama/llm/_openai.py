@@ -1,3 +1,5 @@
+from typing import Generator
+
 from auto_llama import LLMInterface, Chat, exceptions
 
 HAS_DEPENDENCIES = True
@@ -37,6 +39,20 @@ class LocalOpenAILLM(LLMInterface):
 
         res = self.client.completions.create(prompt=prompt, model="NONE", **self.config)
         return res.choices[0].text
+
+    def completion_stream(
+        self, prompt: str, stopping_strings: list[str] = ..., max_new_tokens: int = None
+    ) -> Generator[str, None, None]:
+        self.config["stop"] = [*stopping_strings, *self.config.get("stop", [])]
+        self.config["max_tokens"] = max_new_tokens or self.config.get("max_tokens", 200)
+
+        res = self.client.completions.create(prompt=prompt, model="NONE", stream=True, **self.config)
+
+        try:
+            for chunk in res:
+                yield chunk.choices[0].text
+        finally:
+            res.close()
 
     def chat(self, chat: Chat) -> Chat:
         opain_chat_history = [{"role": chat_msg.role, "content": chat_msg.message} for chat_msg in chat.history]
