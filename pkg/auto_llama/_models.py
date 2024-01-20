@@ -53,6 +53,11 @@ class _ModelLoader:
 
         return cast(py_type, model)
 
+    def exists(self, name: str) -> bool:
+        """Check if model with the given name exists"""
+
+        return self._lazy.get(name, None) is not None
+
 
 ModelLoader = _ModelLoader()
 """Add larger ai models and provide them as singleton to reduce RAM/VRAM usage"""

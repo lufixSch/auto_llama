@@ -4,14 +4,19 @@ from datetime import datetime
 from auto_llama import Memory, ConversationMemory, exceptions, Chat, ChatMessage
 from auto_llama.data import Content
 
+
 HAS_DEPENDENCIES = True
 
 try:
     from txtai import Embeddings
     from txtai.embeddings import errors as txtai_errors
     from auto_llama_extras import text as nlp
+    from auto_llama_extras.text import TextChunker
 
-    from .data import DataSegments, metadata_from_content, db_fragments_to_content
+    from .data import metadata_from_content, db_fragments_to_content
+
+    # Check dependencies
+    from auto_llama_extras.text._chunking import HAS_DEPENDENCIES
 except ImportError:
     HAS_DEPENDENCIES = False
 except exceptions.ExtrasDependenciesMissing:
@@ -24,6 +29,8 @@ class TxtAIMemory(Memory):
     """Long term memory based on embeddings using txtai.
 
     The memory can be obtional saved to disk and loaded from disk
+
+    # WARNING Untested with new chunking solution (My GPU didn't feel like running anything today xD)
     """
 
     def __init__(self, path: str = None, paragraph_len: int = 10, data_split: str = "\n") -> None:
@@ -77,9 +84,16 @@ class TxtAIMemory(Memory):
         Apply all preprocessing steps to the given text.
         """
 
-        text = nlp.to_lower(text)
+        # text = nlp.to_lower(text)
         text = nlp.merge_spaces(text)
-        text = nlp.remove_punctuation(text)
+        text = nlp.merge_symbols(text, symbol="\n")
+        text = nlp.merge_symbols(text, symbol="\r")
+        text = nlp.delete_symbols(text, symbol="\t")
+        text = nlp.delete_symbols(text, symbol="\u200b")  # drop zero-width space
+        text = nlp.delete_symbols(text, symbol="\u00a0")  # drop non-breaking space
+        text = nlp.delete_symbols(text, symbol="\u00ad")  # drop soft hyphen
+
+        # text = nlp.remove_punctuation(text)
         text = nlp.remove_specific_pos(text)
         text = nlp.lemmatize(text)
         text = nlp.num_to_word(text)
@@ -96,9 +110,9 @@ class TxtAIMemory(Memory):
             metadata = metadata_from_content(el)
 
             processed = self._preprocess(el.get_content())
-            seg_data = DataSegments.from_text(processed)
-            segments = seg_data.segments
-            paragraphs = seg_data.paragraphs(self._paragraph_len)
+            chunker = TextChunker(processed)
+            segments = chunker.sentences()
+            paragraphs = chunker.paragraphs(0.6)
 
             self.embeddings.upsert(
                 [{"text": seg, "type": "segment", "timestamp": timestamp, **metadata} for seg in segments]

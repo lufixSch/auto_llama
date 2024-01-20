@@ -4,6 +4,7 @@ from ._util import (
     to_lower,
     merge_spaces,
     merge_symbols,
+    delete_symbols,
     remove_punctuation,
     remove_specific_pos,
     lemmatize,
@@ -12,5 +13,4 @@ from ._util import (
     num_to_word,
 )
 from ._loader import TextLoader, WebTextLoader, RedditPostLoader
-
-# TODO add text chunking (with window?)
+from ._chunking import TextChunker, ChunkMerger

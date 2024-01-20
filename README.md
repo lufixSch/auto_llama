@@ -107,13 +107,10 @@ pip install -e .[<opional_dependencies>]
 - [ ] Improve logging interface
   - [ ] Add logging base class
   - [ ] Allow submodules to log as the Agent from which they where called
-- [ ] Text processing
-  - [ ] Propper sentence spliting
-  - [ ] Grouping of adjacent and related sentences
 - [ ] Improve Memory
   - [ ] Fetch more information than necessary and filter with _similarity_ to improve accuracy
   - [x] Optionally pass source(s) on `Memory.save`
-  - [ ] Save original (unprocessed) data *Optional*
+  - [ ] Save original (unprocessed) data _Optional_
   - [ ] Retrieve window of data around the matching segment
   - [ ] add sliding window paragraphing instead of splitting
 - [ ] Text loader

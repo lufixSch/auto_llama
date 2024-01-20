@@ -19,7 +19,8 @@ classifiers = [
    "Operating System :: OS Independent",
 ]
 dependencies = [
-  "Pillow"
+  "Pillow",
+  "numpy"
 ]
 
 [project.optional-dependencies]

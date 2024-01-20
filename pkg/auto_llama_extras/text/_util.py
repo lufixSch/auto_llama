@@ -54,6 +54,12 @@ def merge_symbols(text: str, symbol: str):
     return re.sub(f"{symbol}+", f"{symbol}", text)
 
 
+def delete_symbols(text: str, symbol: str):
+    """Delete all occurences of the given symbol in the text"""
+
+    return re.sub(f"{symbol}+", "", text)
+
+
 def remove_punctuation(text: str):
     """
     Replace all sentence splitting punctuation with ', '

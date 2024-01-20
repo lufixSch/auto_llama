@@ -30,7 +30,7 @@ def _load_spacy():
 
 
 if HAS_DEPENDENCIES:
-    ModelLoader.add("spacy", _load_spacy)
+    ModelLoader.add("coreferee", _load_spacy)
 
 
 class CorefResChatConverter(ChatToObjectiveConverter):
@@ -43,7 +43,7 @@ class CorefResChatConverter(ChatToObjectiveConverter):
         self._msg_cnt = msg_cnt
 
     def __call__(self, chat: Chat) -> str:
-        nlp = ModelLoader.get("spacy", Language)
+        nlp = ModelLoader.get("coreferee", Language)
 
         if self._msg_cnt != "all":
             chat = chat.clone(-self._msg_cnt)
