@@ -6,24 +6,10 @@ from auto_llama import exceptions, ModelLoader
 HAS_DEPENDENCIES = True
 
 try:
-    import spacy
     from spacy.language import Language
 except ImportError:
     #    raise exceptions.ExtrasDependenciesMissing("nlp", "nlp")
     HAS_DEPENDENCIES = False
-
-
-def _load_spacy():
-    try:
-        nlp = spacy.load("en_core_web_lg")
-
-        return nlp
-    except OSError:
-        raise exceptions.ModelMissing("spacy")
-
-
-if HAS_DEPENDENCIES:
-    ModelLoader.add("spacy", _load_spacy)
 
 
 class TextChunker:

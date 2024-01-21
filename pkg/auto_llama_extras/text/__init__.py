@@ -14,3 +14,9 @@ from ._util import (
 )
 from ._loader import TextLoader, WebTextLoader, RedditPostLoader
 from ._chunking import TextChunker, ChunkMerger
+from ._summarizing import Summarizer
+
+# Register LLM Models
+from ._load_models import _register_models
+
+_register_models()
