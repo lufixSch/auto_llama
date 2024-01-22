@@ -11,7 +11,7 @@ except ImportError:
     HAS_DEPENDENCIES = False
 
 if HAS_DEPENDENCIES:
-    ModelLoader.add("txtai.similarity", lambda: Similarity())
+    ModelLoader.add("txtai.similarity", lambda: Similarity(path="BAAI/bge-reranker-base"))
 
 
 class KeywordMapping:

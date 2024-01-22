@@ -1,2 +1,2 @@
 from ._config import CLIConfig
-from .cli import main
+from .chat import chat_main

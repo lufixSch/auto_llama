@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from datetime import datetime
 
-from auto_llama import Chat, ChatMessage
+from auto_llama import Chat, ChatMessage, logger
 
 from ._config import CLIConfig
 
@@ -72,17 +72,17 @@ def run(config: CLIConfig, chat: Chat):
         print("")  # Newline after message
 
 
-def main():
+def chat_main():
     parser = ArgumentParser(description="AutoLLaMa CLI Assistant")
 
     parser.add_argument(
         "-c", "--config", type=str, help="Path to config file (Python file with `config=CLIConfig(...)`)", required=True
     )
-
-    # TODO Add verbose argument
-    # parser.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
 
     args = parser.parse_args()
+
+    logger.configure("VERBOSE" if args.verbose else "NONE")
 
     config = CLIConfig.load(args.config)
     chat = Chat(config.system_prompt, config.roles)

@@ -50,7 +50,7 @@ class TxtAIMemory(Memory):
         if self.permanent:
             os.makedirs(self.location, exist_ok=True)
 
-        self.embeddings = Embeddings(path="sentence-transformers/all-MiniLM-L6-v2", content=True)
+        self.embeddings = Embeddings(path="khoa-klaytn/bge-base-en-v1.5-angle", content=True)
 
     @classmethod
     def from_disk(cls, path: str, permanent: bool = True, paragraph_len: int = 10) -> "TxtAIMemory":
@@ -161,7 +161,7 @@ class TxtAIConversationMemory(ConversationMemory):
         if self.permanent:
             os.makedirs(self.location, exist_ok=True)
 
-        self.embeddings = Embeddings(path="sentence-transformers/all-MiniLM-L6-v2", content=True)
+        self.embeddings = Embeddings(path="khoa-klaytn/bge-base-en-v1.5-angle", content=True)
 
     @classmethod
     def from_disk(cls, path: str, permanent: bool = True, paragraph_len: int = 10) -> "TxtAIMemory":

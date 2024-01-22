@@ -82,7 +82,9 @@ all = [
 ]
 
 [project.scripts]
-auto-llama = "auto_llama_cli:main"
+auto-llama = "auto_llama_cli:chat_main"
+auto-llama-rag = "auto_llama_cli:rag_main"
+
 
 [tool.hatch.build]
 packages = [

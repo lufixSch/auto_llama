@@ -67,7 +67,7 @@ class Logger:
         if separator:
             sep_str = self._agent_level_separators[min([len(self._agent_level_separators) - 1, self.agent_level])]
 
-            print(f"{sep_str * self._seperator_len}")
+            self.println(f"{sep_str * self._seperator_len}")
 
         self._agent_stack.pop()
 
@@ -79,6 +79,8 @@ class Logger:
         verbose_alt: str = None,
     ):
         """Print a formatted  message to the console
+
+        Automatically writes to log file
 
         Args:
             msg (str): Message, which will be printed
@@ -113,10 +115,19 @@ class Logger:
         out += msg
 
         # Print to console and file
-        self.write_file(out)
+        self.println(out)
+
+    def println(self, msg: str):
+        """Basic print function for simple messages
+
+        Automatically writes to log file
+        """
+
+        # Print to console and file
+        self.write_file(msg)
 
         if self.log_level != "NONE":
-            print(out)
+            print(msg)
 
     def print_agent(
         self,
