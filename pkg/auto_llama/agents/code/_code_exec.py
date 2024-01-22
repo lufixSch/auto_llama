@@ -2,7 +2,7 @@ import os
 import shutil
 import re
 
-from auto_llama import Agent, AgentResponse, AgentResponseItem, exceptions, Chat
+from auto_llama import Agent, AgentResponse, AgentResponseItem, exceptions, Chat, logger
 from auto_llama.data import ImageSource
 
 AGENT_NAME = "CodeExecAgent"
@@ -51,7 +51,10 @@ class CodeExecAgent(Agent):
         self.executor_endpoint = f"http://localhost:{executor_port}"
 
         super().__init__(verbose)
+
+        logger.start_agent(self.__class__.__name__, separator=False, run_msg=False)
         self._mount_container(executor_port)
+        logger.stop_agent(separator=False)
 
     def _mount_container(self, port: int):
         """Build docker image and mount container if it doesn't run already"""
@@ -59,23 +62,23 @@ class CodeExecAgent(Agent):
         try:
             container = docker_client.containers.get(self.container_name)
             if container.status == "running":
-                self.print("Container already running")
+                logger.print("Container already running")
                 return
 
             container.remove()
         except docker.errors.NotFound:
             pass
 
-        self.print("Creating Docker Container!")
-        self.print("... This might take a while ...")
+        logger.print("Creating Docker Container!")
+        logger.print("... This might take a while ...")
 
-        self.print("> Building Docker Image", verbose=True)
+        logger.print("> Building Docker Image", verbose=True)
 
         docker_client.images.build(path=self.container_path, tag=self.container_name)
 
-        self.print("> Image built successfully!", verbose=True)
+        logger.print("> Image built successfully!", verbose=True)
 
-        self.print("> Starting Docker Container", verbose=True)
+        logger.print("> Starting Docker Container", verbose=True)
 
         # Run the container with volume mounts for data and code files
         docker_client.containers.run(
@@ -91,12 +94,12 @@ class CodeExecAgent(Agent):
             detach=True,
         )
 
-        self.print(f"Code executor is running on {self.executor_endpoint}")
+        logger.print(f"Code executor is running on {self.executor_endpoint}")
 
     def add_data(self, *paths: str):
         """Add data (.csv or similar) to the code executor"""
 
-        self.print("Adding Data!")
+        logger.print("Adding Data!")
 
         data_path = os.path.join(self.container_path, "static", "files")
 
@@ -112,7 +115,7 @@ class CodeExecAgent(Agent):
             # TODO: Move file into data folder of the container
             shutil.copy(path, data_path)
 
-        self.print(f"Data: {', '.join([x for x in self.data.keys()])}", verbose=True)
+        logger.print(f"Data: {', '.join([x for x in self.data.keys()])}", verbose=True)
 
     def add_pkg(self, *packages: str):
         """Extend list of usable python packages"""
@@ -165,11 +168,11 @@ class CodeExecAgent(Agent):
         try:
             lang, code = self._extract_code(input_txt)
         except ValueError:
-            self.print("No valid code found in response")
+            logger.print("No valid code found in response")
             return AgentResponse(AgentResponseItem(AgentResponseItem.POSITION.CHAT, "No valid code found in response"))
 
         if lang not in self.allowed_languages:
-            self.print(f"Unsupported language {lang}")
+            logger.print(f"Unsupported language {lang}")
             return AgentResponse.with_same_pos(
                 AgentResponseItem.POSITION.CHAT,
                 [
@@ -181,7 +184,7 @@ class CodeExecAgent(Agent):
         try:
             output, images = self._execute_code(code)
         except exceptions.AgentExecutionFailed:
-            self.print("Failed to execute code")
+            logger.print("Failed to execute code")
             return AgentResponse.with_same_pos(
                 AgentResponseItem.POSITION.CHAT,
                 [
@@ -216,7 +219,7 @@ class CodeExecAgent(Agent):
         return self.run(input_txt)
 
     def __del__(self):
-        self.print("Stopping Docker Container!")
+        logger.print_agent(self.__class__.__name__, "Stopping Docker Container!")
         try:
             container = docker_client.containers.get(self.container_name)
             container.kill()

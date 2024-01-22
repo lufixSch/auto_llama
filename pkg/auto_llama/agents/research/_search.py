@@ -92,7 +92,7 @@ class SearchAgent(Agent):
         res = self.llm.completion(prompt, stopping_strings=["\n"], max_new_tokens=100)
         res = res.strip().strip('"').strip("'")
 
-        self.print(f"Preprocessed query: {res}", verbose=True)
+        logger.print(f"Preprocessed query: {res}", verbose=True)
         return res
 
     def _nlp_preprocessor(self, request: str):
@@ -103,7 +103,7 @@ class SearchAgent(Agent):
         res = text.remove_specific_pos(res)
         res = text.lemmatize(res)
 
-        self.print(f"Preprocessed query: {res}", verbose=True)
+        logger.print(f"Preprocessed query: {res}", verbose=True)
 
         return res
 
@@ -126,7 +126,7 @@ class SearchAgent(Agent):
             if self.memory:
                 self.memory.save(res.values())
         except exceptions.AgentUnavailableError:
-            self.print("No good Search Result was found", verbose=True)
+            logger.print("No good Search Result was found", verbose=True)
 
             # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
             res = AgentResponse(
@@ -166,7 +166,7 @@ class WikipediaSearchAgent(SearchAgent):
             )
 
         if len(responses.values()) <= 0:
-            self.print("No good Search Result was found", verbose=True)
+            logger.print("No good Search Result was found", verbose=True)
 
             # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
             raise NoResultsException(Article(text="Unable to find results regarding this topic", src="wikipedia"))
@@ -188,7 +188,7 @@ class DuckDuckGoSearchAgent(SearchAgent):
                 )
 
             if len(responses.values()) <= 0:
-                self.print("No good Search Result was found", verbose=True)
+                logger.print("No good Search Result was found", verbose=True)
 
                 # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
                 raise NoResultsException(Article(text="Unable to find results regarding this topic", src="duckduckgo"))
@@ -216,7 +216,7 @@ class ArxivSearchAgent(SearchAgent):
             )
 
         if len(responses.values()) <= 0:
-            self.print("No good Search Result was found", verbose=True)
+            logger.print("No good Search Result was found", verbose=True)
 
             # TODO make this prompt configurable, consider changing this to CHAT or RESPONSE to force 'I don't know!' answers.
             raise NoResultsException(Article(text="Unable to find results regarding this topic", src="arxiv"))
