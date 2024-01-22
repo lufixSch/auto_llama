@@ -27,9 +27,11 @@ def add_data(sources: list[str], recursive: bool, config: CLIConfig):
             if os.path.isdir(source):
                 # is directory
                 logger.print("Is directory")
+                # TODO Add directory loading support
             else:
                 # is file
                 logger.print("Is file")
+                # TODO Add single file loading support
 
     config.memory.save(articles)
 
