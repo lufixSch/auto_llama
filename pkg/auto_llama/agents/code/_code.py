@@ -49,13 +49,13 @@ class CodeAgent(CodeExecAgent):
             packages=", ".join(self.pkg),
         )
 
-        self.print("Prompting LLM:", seperator="-", verbose=True)
-        self.print(prompt, verbose=True)
+        logger.print("Prompting LLM:", seperator="-", verbose=True)
+        logger.print(prompt, verbose=True)
 
         result = self.llm.completion(prompt, max_new_tokens=800)
 
-        self.print("Response:", seperator="-", verbose=True)
-        self.print(result)
+        logger.print("Response:", seperator="-", verbose=True)
+        logger.print(result)
 
         return super()._run(self, prompt + result)
 

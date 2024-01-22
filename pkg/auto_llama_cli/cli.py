@@ -21,7 +21,6 @@ def run(config: CLIConfig, chat: Chat):
 
     while True:
         new_message = input(f"{chat.name('user')}: ")
-        print("Got message!")
         chat.append("user", new_message)
 
         objective = config.chat_converter(chat)

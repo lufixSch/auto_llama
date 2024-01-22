@@ -3,6 +3,7 @@ from enum import Enum
 
 from ._memory import Memory
 from .data import Content, Article, Image, ImageSource
+from ._logger import logger
 
 
 class AgentResponseItem:
@@ -135,36 +136,10 @@ class Agent(ABC):
     def run(self, input: str) -> AgentResponse:
         """Run agent with an input text"""
 
-        self.print("Running ...", seperator="=")
-        self.print(f"Prompt: {input}", verbose=True)
+        logger.start_agent(self.__class__.__name__)
+        logger.print(f"Prompt: {input}", verbose=True)
 
-        return self._run(input)
+        res = self._run(input)
+        logger.stop_agent()
 
-    def print(
-        self,
-        msg: str,
-        seperator: str = None,
-        verbose: bool = False,
-        verbose_alt: str = None,
-    ):
-        """Print a formatted  message to the console
-
-        Args:
-            msg (str): Message, which will be printed
-            separator (str): Symbol based on which a separator will be printed before the message
-            verbose (bool): Wether this is a verbose message. If True, this message will only be printed if the agent is in verbose mode
-            verbose_alt (str): An alternative message to be printed if the agent is in verbose mode
-        """
-
-        if self._verbose:
-            if not verbose:
-                return
-
-            if verbose_alt:
-                msg = verbose_alt
-
-        if seperator:
-            print(f"{seperator * 30}")
-
-        name = self.__class__.__name__
-        print(f"{name}: {msg}")
+        return res

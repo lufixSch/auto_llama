@@ -7,3 +7,4 @@ from ._selector import AgentSelector
 from ._preprocessors import ChatToObjectiveConverter, PromptPreprocessor, ChatPreprocessor
 from ._models import ModelLoader
 from ._config import ConfigBase
+from ._logger import logger

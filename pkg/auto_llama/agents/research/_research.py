@@ -48,11 +48,11 @@ class ResearchAgent(Agent):
     def _step(self, i: int, steps: list[ReActStep]) -> ReActStep:
         """Single research step"""
 
-        self.print(f"Iteration {i+1} of {self.max_iter}", seperator="+")
+        logger.print(f"Iteration {i+1} of {self.max_iter}", seperator="+")
 
         this_step = steps[-1]
         if this_step.is_final:
-            self.print("Found final answer", verbose=True, verbose_alt=f"Found final answer: {this_step.observation}")
+            logger.print("Found final answer", verbose=True, verbose_alt=f"Found final answer: {this_step.observation}")
             return steps
 
         for name, tool in self.tools.items():
