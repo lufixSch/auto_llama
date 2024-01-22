@@ -139,4 +139,7 @@ class Agent(ABC):
         logger.start_agent(self.__class__.__name__)
         logger.print(f"Prompt: {input}", verbose=True)
 
-        return self._run(input)
+        res = self._run(input)
+        logger.stop_agent()
+
+        return res
