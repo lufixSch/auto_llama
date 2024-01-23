@@ -1,37 +1,70 @@
 import os
-from urllib.parse import urlparse
+from pathlib import Path
 from argparse import ArgumentParser
 
 from auto_llama import logger
 from auto_llama.data import Article
 
-from auto_llama_extras.text import WebTextLoader
+from auto_llama_extras.text import WebTextLoader, PDFLoader, PlainTextLoader
 
 from ._config import CLIConfig
 
+web_loader = WebTextLoader()
+text_loader = PlainTextLoader()
+pdf_loader = PDFLoader()
 
-def is_url(url: str):
-    url = urlparse(url)
-    return url.scheme not in ("file", "") and url.netloc
+
+def load_file(source: str):
+    if text_loader.is_valid(source):
+        return text_loader(source)
+    elif pdf_loader.is_valid(source):
+        return pdf_loader(source)
+
+    raise ValueError(f"'{source}' - Unsupported file type")
+
+
+def load_folder(source: Path, recursive: bool) -> list[Article]:
+    articles: list[Article] = []
+
+    for path in source.iterdir():
+        if path.is_dir():
+            if recursive:
+                articles.extend(load_folder(path, recursive))
+            continue
+
+        try:
+            logger.print(f"Loading '{path.as_posix()}' as File", verbose=True)
+            articles.append(load_file(path.as_posix()))
+        except ValueError as e:
+            logger.print(str(e), verbose=True)
+
+    return articles
 
 
 def add_data(sources: list[str], recursive: bool, config: CLIConfig):
-    web_loader = WebTextLoader()
-
-    # detect if input is a web adress, file or folder
     articles: list[Article] = []
     for source in sources:
-        if is_url(source):
+        source = source.rstrip("/")
+
+        # Load Web Page
+        if web_loader.is_valid(source):
+            logger.print(f"Loading '{source}' as WebPage")
             articles.append(web_loader(source))
+
+        # Load local data
         elif os.path.exists(source):
+            # Load supported files in directory (recursive)
             if os.path.isdir(source):
-                # is directory
-                logger.print("Is directory")
-                # TODO Add directory loading support
+                logger.print(f"Loading '{source}' as Folder")
+                articles.extend(load_folder(Path(source), recursive))
+
+            # Load single file
             else:
-                # is file
-                logger.print("Is file")
-                # TODO Add single file loading support
+                try:
+                    logger.print(f"Loading '{source}' as File")
+                    articles.append(load_file(source))
+                except ValueError as e:
+                    logger.print(str(e))
 
     config.memory.save(articles)
 

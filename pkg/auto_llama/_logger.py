@@ -90,12 +90,11 @@ class Logger:
         """
 
         # Check log_level
-        if self.log_level == "VERBOSE":
-            if not verbose:
-                return
+        if self.log_level != "VERBOSE" and verbose:
+            return
 
-            if verbose_alt:
-                msg = verbose_alt
+        if self.log_level == "VERBOSE" and verbose_alt:
+            msg = verbose_alt
 
         out = ""
 
@@ -115,9 +114,9 @@ class Logger:
         out += msg
 
         # Print to console and file
-        self.println(out)
+        self.println(out, verbose)
 
-    def println(self, msg: str):
+    def println(self, msg: str, verbose: bool = False):
         """Basic print function for simple messages
 
         Automatically writes to log file
@@ -126,7 +125,7 @@ class Logger:
         # Print to console and file
         self.write_file(msg)
 
-        if self.log_level != "NONE":
+        if (self.log_level == "INFO" and not verbose) or self.log_level == "VERBOSE":
             print(msg)
 
     def print_agent(

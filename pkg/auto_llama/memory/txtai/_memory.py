@@ -60,7 +60,9 @@ class TxtAIMemory(Memory):
         `permanent` is False, changes  will not be saved
         """
         memory = TxtAIMemory(path=path if permanent else None, paragraph_len=paragraph_len)
-        memory.embeddings.load(path=path)
+
+        if os.path.exists(os.path.join(path, "config")):
+            memory.embeddings.load(path=path)
 
         return memory
 
@@ -171,7 +173,9 @@ class TxtAIConversationMemory(ConversationMemory):
         `permanent` is False, changes  will not be saved
         """
         memory = TxtAIMemory(path=path if permanent else None, paragraph_len=paragraph_len)
-        memory.embeddings.load(path=path)
+
+        if os.path.exists(os.path.join(path, "config")):
+            memory.embeddings.load(path=path)
 
         return memory
 
