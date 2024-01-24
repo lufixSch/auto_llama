@@ -90,10 +90,8 @@ class Logger:
         """
 
         # Check log_level
-        if self.log_level != "VERBOSE" and verbose:
-            return
-
         if self.log_level == "VERBOSE" and verbose_alt:
+            verbose = True
             msg = verbose_alt
 
         out = ""

@@ -1,3 +1,5 @@
+import os
+
 from auto_llama_cli import CLIConfig
 from auto_llama import ChatRoles
 from auto_llama.llm import LocalOpenAILLM
@@ -6,12 +8,14 @@ from auto_llama.preprocessors import CorefResChatConverter
 from auto_llama.selectors import SimilarityAgentSelector
 from auto_llama.memory import TxtAIConversationMemory, TxtAIMemory
 
+BASE_BATH = os.path.dirname(os.path.abspath(__file__))
+
 # LLM -----------------------------------------------------
 llm = LocalOpenAILLM(base_url="http://localhost:5000/v1")
 
 # Memory -----------------------------------------------------
-facts_memory = TxtAIMemory()
-conversation_memory = TxtAIConversationMemory()
+facts_memory = TxtAIMemory.from_disk(os.path.join(BASE_BATH, "data", "studies_rag_v1"))
+conversation_memory = TxtAIConversationMemory.from_disk(os.path.join(BASE_BATH, "data", "conv_v1"))
 
 # Agents -----------------------------------------------------
 search_agent = MultiSearchAgent(

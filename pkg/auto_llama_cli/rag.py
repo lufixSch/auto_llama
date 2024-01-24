@@ -1,76 +1,158 @@
+from __future__ import annotations
+
 import os
+import traceback
 from pathlib import Path
 from argparse import ArgumentParser
 
-from auto_llama import logger
+
+# import threading
+from queue import Empty
+from multiprocessing import JoinableQueue, Process
+
+from auto_llama import logger, Memory
 from auto_llama.data import Article
 
-from auto_llama_extras.text import WebTextLoader, PDFLoader, PlainTextLoader
+from auto_llama_extras.text import WebTextLoader, PDFLoader, PlainTextLoader, TextLoader
 
 from ._config import CLIConfig
 
 web_loader = WebTextLoader()
-text_loader = PlainTextLoader()
+text_loader = PlainTextLoader(file_types=["md"])
 pdf_loader = PDFLoader()
 
+src_queue: JoinableQueue[tuple[str, TextLoader]] = JoinableQueue()
+article_queue: JoinableQueue[Article] = JoinableQueue()
 
-def load_file(source: str):
+
+def load_articles_job(src_queue: JoinableQueue[tuple[str, TextLoader]], article_queue: JoinableQueue[Article]):
+    """Load all sources in the `src_queue` with the provided loader and puts them into `article_queue`
+
+    Can be launched multiple times with multiprocessing.
+    Assumes that all sources are already in the `src_queue`
+    """
+
+    while not src_queue.empty():
+        try:
+            source, loader = src_queue.get_nowait()
+        except Empty:
+            break
+
+        logger.print(f"Loading '{source}' with {loader.__class__.__name__}")
+
+        try:
+            article_queue.put(loader(source))
+        except Exception as e:
+            if logger.log_level == "VERBOSE":
+                traceback.print_exc()
+            logger.print(f"Unable do load '{source}' - {str(e)}", verbose_alt=f"Unable to load '{source}'")
+
+        src_queue.task_done()
+
+
+def save_article_job(memory: Memory, article_queue: JoinableQueue[Article]):
+    """Save all articles in `article_queue`
+
+    Can not be started in a separate process (Problem with GPU and multiprocessing).
+    Assumes that all articles are already in the `article_queue`
+    """
+
+    while not article_queue.empty():
+        article = article_queue.get_nowait()
+
+        logger.print(f"Saving '{article.title}'")
+        try:
+            memory.save(article)
+        except Exception as e:
+            if logger.log_level == "VERBOSE":
+                traceback.print_exc()
+            logger.print(
+                f"Unable do save '{article.title}' - {str(e)}", verbose_alt=f"Unable to load '{article.title}'"
+            )
+
+        article_queue.task_done()
+
+
+def select_file_loader(source: str):
+    """Select the right loader for a given file path"""
+
     if text_loader.is_valid(source):
-        return text_loader(source)
+        return source, text_loader
     elif pdf_loader.is_valid(source):
-        return pdf_loader(source)
+        return source, pdf_loader
 
     raise ValueError(f"'{source}' - Unsupported file type")
 
 
-def load_folder(source: Path, recursive: bool) -> list[Article]:
-    articles: list[Article] = []
+def expand_folder(source: Path, recursive: bool) -> list[tuple[str, TextLoader]]:
+    """Recursively traverse all directories starting at `source` and return a list of all supported files with the right loader"""
+
+    file_paths: list[tuple[str, TextLoader]] = []
 
     for path in source.iterdir():
         if path.is_dir():
+            if path.name.startswith("."):
+                continue
+
             if recursive:
-                articles.extend(load_folder(path, recursive))
+                file_paths.extend(expand_folder(path, recursive))
             continue
 
         try:
-            logger.print(f"Loading '{path.as_posix()}' as File", verbose=True)
-            articles.append(load_file(path.as_posix()))
+            file_paths.append(select_file_loader(path.as_posix()))
         except ValueError as e:
             logger.print(str(e), verbose=True)
 
-    return articles
+    return file_paths
 
 
-def add_data(sources: list[str], recursive: bool, config: CLIConfig):
-    articles: list[Article] = []
+def make_load_jobs(sources: list[str], recursive: bool, queue: JoinableQueue[tuple[str, TextLoader]]):
+    """Put all supported sources with the right loader into the `queue`"""
+
     for source in sources:
-        source = source.rstrip("/")
+        source.rstrip("/")
 
-        # Load Web Page
+        # Add WebPage load job
         if web_loader.is_valid(source):
-            logger.print(f"Loading '{source}' as WebPage")
-            articles.append(web_loader(source))
+            queue.put_nowait((source, web_loader))
 
-        # Load local data
+        # Add load jobs for local data
         elif os.path.exists(source):
-            # Load supported files in directory (recursive)
+            # Expand directories
             if os.path.isdir(source):
-                logger.print(f"Loading '{source}' as Folder")
-                articles.extend(load_folder(Path(source), recursive))
+                for job in expand_folder(Path(source), recursive):
+                    queue.put_nowait(job)
 
-            # Load single file
-            else:
-                try:
-                    logger.print(f"Loading '{source}' as File")
-                    articles.append(load_file(source))
-                except ValueError as e:
-                    logger.print(str(e))
+                continue
 
-    config.memory.save(articles)
+            # Make single file job
+            try:
+                queue.put_nowait(select_file_loader(source))
+            except ValueError as e:
+                logger.print(str(e))
+
+
+def add_data(sources: list[str], recursive: bool, nthreads: int, config: CLIConfig):
+    """Add data to memory"""
+
+    make_load_jobs(sources, recursive, src_queue)
+
+    for _ in range(nthreads):
+        Process(target=load_articles_job, args=(src_queue, article_queue), daemon=True).start()
+
+    # Process(target=save_article_job, args=(config.memory, article_queue), daemon=True).start()
+
+    src_queue.join()
+    logger.print("All articles loaded!", seperator="=")
+
+    save_article_job(config.memory, article_queue)
+    logger.print("All articles saved!", seperator="=")
 
 
 def search_data(query: str, config: CLIConfig):
-    res = config.memory.remember(query)
+    """Search data in memory"""
+
+    res = config.memory.remember(query, max_tokens=500, max_items=30)
 
     for article in res:
         logger.print(article.get_formatted())
@@ -88,7 +170,17 @@ def rag_main():
     parser.add_argument("-a", "--add", nargs="*", type=str, help="List of sources, which should be added to the RAG")
     parser.add_argument("-q", "--query", type=str, help="Query for RAG")
     parser.add_argument(
-        "-r", "--recursive", action="store_true", help="Recurse through a directory (if a dir is given by --add)"
+        "-r",
+        "--recursive",
+        action="store_true",
+        help="Recurse through a directory (if a dir is given by --add) - excludes invisible folders (.*)",
+    )
+    parser.add_argument(
+        "-n",
+        "--nthreads",
+        type=int,
+        default=1,
+        help="Increase number of threads for loading new source data",
     )
 
     args = parser.parse_args()
@@ -98,6 +190,6 @@ def rag_main():
     config = CLIConfig.load(args.config)
 
     if args.add:
-        add_data(args.add, args.recursive, config)
+        add_data(args.add, args.recursive, args.nthreads, config)
     if args.query:
         search_data(args.query, config)

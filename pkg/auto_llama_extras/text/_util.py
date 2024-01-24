@@ -111,7 +111,12 @@ def num_to_word(text: str, min_len: int = 1):
         # Check if token is a number of length `min_len` or more
         if token.isdigit() and len(token) >= min_len:
             # 740700 will become "seven hundred and forty thousand seven hundred".
-            tokens[i] = num2words(int(token)).replace(",", "")  # Remove commas from num2words.
+            try:
+                tokens[i] = num2words(int(token)).replace(",", "")  # Remove commas from num2words.
+            except ValueError:
+                # catch error for super- or subscript digits
+                pass
+
     return "".join(tokens)
 
 
