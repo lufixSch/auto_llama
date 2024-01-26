@@ -2,12 +2,10 @@
 
 import os
 
-from auto_llama_cli import CLIConfig
-from auto_llama import ChatRoles
+from auto_llama import ChatRoles, Config
 from auto_llama.llm import LocalOpenAILLM
 from auto_llama_agents import MultiSearchAgent, WikipediaSearchAgent, DuckDuckGoSearchAgent
 from auto_llama_agents.selectors import SimilarityAgentSelector
-from auto_llama.preprocessors import CorefResChatConverter
 from auto_llama_memory import TxtAIConversationMemory, TxtAIMemory
 
 BASE_BATH = os.path.dirname(os.path.abspath(__file__))
@@ -32,9 +30,6 @@ agent_keywords = {
 assistant_keywords = ["talk to a friend", "talk to a assistant", "answer personal questions"]
 selector = SimilarityAgentSelector(agents, agent_keywords, assistant_keywords)
 
-# Preprocessor -----------------------------------------------------
-chat_converter = CorefResChatConverter()
-
 # System Prompt -----------------------------------------------------
 roles: dict[ChatRoles, str] = {"system": "System", "assistant": "AutoLLaMa", "user": "User"}
 system_prompt = """
@@ -46,6 +41,13 @@ You remember the following segments of an old conversation: {old_chat}
 """
 start_message = "Hello! My name is AutoLLaMa. How can I help you?"
 
-config = CLIConfig(
-    llm, agents, selector, chat_converter, facts_memory, conversation_memory, roles, system_prompt, start_message
+config = Config(
+    llm=llm,
+    agents=agents,
+    selector=selector,
+    memory=facts_memory,
+    conversation_memory=conversation_memory,
+    roles=roles,
+    system_prompt=system_prompt,
+    start_message=start_message,
 )

@@ -1,3 +1,11 @@
+"""Add new data to the Memory or search the memory with a query
+
+The config needs the following attributest:
+Config(
+  memory: Memory
+)
+"""
+
 from __future__ import annotations
 
 import os
@@ -10,12 +18,11 @@ from argparse import ArgumentParser
 from queue import Empty
 from multiprocessing import JoinableQueue, Process
 
-from auto_llama import logger, Memory
+from auto_llama import logger, Config
 from auto_llama.data import Article
-
 from auto_llama.text import WebTextLoader, PDFLoader, PlainTextLoader, TextLoader
+from auto_llama_memory import Memory
 
-from ._config import CLIConfig
 
 web_loader = WebTextLoader()
 text_loader = PlainTextLoader(file_types=["md"])
@@ -132,7 +139,7 @@ def make_load_jobs(sources: list[str], recursive: bool, queue: JoinableQueue[tup
                 logger.print(str(e))
 
 
-def add_data(sources: list[str], recursive: bool, nthreads: int, config: CLIConfig):
+def add_data(sources: list[str], recursive: bool, nthreads: int, config: Config):
     """Add data to memory"""
 
     make_load_jobs(sources, recursive, src_queue)
@@ -149,7 +156,7 @@ def add_data(sources: list[str], recursive: bool, nthreads: int, config: CLIConf
     logger.print("All articles saved!", seperator="=")
 
 
-def search_data(query: str, config: CLIConfig):
+def search_data(query: str, config: Config):
     """Search data in memory"""
 
     res = config.memory.remember(query, max_tokens=1000, max_items=50)
@@ -159,7 +166,7 @@ def search_data(query: str, config: CLIConfig):
         print()
 
 
-def rag_main():
+if __name__ == "__main__":
     parser = ArgumentParser(description="AutoLLaMa CLI RAG Interface")
 
     parser.add_argument(
@@ -187,7 +194,7 @@ def rag_main():
 
     logger.configure("VERBOSE" if args.verbose else "INFO")
 
-    config = CLIConfig.load(args.config)
+    config = Config.load(args.config)
 
     if args.add:
         add_data(args.add, args.recursive, args.nthreads, config)

@@ -5,7 +5,7 @@ from typing import Any, Self
 from .exceptions import ConfigError
 
 
-class ConfigBase:
+class Config:
     """Config base class for easy customization"""
 
     def __init__(self, **kwargs) -> None:

@@ -1,9 +1,23 @@
+"""A simple chat cli to get startet with auto_llama
+
+The config needs the following attributes:
+Config(
+  llm: LLMInterface
+  agents: dict[str, Agent]
+  selector: AgentSelector
+  memory: Memory
+  conversation_memory: ConversationMemory
+  roles: dict[ChatRoles, str]
+  system_prompt: str
+  start_message: str
+)
+"""
+
 from argparse import ArgumentParser
 from datetime import datetime
 
-from auto_llama import Chat, ChatMessage, logger
-
-from ._config import CLIConfig
+from auto_llama import Chat, ChatMessage, logger, Config
+from auto_llama_agents import AgentResponse
 
 
 def print_message(message: ChatMessage, chat: Chat):
@@ -12,7 +26,7 @@ def print_message(message: ChatMessage, chat: Chat):
     print(f"{chat.name(message.role)}: {message.message}", end="\n" if message.message else "")
 
 
-def run(config: CLIConfig, chat: Chat):
+def run(config: Config, chat: Chat):
     """Run assistant loop"""
 
     if config.start_message:
@@ -23,32 +37,29 @@ def run(config: CLIConfig, chat: Chat):
         new_message = input(f"{chat.name('user')}: ")
         chat.append("user", new_message)
 
-        objective = config.chat_converter(chat)
-        agent = config.selector.run(objective)
+        results: AgentResponse = config.selector.run(chat)
 
         context = ""
-        if agent:
-            results = agent.run(objective)
-            response = ""
+        response = ""
 
-            # Interpret agent results
-            for out in results.items():
-                if out.position is out.POSITION.CONTEXT:
-                    context += "\n" + out.to_string()
-                if out.position is out.POSITION.CHAT:
-                    chat.last.message += "\n" + out.to_string()
-                if out.position is out.POSITION.RESPONSE:
-                    response += "\n" + out.to_string()
+        # Interpret agent results
+        for out in results.items():
+            if out.position is out.POSITION.CONTEXT:
+                context += "\n" + out.to_string()
+            if out.position is out.POSITION.CHAT:
+                chat.last.message += "\n" + out.to_string()
+            if out.position is out.POSITION.RESPONSE:
+                response += "\n" + out.to_string()
 
-            # Generate response from agent results instead of llm response
-            if response:
-                msg = chat.append("assistant", response)
-                print_message(msg, chat)
-                continue
+        # Generate response from agent results instead of llm response
+        if response:
+            msg = chat.append("assistant", response)
+            print_message(msg, chat)
+            continue
 
         # TODO Customize max tokens and max_items
-        remembered_facts = config.memory.remember(objective, 1000, 50)
-        remembered_conv = config.conversation_memory.remember(objective, max_items=20)
+        remembered_facts = config.memory.remember(chat.last_from("user"), 1000, 50)
+        remembered_conv = config.conversation_memory.remember(chat.last_from("user"), max_items=20)
 
         context += "\n" + "\n".join([fact.get_formatted() for fact in remembered_facts])
         chat.format_system_message(context, remembered_conv)
@@ -72,11 +83,11 @@ def run(config: CLIConfig, chat: Chat):
         print("")  # Newline after message
 
 
-def chat_main():
+if __name__ == "__main__":
     parser = ArgumentParser(description="AutoLLaMa CLI Assistant")
 
     parser.add_argument(
-        "-c", "--config", type=str, help="Path to config file (Python file with `config=CLIConfig(...)`)", required=True
+        "-c", "--config", type=str, help="Path to config file (Python file with `config=Config(...)`)", required=True
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
 
@@ -84,7 +95,7 @@ def chat_main():
 
     logger.configure("VERBOSE" if args.verbose else "NONE")
 
-    config = CLIConfig.load(args.config)
+    config = Config.load(args.config)
     chat = Chat(config.system_prompt, config.roles)
 
     try:

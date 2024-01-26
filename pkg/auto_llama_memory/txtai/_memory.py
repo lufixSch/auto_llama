@@ -1,8 +1,9 @@
 import os
 from datetime import datetime
 
-from auto_llama import Memory, ConversationMemory, exceptions, Chat, ChatMessage
+from auto_llama import exceptions, Chat, ChatMessage
 from auto_llama.data import Content
+from auto_llama_memory import Memory, ConversationMemory
 
 
 HAS_DEPENDENCIES = True
