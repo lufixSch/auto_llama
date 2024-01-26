@@ -1,4 +1,5 @@
-from auto_llama import AgentResponse, LLMInterface, PromptTemplate, exceptions, Chat
+from auto_llama import LLMInterface, PromptTemplate, exceptions, Chat, logger
+from auto_llama_agents import AgentResponse
 
 # Agent specific dependencies
 from ._code_exec import CodeExecAgent, HAS_DEPENDENCIES, HAS_DOCKER

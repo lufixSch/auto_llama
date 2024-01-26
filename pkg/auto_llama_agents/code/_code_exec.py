@@ -2,8 +2,9 @@ import os
 import shutil
 import re
 
-from auto_llama import Agent, AgentResponse, AgentResponseItem, exceptions, Chat, logger
+from auto_llama import Agent, exceptions, Chat, logger
 from auto_llama.data import ImageSource
+from auto_llama_agents import AgentResponse, AgentResponseItem
 
 AGENT_NAME = "CodeExecAgent"
 HAS_DEPENDENCIES = True

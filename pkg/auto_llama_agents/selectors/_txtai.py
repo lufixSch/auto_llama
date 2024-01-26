@@ -1,7 +1,7 @@
 """txtai based manager"""
 
-from auto_llama import AgentSelector, Agent, ModelLoader
-from auto_llama.exceptions import SelectorDependenciesMissing
+from auto_llama import ModelLoader, exceptions
+from auto_llama_agents import AgentSelector, Agent
 
 HAS_DEPENDENCIES = True
 
@@ -69,7 +69,7 @@ class SimilarityAgentSelector(AgentSelector):
         """
 
         if not HAS_DEPENDENCIES:
-            raise SelectorDependenciesMissing(self.__class__.__name__, "txtai")
+            raise exceptions.SelectorDependenciesMissing(self.__class__.__name__, "txtai")
 
         self._tools = tools
         self._keyword_mapping = KeywordMapping(assistant=none_keywords, **keywords)

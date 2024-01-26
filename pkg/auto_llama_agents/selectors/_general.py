@@ -1,4 +1,4 @@
-from auto_llama import AgentSelector, Agent
+from auto_llama_agents import AgentSelector, Agent
 
 
 class CommandAgentSelector(AgentSelector):

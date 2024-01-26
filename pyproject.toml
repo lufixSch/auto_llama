@@ -40,19 +40,22 @@ extras = [
   "auto-llama[extras.text]",
   "auto-llama[extras.audio]"
 ]
-"agent.research" = [
+"agents.research" = [
   "wikipedia",
   "duckduckgo_search",
   "arxiv",
   "auto-llama[text]"
 ]
-"agent.code" = [
+"agents.code" = [
   "docker",
   "pandas",
   "requests"
 ]
-agent = [
-  'auto-llama[agent.research,  agent.code]'
+"agents.similarity" = [
+  'txtai'
+]
+agents = [
+  'auto-llama[agents.research,  agents.code, agebts.similarity]',
 ]
 "llm.openai" = [
   "openai"

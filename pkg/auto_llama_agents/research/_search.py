@@ -2,8 +2,11 @@ from abc import abstractmethod
 from typing import Literal
 from itertools import islice
 
-from auto_llama import Agent, AgentResponse, AgentResponseItem, PromptTemplate, LLMInterface, Memory, exceptions
+from auto_llama import Agent, PromptTemplate, LLMInterface, exceptions, logger
 from auto_llama.data import Article
+from auto_llama_agents import AgentResponse, AgentResponseItem
+from auto_llama_memory import Memory
+
 
 AGENT_NAME = "SearchAgent"
 HAS_DEPENDENCIES = True

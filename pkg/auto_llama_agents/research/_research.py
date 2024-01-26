@@ -1,6 +1,8 @@
-from auto_llama import Agent, AgentResponse, AgentResponseItem, LLMInterface, PromptTemplate, Memory, exceptions
+from auto_llama import Agent, LLMInterface, PromptTemplate, exceptions, logger
 from auto_llama_extras.react import ReActRunner, ReActStep
 from auto_llama.data import Article
+from auto_llama_agents import AgentResponse, AgentResponseItem
+from auto_llama_memory import Memory
 
 HAS_DEPENDENCIES = True
 
