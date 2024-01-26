@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from ._chat import Chat, ChatMessage
-from .data import Content
+from auto_llama import Chat, ChatMessage
+from auto_llama.data import Content
 
 
 class Memory(ABC):

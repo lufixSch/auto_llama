@@ -152,7 +152,7 @@ def add_data(sources: list[str], recursive: bool, nthreads: int, config: CLIConf
 def search_data(query: str, config: CLIConfig):
     """Search data in memory"""
 
-    res = config.memory.remember(query, max_tokens=500, max_items=30)
+    res = config.memory.remember(query, max_tokens=1000, max_items=50)
 
     for article in res:
         logger.print(article.get_formatted())

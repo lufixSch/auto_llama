@@ -1,12 +1,22 @@
 import importlib.util
 import sys
-from typing import Self
+from typing import Any, Self
 
 from .exceptions import ConfigError
 
 
 class ConfigBase:
-    """Config base class"""
+    """Config base class for easy customization"""
+
+    def __init__(self, **kwargs) -> None:
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    def __getattr__(self, name: str) -> Any:
+        try:
+            return getattr(self, f"{name}")
+        except AttributeError:
+            raise ConfigError(f"{name} is not a valid config option")
 
     @classmethod
     def load(cls, config_path: str) -> Self:

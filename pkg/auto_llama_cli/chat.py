@@ -47,8 +47,8 @@ def run(config: CLIConfig, chat: Chat):
                 continue
 
         # TODO Customize max tokens and max_items
-        remembered_facts = config.memory.remember(objective)
-        remembered_conv = config.conversation_memory.remember(objective)
+        remembered_facts = config.memory.remember(objective, 1000, 50)
+        remembered_conv = config.conversation_memory.remember(objective, max_items=20)
 
         context += "\n" + "\n".join([fact.get_formatted() for fact in remembered_facts])
         chat.format_system_message(context, remembered_conv)

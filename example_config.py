@@ -1,12 +1,14 @@
+"""Example config for using the chat.py or rag.py scripts"""
+
 import os
 
 from auto_llama_cli import CLIConfig
 from auto_llama import ChatRoles
 from auto_llama.llm import LocalOpenAILLM
-from auto_llama.agents import MultiSearchAgent, WikipediaSearchAgent, DuckDuckGoSearchAgent
+from auto_llama_agents import MultiSearchAgent, WikipediaSearchAgent, DuckDuckGoSearchAgent
+from auto_llama_agents.selectors import SimilarityAgentSelector
 from auto_llama.preprocessors import CorefResChatConverter
-from auto_llama.selectors import SimilarityAgentSelector
-from auto_llama.memory import TxtAIConversationMemory, TxtAIMemory
+from auto_llama_memory import TxtAIConversationMemory, TxtAIMemory
 
 BASE_BATH = os.path.dirname(os.path.abspath(__file__))
 
