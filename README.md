@@ -1,108 +1,54 @@
 # AutoLLaMa
 
-Supercharge your local LLM with different agents
+Supercharge your local LLM with AutoLLaMa!
 
-This project is a union off different smaller ideas I had/build to improve the capabilities of LLMs, build into a modular framework. The framework is built to be extendable, so feel free to experiment with it.
+This project is a union off different concepts/ideas to improve the capabilities of LLMs. It is build to be a library, that can be used to get started with any LLM related project.
 
-> **ℹ️ NOTE:** Maybe you also found my text_generation_webui_auto_llama repository on GitHub. This is **NOT** (yet) a extension of auto-llama for oobabooga/text-generation-webui!
+> **ℹ️ NOTE:** Maybe you also found my text_generation_webui_auto_llama repository on GitHub. This is **NOT** an extension of auto-llama for oobabooga/text-generation-webui!
 
-> **⚠️ WARNING: This project is still in early development!**
+> **⚠️ WARNING: This project is still in early development! Things (like restructuring the whole project) may change without any notice!**
 
-## Package
+## Introduction
 
-### auto_llama
+AutoLLaMa itself is just a set classes to ensure interoperability between different libraries and projects. Additionally this repository contains some baseimplementation of often needed tools, like RAG (`auto_llama_memory`) and function calling (`auto_llama_agents`)
 
-The framework is based on the following main ideas:
+The following packages are part of this repository:
 
-1. Agents - Agent that uses an LLM and/or other tools to perform a specific task derived from a single prompt or a chat history.
-2. Selectors - A system that decides which agent to use for a given prompt or chat history.
-3. Memory - A system that stores information across agents and prompts to improve the performance of the system.
-4. LLMs - A interface to interact with a LLM for regular text generation and chat.
+- `auto_llama`: The core of the project. It provides classes to implement an LLM, a generic Chat class and some more
+  - `text`: Text processing tools
+  - `audio`: Audio processing tools
+- `auto_llama_agents`: A function calling system, with solutions for deciding which Agent to call depending on the conversation
+- `auto_llama_memory`: A long term memory solution for generic data and conversations
 
-#### Implementations
+Every package is designed to be used independently of all other packages (except `auto_llama`).
 
-##### Agents
-
-There are a few agents implemented currently. They are accessible over the `auto_llama.agents` module:
-
-- code - Agents based around executing code in a sandbox environment (Docker container)
-  - CodeExecAgent - Executes code included in the prompt or last chat message
-  - CodeAgent - Uses an LLM to generate code based on a objective and executes it
-- research - Agents based around finding information in the internet
-  - SearchAgent: Retrieves information using a single tool (e.g. WikipediaSearchAgent, DuckDuckGoSearchAgent)
-  - ResearchAgent: Thoroughly researchs a given topic using multiple SearchAgents and ReAct
-
-##### Selectors
-
-The selectors are accessible over the `auto_llama.selectors` module:
-
-- CommandAgentSelector - Decides which Agent to use by checking for a command at the start of the prompt
-- KeywordAgentSelector - Decides which Agent to use by checking for keywords in the prompt
-- txtai - Manager using the txtai framework
-  - SimilarityAgentSelector - Classifies prompt using keywords for each tool. The results determine which tool is used
-
-##### Preprocessors
-
-There are also some implementations of text input or chat preprocessors available (`auto_llama.preprocessors`):
-
-- TemplateInputPreprocessor - Extract an objective from a prompt using _begin_ and _end_ keywords.
-- nlp - Improved preprocessing using nlp
-  - CorefResChatPreprocessor - Extract objective from chat history using the last message and coreference resolution to improve context
-
-##### Memory
-
-Memory implementations are available in `auto_llama.memory`
-
-- txtai
-  - TxtAIMemory - Embeddings database for text or chat using the python `txtai` package
-  - TxtAIConversationMemory - Embeddings database for old conversations using the python `txtai` package
-
-### auto_llama_extras
-
-This package provides some extra modules and quality of life features to get started with your custom implementation
-
-- audio - Audio processing tools
-  - txtai - Speech recognition and TTS using the txtai pipelines
-- text - Text processing tools
-- react - Small ReAct framework to make an implementation easier
-
-### auto_llama_cli
-
-Provides a simple chat CLI which can be used to interact with AutoLLaMa. The CLI can be accessed using the `auto-llama` command.
-
-Note that the command requires an argument `--config` with your config file. The config file should be a python file with at least a `config` variable which is an instance of `CLIConfig`. Refer to `example_config.py` for an example.
-
-## Installation
+## Install
 
 At the moment it is not possible to install AutoLLaMa using `pip`. You need to install it from source.
 
 1. Clone the repository
 2. `pip install .` in the root directory of the repository
 
-In order to make the package light weight there are optional dependencies defined separately for each submodule or group of agents. You cann install them separately.
+In order to make the package light weight there are optional dependencies defined separately for each package. You cann install them separately.
 
 _Example:_
 
 ```bash
-pip install .[agent.code]
-pip install .[module.nlp]
+pip install .[agents.code]
+pip install .[extras.text]
 ```
-
-To install all dependencies, run `pip install .[all]`. This will install all optional dependencies for the project.
-
-> **ℹ️ NOTE:** Optional dependencies including the `nlp` module (e.g. `module.nlp`, `agent.research` ...) will install torch. Depending on you system you might want to install it beforehand.
-
-> **ℹ️ NOTE:** Modules using the `nlp` optional dependency group (e.g. `module.nlp`, `agent.research`, `agent.preprocessor.nlp`) might need you to download _spaCy_ or _nltk_ models. Use `bin/nltk_ressources.py` and `bin/spacy_ressources.py` for easy installation of necessary ressources.
 
 ### Development
 
 Install the package in editable mode
 
 ```bash
-pip install -e .[<opional_dependencies>]
+pip install -e .[<optional_dependencies>]
 ```
 
 ## Ideas
+
+Here are some ideas for additional features, that I'm working on or plan to work on:
 
 - [ ] Improve logging interface
   - [ ] Add logging base class
@@ -140,3 +86,7 @@ pip install -e .[<opional_dependencies>]
     - [ ] voice clone
   - [x] Add transcription (realtime transscript)
     - [ ] Realtime/Stream Transscript
+
+## Contributing
+
+You can contribute to the project by submitting a pull request or by opening an issue for bugs or feature requests. I'm always open for new ideas 😃

@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 
-from ..auto_llama._memory import Memory
-from ..auto_llama.data import Content, Article, Image, ImageSource
-from ..auto_llama._logger import logger
+from auto_llama_memory import Memory
+from auto_llama.data import Content, Article, Image, ImageSource
+from auto_llama import logger
 
 
 class AgentResponseItem:
