@@ -1,16 +1,12 @@
 from abc import ABC, abstractmethod
 
-from ._agent import Agent
+from auto_llama import Chat
+from ._agent import AgentResponse
 
 
 class AgentSelector(ABC):
     """Base class for deciding which agents tor run based on an input"""
 
     @abstractmethod
-    def _run(self, prompt: str) -> Agent | None:
-        """Run agents based on text input"""
-
-    def run(self, prompt: str) -> Agent | None:
-        """Run agents based on text input"""
-
-        return self._run(prompt)
+    def run(self, chat: Chat) -> AgentResponse:
+        """Select and run agents based on the conversation"""

@@ -1,17 +1,39 @@
-"""txtai based manager"""
+"""txtai based selector"""
 
-from auto_llama import ModelLoader, exceptions
-from auto_llama_agents import AgentSelector, Agent
+from typing import Literal
+from string import punctuation
+
+from auto_llama import ModelLoader, exceptions, Chat
+from auto_llama_agents import AgentSelector, Agent, AgentResponse
 
 HAS_DEPENDENCIES = True
 
 try:
+    import spacy
+    from spacy.tokens import Token
+    from spacy.language import Language
+    import coreferee
+    from coreferee.data_model import ChainHolder
     from txtai.pipeline import Similarity
 except ImportError:
     HAS_DEPENDENCIES = False
 
+
+def _load_spacy():
+    try:
+        nlp = spacy.load("en_core_web_trf")
+        nlp.add_pipe("coreferee")
+
+        return nlp
+    except coreferee.errors.VectorsModelNotInstalledError:
+        raise exceptions.ModelMissing("spacy")
+    except OSError:
+        raise exceptions.ModelMissing("spacy")
+
+
 if HAS_DEPENDENCIES:
     ModelLoader.add("txtai.similarity", lambda: Similarity(path="BAAI/bge-reranker-base"))
+    ModelLoader.add("coreferee", _load_spacy)
 
 
 class KeywordMapping:
@@ -52,6 +74,59 @@ class KeywordMapping:
         raise ValueError(f"No matching name found for keyword: {keyword}")
 
 
+class CorefResChatConverter:
+    """Extract objective from chat history using the last message and coreference resolution to improve context"""
+
+    def __init__(self, msg_cnt: int | Literal["all"] = 3) -> None:
+        if not HAS_DEPENDENCIES:
+            raise exceptions.PreprocessorDependenciesMissing(self.__class__.__name__, "coref")
+
+        self._msg_cnt = msg_cnt
+
+    def __call__(self, chat: Chat) -> str:
+        nlp = ModelLoader.get("coreferee", Language)
+
+        if self._msg_cnt != "all":
+            chat = chat.clone(-self._msg_cnt)
+
+        conversation = (el.message for el in chat.history)
+
+        # Ensure punctuation at the end of a message to improve accuracy
+        conversation = list((el if el.rstrip()[-1] in punctuation else f"{el}." for el in conversation))
+
+        doc = nlp(" ".join(conversation))
+        last_msg = nlp(conversation[-1])
+
+        offset = len(doc) - len(last_msg)
+        maps: dict[str, str] = {}
+
+        for i, token in enumerate(last_msg):
+            conv_token = doc[offset + i]
+
+            if token.pos_ == "PRON":
+                coref: ChainHolder = conv_token._.coref_chains
+
+                if coref:
+                    for chain in coref:
+                        for ref in chain:
+                            ref_token: Token = doc[ref.root_index]
+
+                            if ref_token.pos_ == "PROPN":
+                                maps[token.text] = ref_token.text
+                                break
+                        else:
+                            continue
+
+                        break
+
+        last_msg_str = conversation[-1]
+
+        for original, resolved in maps.items():
+            last_msg_str = last_msg_str.replace(original, resolved)
+
+        return last_msg_str
+
+
 class SimilarityAgentSelector(AgentSelector):
     """Automatically detect which agent is needed using similarity models"""
 
@@ -73,14 +148,16 @@ class SimilarityAgentSelector(AgentSelector):
 
         self._tools = tools
         self._keyword_mapping = KeywordMapping(assistant=none_keywords, **keywords)
+        self._coref_converter = CorefResChatConverter()  # TODO Add msg_cnt as configurable parameter
 
-    def _run(self, prompt: str) -> Agent:
+    def run(self, chat: Chat) -> AgentResponse:
+        prompt = self._coref_converter(chat)
         similarities = ModelLoader.get("txtai.similarity", Similarity)(prompt, self._keyword_mapping.keywords_flat)
 
         keyword = self._keyword_mapping.keywords_flat[similarities[0][0]]
         tool = self._keyword_mapping.name(keyword)
 
         if tool == "assistant":
-            return None
+            return AgentResponse.empty()
 
-        return self._tools[tool]
+        return self._tools[tool].run(prompt)
