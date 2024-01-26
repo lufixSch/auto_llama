@@ -34,7 +34,7 @@ class TxtAIMemory(Memory):
     # WARNING Untested with new chunking solution (My GPU didn't feel like running anything today xD)
     """
 
-    def __init__(self, path: str = None, paragraph_len: int = 10, data_split: str = "\n") -> None:
+    def __init__(self, path: str = None, data_split: str = "\n") -> None:
         """Initialize new memory
 
         If no path is given, changes will not be saved to disk
@@ -45,7 +45,6 @@ class TxtAIMemory(Memory):
 
         self.permanent = True if path is not None else False
         self.location = path
-        self._paragraph_len = paragraph_len
         self._data_split = data_split
 
         if self.permanent:
@@ -54,13 +53,13 @@ class TxtAIMemory(Memory):
         self.embeddings = Embeddings(path="khoa-klaytn/bge-base-en-v1.5-angle", content=True)
 
     @classmethod
-    def from_disk(cls, path: str, permanent: bool = True, paragraph_len: int = 10) -> "TxtAIMemory":
+    def from_disk(cls, path: str, permanent: bool = True) -> "TxtAIMemory":
         """Loads a TxtAIMemory from disk
 
         If `permanent` is True, changes in the memory will be saved to the same location. If
         `permanent` is False, changes  will not be saved
         """
-        memory = TxtAIMemory(path=path if permanent else None, paragraph_len=paragraph_len)
+        memory = TxtAIMemory(path=path if permanent else None)
 
         if os.path.exists(os.path.join(path, "config")):
             memory.embeddings.load(path=path)
@@ -167,13 +166,13 @@ class TxtAIConversationMemory(ConversationMemory):
         self.embeddings = Embeddings(path="khoa-klaytn/bge-base-en-v1.5-angle", content=True)
 
     @classmethod
-    def from_disk(cls, path: str, permanent: bool = True, paragraph_len: int = 10) -> "TxtAIMemory":
+    def from_disk(cls, path: str, permanent: bool = True) -> "TxtAIMemory":
         """Loads a TxtAIMemory from disk
 
         If `permanent` is True, changes in the memory will be saved to the same location. If
         `permanent` is False, changes  will not be saved
         """
-        memory = TxtAIMemory(path=path if permanent else None, paragraph_len=paragraph_len)
+        memory = TxtAIConversationMemory(path=path if permanent else None)
 
         if os.path.exists(os.path.join(path, "config")):
             memory.embeddings.load(path=path)
