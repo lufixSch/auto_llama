@@ -1,3 +1,5 @@
+"""Text processing tools"""
+
 from ._util import (
     str_to_list,
     tokens_from_str,

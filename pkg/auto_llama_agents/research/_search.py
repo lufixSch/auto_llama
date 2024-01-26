@@ -17,7 +17,7 @@ try:
     import wikipedia
     import arxiv
     from duckduckgo_search import DDGS
-    from auto_llama_extras import text
+    from auto_llama import text
 except ImportError:
     HAS_DEPENDENCIES = False
 except exceptions.ExtrasDependenciesMissing:

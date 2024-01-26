@@ -10,13 +10,13 @@ HAS_DEPENDENCIES = True
 try:
     from txtai import Embeddings
     from txtai.embeddings import errors as txtai_errors
-    from auto_llama_extras import text as nlp
-    from auto_llama_extras.text import TextChunker
+    from auto_llama import text as nlp
+    from auto_llama.text import TextChunker
 
     from .data import metadata_from_content, db_fragments_to_content
 
     # Check dependencies
-    from auto_llama_extras.text._chunking import HAS_DEPENDENCIES
+    from auto_llama.text._chunking import HAS_DEPENDENCIES
 except ImportError:
     HAS_DEPENDENCIES = False
 except exceptions.ExtrasDependenciesMissing:

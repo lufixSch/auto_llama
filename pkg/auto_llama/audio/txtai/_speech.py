@@ -1,4 +1,4 @@
-from auto_llama_extras.audio import TTSInterface, STTInterface
+from auto_llama.audio import TTSInterface, STTInterface
 from auto_llama import exceptions, ModelLoader
 from numpy.typing import NDArray
 

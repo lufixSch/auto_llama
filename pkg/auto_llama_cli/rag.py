@@ -13,7 +13,7 @@ from multiprocessing import JoinableQueue, Process
 from auto_llama import logger, Memory
 from auto_llama.data import Article
 
-from auto_llama_extras.text import WebTextLoader, PDFLoader, PlainTextLoader, TextLoader
+from auto_llama.text import WebTextLoader, PDFLoader, PlainTextLoader, TextLoader
 
 from ._config import CLIConfig
 

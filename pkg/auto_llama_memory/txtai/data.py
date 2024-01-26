@@ -4,8 +4,8 @@ from auto_llama import exceptions
 from auto_llama.data import Content, Image, ImageSource, Article
 
 try:
-    from auto_llama_extras import text as nlp
-    from auto_llama_extras.text import ChunkMerger
+    from auto_llama import text as nlp
+    from auto_llama.text import ChunkMerger
 except ImportError:
     raise exceptions.MemoryDependenciesMissing("TxtAIMemory", "txtai")
 

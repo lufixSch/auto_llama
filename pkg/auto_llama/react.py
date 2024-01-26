@@ -1,4 +1,4 @@
-"""ReAct Framework"""
+"""Minimal ReAct Framework"""
 
 from typing import Callable, TypeAlias, Literal
 import re
