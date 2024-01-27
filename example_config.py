@@ -19,7 +19,10 @@ conversation_memory = TxtAIConversationMemory.from_disk(os.path.join(BASE_BATH, 
 
 # Agents -----------------------------------------------------
 search_agent = MultiSearchAgent(
-    [DuckDuckGoSearchAgent(facts_memory, max_results=3), WikipediaSearchAgent(facts_memory, 2)]
+    [
+        DuckDuckGoSearchAgent.with_nlp_query(facts_memory, max_results=3),
+        WikipediaSearchAgent.with_nlp_query(facts_memory, 2),
+    ]
 )
 agents = {"search": search_agent}
 

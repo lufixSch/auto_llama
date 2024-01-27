@@ -10,6 +10,8 @@ HAS_DEPENDENCIES = True
 
 # Module specific dependencies
 try:
+    import wikipedia
+    import arxiv
     from bs4 import BeautifulSoup
     import requests
     from pypdf import PdfReader
@@ -62,7 +64,52 @@ class WebTextLoader(TextLoader):
         return url.scheme not in ("file", "") and url.netloc
 
 
-class RedditPostLoader(WebTextLoader):
+class WikipediaLoader(WebTextLoader):
+    """Load text documents from Wikipedia"""
+
+    def __call__(self, source: str) -> Article:
+        article = wikipedia.page(source)
+
+        return Article(text=article.content, title=article.title, src=article.url)
+
+    def summary(self, source: str) -> Article:
+        article = wikipedia.page(source)
+
+        return Article(text=wikipedia.summary(source), title=article.title, src=article.url)
+
+    def is_valid(self, source: str) -> bool:
+        try:
+            wikipedia.page(source)
+            return True
+        except wikipedia.exceptions.PageError:
+            return False
+
+
+class ArxivLoader(TextLoader):
+    """Load abstract from Arxiv article"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._client = arxiv.Client()
+
+    def __call__(self, id: str) -> Article:
+        article = arxiv.Search(id_list=[id], max_results=1)
+        result = next(self._client.results(article))
+
+        return Article(text=result.summary.replace("\n", " "), title=result.title, src=result.pdf_url)
+
+    def search(
+        self, topic: str, limit: int = 10, sort: arxiv.SortCriterion = arxiv.SortCriterion.Relevance
+    ) -> list[Article]:
+        """Search for a given topic and return a list of articles"""
+
+        search = arxiv.Search(topic, max_results=limit, sort_by=sort)
+        results = self._client.results(search)
+
+        return [Article(text=res.summary.replace("\n", " "), title=res.title, src=res.pdf_url) for res in results]
+
+
+class RedditLoader(WebTextLoader):
     """Load text documents from Reddit posts (Only works with links to a single reddit post)"""
 
     def __call__(self, source: str) -> Article:

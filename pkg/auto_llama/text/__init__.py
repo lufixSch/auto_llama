@@ -14,7 +14,7 @@ from ._util import (
     num_to_char_long,
     num_to_word,
 )
-from ._loader import TextLoader, WebTextLoader, RedditPostLoader, PDFLoader, PlainTextLoader
+from ._loader import TextLoader, WebTextLoader, RedditLoader, PDFLoader, PlainTextLoader
 from ._chunking import TextChunker, ChunkMerger
 from ._summarizing import Summarizer
 
