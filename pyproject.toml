@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "auto-llama"
-version = "0.0.3"
+version = "0.0.4"
 description = "Supercharge your local LLM with different agents"
 readme = "README.md"
 license = { file = "LICENSE" }
