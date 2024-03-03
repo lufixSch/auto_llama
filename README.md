@@ -24,19 +24,31 @@ Every package is designed to be used independently of all other packages (except
 
 ## Install
 
-At the moment it is not possible to install AutoLLaMa using `pip`. You need to install it from source.
+At the moment it is not possible to install AutoLLaMa using `pip`. You can either install the prebuild wheels from GitHub or install it directly from source.
+
+In order to make the package light weight there are optional dependencies defined separately for each package/submodule. You cann install them separately.
+
+_Example:_
+
+```bash
+pip install auto-llama[agents.code]
+pip install auto-llama[extras.text]
+```
+
+### Prebuild wheel
+
+There are prebuild wheels of this package available on the GitHub [releases](https://github.com/LufixSch/AutoLLaMa/releases). They can be installed as follows:
+
+```bash
+pip install auto-llama --index-url https://github.com/lufixSch/auto_llama/releases/download/<version>/
+```
+
+### From source
 
 1. Clone the repository
 2. `pip install .` in the root directory of the repository
 
 In order to make the package light weight there are optional dependencies defined separately for each package. You cann install them separately.
-
-_Example:_
-
-```bash
-pip install .[agents.code]
-pip install .[extras.text]
-```
 
 ### Development
 
