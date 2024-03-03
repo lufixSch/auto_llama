@@ -40,8 +40,10 @@ pip install auto-llama[extras.text]
 There are prebuild wheels of this package available on the GitHub [releases](https://github.com/LufixSch/AutoLLaMa/releases). They can be installed as follows:
 
 ```bash
-pip install auto-llama --index-url https://github.com/lufixSch/auto_llama/releases/download/<version>/
+pip install auto-llama --index-url https://github.com/lufixSch/auto_llama/releases/download/latest/
 ```
+
+> If you just want a specific version replace `latest` with the version you are interested in.
 
 ### From source
 
