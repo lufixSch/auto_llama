@@ -1,0 +1,77 @@
+/* Write your global styles here, in PostCSS syntax */
+@tailwind base;
+
+@layer base {
+	html,
+	body {
+		@apply bg-zinc-50 dark:bg-zinc-950;
+		@apply text-gray-900 dark:text-gray-100;
+		@apply font-sans;
+		@apply font-light;
+		@apply text-base;
+	}
+
+	h1 {
+		@apply text-4xl md:text-6xl;
+		@apply font-bold;
+		@apply mb-2 mt-4 md:mb-4 md:mt-8;
+	}
+
+	h2 {
+		@apply text-2xl md:text-5xl;
+		@apply font-semibold;
+		@apply mb-2 mt-4 md:mb-4 md:mt-8;
+	}
+
+	h3 {
+		@apply text-2xl md:text-4xl;
+		@apply font-normal;
+		@apply mb-1 mt-2 md:mb-2 md:mt-4;
+	}
+
+	h4 {
+		@apply text-xl md:text-3xl;
+		@apply font-normal;
+		@apply mb-1 mt-2 md:mb-2 md:mt-4;
+	}
+
+	h5 {
+		@apply text-xl md:text-2xl;
+		@apply font-light;
+		@apply mb-0.5 mt-1 md:mb-1 md:mt-2;
+	}
+
+	h6 {
+		@apply text-lg md:text-xl;
+		@apply font-light;
+		@apply mb-0.5 mt-1 md:mb-1 md:mt-2;
+	}
+
+	p {
+		@apply text-sm md:text-base;
+		@apply font-light;
+		@apply mb-1;
+	}
+
+	a {
+		@apply text-amber-700 dark:text-amber-400;
+		@apply hover:text-amber-500 hover:dark:text-amber-500;
+		@apply hover:underline;
+	}
+
+	ul {
+		@apply list-disc ml-4;
+	}
+
+	textarea,
+	input {
+		@apply w-full rounded-md border-none px-3 py-2 text-sm box-border;
+		@apply file:border-0 file:bg-transparent file:text-sm file:font-medium;
+		@apply focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 group-hover/input:shadow-none;
+		@apply focus-visible:ring-[1px] focus-visible:ring-amber-600 dark:focus-visible:ring-amber-500;
+		@apply placeholder:text-gray-400 dark:placeholder:text-gray-600 bg-zinc-200 dark:bg-zinc-800;
+	}
+}
+
+@tailwind components;
+@tailwind utilities;
