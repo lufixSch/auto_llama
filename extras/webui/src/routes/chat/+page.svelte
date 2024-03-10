@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { createChat } from '$lib/chats';
+	import { goto } from '$app/navigation';
+	import APIInterface from '$lib/api';
 	import ChatInput from '$lib/components/chat_input.svelte';
 
-	function handleNewMessage(event: CustomEvent) {
-		const { id, chat } = createChat('none');
+	async function handleNewMessage(event: CustomEvent) {
+		const { id, index } = await APIInterface.createChat('none', 'New Chat', event.detail);
+		goto(`/chat/${id}`);
 	}
 </script>
 

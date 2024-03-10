@@ -9,6 +9,7 @@
 	class="flex space-y-2 sm:space-y-0 sm:space-x-2 flex-col sm:flex-row sm:items-end"
 	on:submit|preventDefault={(e) => {
 		submit('inputEvent', message);
+		message = '';
 	}}
 >
 	<textarea
