@@ -13,13 +13,7 @@
 
 	export let data: PageData;
 	let chat = data.chat;
-	let scroller: HTMLElement;
 	let stream: Stream<OpenAI.Chat.Completions.ChatCompletionChunk> | undefined;
-
-	/** Update scroll position to bottom on load */
-	$: if (scroller && scroller.scrollTop < scroller.scrollHeight) {
-		scroller.scrollTop = scroller.scrollHeight;
-	}
 
 	/** Trigger llm completion on load if redirected from /chat */
 	$: if ($page.url.searchParams.has('new')) {
@@ -37,12 +31,6 @@
 		chat.messages.push({ role: Roles.user, content: event.detail });
 		chat = chat;
 
-		// Create timeout to trigger scrolling after new element was rendered
-		// I'm sure ther is a better solution to do this. If you know one open a PR
-		setTimeout(() => {
-			scroller.scrollTop = scroller.scrollHeight;
-		}, 0);
-
 		APIInterface.overwriteChat(data.id, chat);
 		stream = await llm.chatStream(chat);
 	}
@@ -59,13 +47,13 @@
 
 <section class="flex flex-col p-4 h-full">
 	<div class="h-full flex flex-col justify-end my-4 overflow-y-hidden">
-		<div bind:this={scroller} class="flex flex-col space-y-4 overflow-y-auto">
-			{#each chat.messages as message}
-				<ChatBubble role={message.role} content={message.content} />
-			{/each}
+		<div class="flex flex-col-reverse space-y-4 space-y-reverse overflow-y-auto">
 			{#if stream}
 				<StreamChatBubble {stream} on:inputEvent={handleStreamComplete} />
 			{/if}
+			{#each chat.messages.slice().reverse() as message}
+				<ChatBubble role={message.role} content={message.content} />
+			{/each}
 		</div>
 	</div>
 	<ChatInput on:inputEvent={handleNewMessage}></ChatInput>
