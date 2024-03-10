@@ -35,6 +35,22 @@ export class LLMInterface {
 			stream: true
 		});
 	}
+
+	/** Generate a description for a chat */
+	public async generateDescription(message: string) {
+		return await this.client.chat.completions.create({
+			messages: [
+				{
+					role: 'system',
+					content:
+						'You are a helpful AI that generates titles for chats. Keep the title short and to the point. Respond only with the title. Do not include the chat itself in the response. You will receive a single message as input.'
+				},
+				{ role: 'user', content: `Describe the following chat: ${message}` }
+			],
+			model: 'gpt-3.5-turbo',
+			max_tokens: 100
+		});
+	}
 }
 
 const llm = new LLMInterface(PUBLIC_OPEN_AI_ENDPOINT, PUBLIC_OPEN_AI_KEY);

@@ -14,6 +14,7 @@
 	export let data: PageData;
 	let chat = data.chat;
 	let stream: Stream<OpenAI.Chat.Completions.ChatCompletionChunk> | undefined;
+	let shouldRegenerate: boolean = false;
 
 	/** Trigger llm completion on load if redirected from /chat */
 	$: if ($page.url.searchParams.has('new')) {
@@ -28,8 +29,10 @@
 			stream = undefined;
 		}
 
-		chat.messages.push({ role: Roles.user, content: event.detail });
-		chat = chat;
+		if (event.detail.trim() != '') {
+			chat.messages.push({ role: Roles.user, content: event.detail });
+			chat = chat;
+		}
 
 		APIInterface.overwriteChat(data.id, chat);
 		stream = await llm.chatStream(chat);
@@ -37,11 +40,44 @@
 
 	/** Handle when the stream from the model completed*/
 	async function handleStreamComplete(event: CustomEvent) {
+		if (shouldRegenerate) {
+			shouldRegenerate = false;
+			return;
+		}
+
 		chat.messages.push({ role: Roles.assistant, content: event.detail });
 		APIInterface.overwriteChat(data.id, chat);
 
 		stream = undefined;
 		chat = chat;
+	}
+
+	/** Handle regeneration request */
+	async function handleRegeneration() {
+		if (stream) {
+			shouldRegenerate = true;
+			stream.controller.abort();
+			stream = undefined;
+		} else {
+			if (
+				chat.messages.length > 0 &&
+				chat.messages[chat.messages.length - 1].role === Roles.assistant
+			) {
+				chat.messages.pop();
+				chat = chat;
+			}
+		}
+
+		APIInterface.overwriteChat(data.id, chat);
+		stream = await llm.chatStream(chat);
+	}
+
+	/** Handle completion stop request*/
+	async function handleStop() {
+		if (stream) {
+			stream.controller.abort();
+			stream = undefined;
+		}
 	}
 </script>
 
@@ -56,5 +92,10 @@
 			{/each}
 		</div>
 	</div>
-	<ChatInput on:inputEvent={handleNewMessage}></ChatInput>
+	<ChatInput
+		on:inputEvent={handleNewMessage}
+		on:regenerate={handleRegeneration}
+		on:stop={handleStop}
+		isGenerating={stream !== undefined}
+	></ChatInput>
 </section>
