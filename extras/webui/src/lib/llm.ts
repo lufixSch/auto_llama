@@ -13,9 +13,9 @@ export class LLMInterface {
 		});
 	}
 
-	public async chat(chat: Chat) {
-		const messages = chat.messages.map((m) => {
-			return { role: m.role, content: m.content };
+	public async chat(chat: Chat, branch: number) {
+		const messages = chat.getBranch(branch).map((m) => {
+			return { role: m.message.role, content: m.message.content };
 		});
 
 		return await this.client.chat.completions.create({
@@ -24,9 +24,9 @@ export class LLMInterface {
 		});
 	}
 
-	public async chatStream(chat: Chat) {
-		const messages = chat.messages.map((m) => {
-			return { role: m.role, content: m.content };
+	public async chatStream(chat: Chat, branch: number) {
+		const messages = chat.getBranch(branch).map((m) => {
+			return { role: m.message.role, content: m.message.content };
 		});
 
 		return await this.client.chat.completions.create({

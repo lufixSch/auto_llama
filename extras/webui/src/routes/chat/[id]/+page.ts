@@ -1,15 +1,20 @@
-import type { Chat } from '$lib/chats.js';
+import { Chat } from '$lib/chats.js';
 
 export const prerender = false;
 export const ssr = false;
 
 export async function load({ fetch, params }) {
+	const res = await fetch(`/api/chat/${params.id}`);
+	if (!res.ok) {
+		throw new Error('Chat not found');
+	}
+
 	try {
 		return {
-			chat: (await (await fetch(`/api/chat/${params.id}`)).json()) as Chat,
+			chat: Chat.fromJson((await res.json()) as Chat),
 			id: params.id
 		};
 	} catch {
-		throw new Error('Chat not found');
+		throw new Error('Unable to load Chat!');
 	}
 }

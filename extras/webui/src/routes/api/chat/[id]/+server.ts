@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { json } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 
 import { readChat, getPath, getIndex, overwriteIndex, overwriteChat } from '$lib/server/chat';
 import type { Chat } from '$lib/chats.js';
@@ -7,7 +7,12 @@ import type { Chat } from '$lib/chats.js';
 /** Get the chat with the given ID */
 export async function GET({ params }) {
 	const { id } = params;
-	return json(readChat(id));
+
+	try {
+		return json(readChat(id));
+	} catch {
+		return error(404, 'Chat not found!');
+	}
 }
 
 /** Delele the chat with the given ID */

@@ -23,4 +23,6 @@
 	}
 </script>
 
-<ChatBubble role={Roles.assistant} content={streamContent} />
+{#if streamContent}
+	<ChatBubble role={Roles.assistant} content={streamContent} />
+{/if}

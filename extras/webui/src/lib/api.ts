@@ -12,20 +12,28 @@ export default class APIInterface {
 		description: string,
 		firstMessage?: string
 	): Promise<{ id: string; index: { [key: string]: string } }> {
-		return await (
-			await fetch(`${apiBase}/chat`, {
-				method: 'POST',
-				body: JSON.stringify({ description, character, firstMessage })
-			})
-		).json();
+		const res = await fetch(`${apiBase}/chat`, {
+			method: 'POST',
+			body: JSON.stringify({ description, character, firstMessage })
+		});
+
+		if (!res.ok) {
+			throw new Error('Failed to create chat');
+		}
+
+		return await res.json();
 	}
 
 	static async overwriteChat(id: string, chat: Chat) {
-		return await (
-			await fetch(`${apiBase}/chat/${id}`, {
-				method: 'PUT',
-				body: JSON.stringify(chat)
-			})
-		).json();
+		const res = await fetch(`${apiBase}/chat/${id}`, {
+			method: 'PUT',
+			body: JSON.stringify(chat)
+		});
+
+		if (!res.ok) {
+			throw new Error('Failed to update chat');
+		}
+
+		return await res.json();
 	}
 }
