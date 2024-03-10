@@ -12,7 +12,7 @@
 			res.choices[0].message.content || 'New Chat',
 			event.detail
 		);
-		goto(`/chat/${id}?new`);
+		requestAnimationFrame(() => goto(`/chat/${id}?new`));
 	}
 </script>
 

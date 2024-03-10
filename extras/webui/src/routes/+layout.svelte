@@ -2,6 +2,18 @@
 	import '../app.postcss';
 </script>
 
-<body class="flex h-[100vh] flex-col overflow-hidden">
+<body class={`flex flex-col overflow-hidden`}>
 	<slot />
 </body>
+
+<style>
+	body {
+		height: 100vh;
+	}
+
+	@supports (height: 100dvh) {
+		body {
+			height: 100dvh;
+		}
+	}
+</style>
