@@ -5,7 +5,7 @@
 
 	async function handleNewMessage(event: CustomEvent) {
 		const { id, index } = await APIInterface.createChat('none', 'New Chat', event.detail);
-		goto(`/chat/${id}`);
+		goto(`/chat/${id}?new`);
 	}
 </script>
 

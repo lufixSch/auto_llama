@@ -8,17 +8,26 @@
 	import type { Stream } from 'openai/streaming.mjs';
 	import type OpenAI from 'openai';
 	import StreamChatBubble from '$lib/components/stream_chat_bubble.svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 	let chat = data.chat;
 	let scroller: HTMLElement;
 	let stream: Stream<OpenAI.Chat.Completions.ChatCompletionChunk> | undefined;
 
+	/** Update scroll position to bottom on load */
 	$: if (scroller && scroller.scrollTop < scroller.scrollHeight) {
-		console.log('Change', scroller.childElementCount);
 		scroller.scrollTop = scroller.scrollHeight;
 	}
 
+	/** Trigger llm completion on load if redirected from /chat */
+	$: if ($page.url.searchParams.has('new')) {
+		llm.chatStream(chat).then((s) => (stream = s));
+		goto('?');
+	}
+
+	/** Handle a new message from the user */
 	async function handleNewMessage(event: CustomEvent) {
 		if (stream) {
 			stream.controller.abort();
@@ -38,8 +47,11 @@
 		stream = await llm.chatStream(chat);
 	}
 
+	/** Handle when the stream from the model completed*/
 	async function handleStreamComplete(event: CustomEvent) {
 		chat.messages.push({ role: Roles.assistant, content: event.detail });
+		APIInterface.overwriteChat(data.id, chat);
+
 		stream = undefined;
 		chat = chat;
 	}
