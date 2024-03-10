@@ -10,6 +10,7 @@ export interface Message {
 	role: Roles;
 	content: string;
 	branches: number[];
+	branchStart: number[];
 }
 
 export class Chat {
@@ -25,6 +26,9 @@ export class Chat {
 	createBranch(sourceBranch: number, messageId: string) {
 		const msgIndex = this.branches[sourceBranch].messages.findIndex((id) => id === messageId);
 		const branchId = this.branches.length;
+
+		this.messages[messageId].branchStart.push(branchId);
+
 		this.branches.push({
 			source: sourceBranch,
 			messages: this.branches[sourceBranch].messages.slice(0, msgIndex + 1)
@@ -32,12 +36,35 @@ export class Chat {
 		this.branches[branchId].messages.forEach((msgId) =>
 			this.messages[msgId].branches.push(branchId)
 		);
+
 		return branchId;
+	}
+
+	getBranchPath(branch: number) {
+		const path: number[] = [branch];
+		let current: number | null = branch;
+		while (current !== null) {
+			path.push(current);
+			current = this.branches[current].source;
+		}
+
+		return path;
+	}
+
+	getBranchSet(branch: number) {
+		const set = new Set<number>();
+		let current: number | null = branch;
+		while (current !== null) {
+			set.add(current);
+			current = this.branches[current].source;
+		}
+
+		return set;
 	}
 
 	newMessage(role: Roles, content: string, branch: number) {
 		const id = generateId(8);
-		const message: Message = { role, content, branches: [branch] };
+		const message: Message = { role, content, branches: [branch], branchStart: [] };
 		this.messages[id] = message;
 		this.branches[branch].messages.push(id);
 		return id;

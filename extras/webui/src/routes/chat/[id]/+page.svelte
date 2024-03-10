@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { Roles, type Message } from '$lib/chats';
-	import ChatBubble from '$lib/components/chat_bubble.svelte';
+	import { Roles } from '$lib/chats';
+	import ChatBubble from '$lib/components/chat_bubble/actions.svelte';
 	import ChatInput from '$lib/components/chat_input.svelte';
 	import APIInterface from '$lib/api';
 	import type { PageData } from './$types';
 	import llm from '$lib/llm';
 	import type { Stream } from 'openai/streaming.mjs';
 	import type OpenAI from 'openai';
-	import StreamChatBubble from '$lib/components/stream_chat_bubble.svelte';
+	import StreamChatBubble from '$lib/components/chat_bubble/stream.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { generateId } from '$lib/utils/id';
@@ -17,6 +17,7 @@
 	let branch: number = 0;
 	let messages = chat.getBranch(branch);
 	let stream: Stream<OpenAI.Chat.Completions.ChatCompletionChunk> | undefined;
+	let branchPath: number[] = [];
 	let shouldRegenerate: boolean = false;
 
 	/** Trigger llm completion on load if redirected from /chat */
@@ -28,6 +29,7 @@
 
 	$: branch = Number($page.url.searchParams.get('branch') || 0);
 	$: messages = chat.getBranch(branch);
+	$: branchPath = chat.getBranchPath(branch);
 
 	/** Handle a new message from the user */
 	async function handleNewMessage(event: CustomEvent) {
@@ -66,13 +68,14 @@
 			stream.controller.abort();
 			stream = undefined;
 		} else {
-			if (messages.length > 0 && messages[messages.length - 1].message.role === Roles.assistant) {
-				chat.deleteMessage(messages[messages.length - 1].id);
-				chat = chat;
+			if (messages.length > 1 && messages[messages.length - 1].message.role === Roles.assistant) {
+				// Create new branch if assistant response already exists
+				handleBranching(messages[messages.length - 2].id, true);
+				return;
 			}
 		}
 
-		APIInterface.overwriteChat(data.id, chat);
+		// Otherwise, just add a new message
 		stream = await llm.chatStream(chat, branch);
 	}
 
@@ -92,13 +95,26 @@
 	}
 
 	/** Handle message branching */
-	async function handleBranching(id: string) {
-		console.log('Branch');
+	async function handleBranching(id: string, generate = false) {
 		const branchId = chat.createBranch(branch, id);
 		APIInterface.overwriteChat(data.id, chat);
 
-		$page.url.searchParams.append('branch', branchId.toString());
-		goto($page.url.href);
+		$page.url.searchParams.set('branch', branchId.toString());
+
+		if (chat.messages[id].role === Roles.user || generate) {
+			// Automatically generate new assistant response if branch message is from user
+			$page.url.searchParams.set('new', 'true');
+		}
+
+		await goto($page.url.href);
+		messages = messages;
+	}
+
+	/** Switch to a different branch */
+	async function switchBranch(branchId: number) {
+		$page.url.searchParams.set('branch', branchId.toString());
+		await goto($page.url.href);
+		messages = messages;
 	}
 </script>
 
@@ -110,10 +126,13 @@
 			{/if}
 			{#each messages.slice().reverse() as m}
 				<ChatBubble
-					role={m.message.role}
-					content={m.message.content}
+					message={m.message}
+					{branchPath}
 					on:branch={() => handleBranching(m.id)}
 					on:delete={() => handleDelete(m.id)}
+					on:switch={(e) => {
+						switchBranch(e.detail);
+					}}
 				/>
 			{/each}
 		</div>

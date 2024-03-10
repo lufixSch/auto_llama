@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type OpenAI from 'openai';
 	import type { Stream } from 'openai/streaming.mjs';
-	import ChatBubble from './chat_bubble.svelte';
+	import ChatBubble from '$lib/components/chat_bubble/base.svelte';
 	import { Roles } from '$lib/chats';
 	import { createEventDispatcher } from 'svelte';
 
