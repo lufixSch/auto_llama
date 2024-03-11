@@ -40,7 +40,6 @@
 			'bg-zinc-200 dark:bg-zinc-700': message.role === Roles.assistant
 		})}
 		on:click={(e) => {
-			console.log('Toggle action menu');
 			openActions = !openActions;
 		}}
 	>

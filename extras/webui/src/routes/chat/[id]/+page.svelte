@@ -10,6 +10,7 @@
 	import StreamChatBubble from '$lib/components/chat_bubble/stream.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	export let data: PageData;
 	let stream: Stream<OpenAI.Chat.Completions.ChatCompletionChunk> | undefined;
@@ -18,16 +19,18 @@
 
 	$: chat = data.chat;
 
-	/** Trigger llm completion on load if redirected from /chat */
-	$: if ($page.url.searchParams.has('new')) {
-		llm.chatStream(chat, branch).then((s) => (stream = s));
-		$page.url.searchParams.delete('new');
-		goto('?' + $page.url.searchParams.toString());
-	}
-
 	$: branch = Number($page.url.searchParams.get('branch') || 0);
 	$: messages = chat.getBranch(branch);
 	$: branchPath = chat.getBranchPath(branch);
+
+	onMount(() => {
+		/** Trigger llm completion on load if redirected from /chat */
+		if ($page.url.searchParams.has('new')) {
+			llm.chatStream(chat, branch).then((s) => (stream = s));
+			$page.url.searchParams.delete('new');
+			goto('?' + $page.url.searchParams.toString());
+		}
+	});
 
 	/** Handle a new message from the user */
 	async function handleNewMessage(event: CustomEvent) {

@@ -1,17 +1,23 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { navigating, page } from '$app/stores';
 	import APIInterface from '$lib/api';
 	import type { ChatIndex } from '$lib/chats';
 	import ChatList from '$lib/components/chat_list.svelte';
+	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
+	$: if (
+		$navigating?.from?.url.pathname === '/chat' &&
+		$navigating?.to?.url.searchParams.has('new')
+	) {
+		APIInterface.getChatIndex().then((chatIndex) => (data.chatIndex = chatIndex));
+	}
+
 	/** Delete a chat*/
 	async function handleDeleteChat(e: CustomEvent) {
-		console.log(e.detail);
-
 		if ($page.url.pathname.includes(e.detail)) {
 			goto('/chat');
 		}
