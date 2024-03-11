@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Roles, type Message } from '$lib/chats';
 	import { cn } from '$lib/utils/cn';
-	import { tap } from 'svelte-gestures';
 
 	import markdownit from 'markdown-it';
 	import markdownitLatex from 'markdown-it-katex';

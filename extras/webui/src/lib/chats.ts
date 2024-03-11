@@ -6,6 +6,8 @@ export enum Roles {
 	user = 'user'
 }
 
+export type ChatIndex = { [key: string]: string };
+
 export interface Message {
 	role: Roles;
 	content: string;

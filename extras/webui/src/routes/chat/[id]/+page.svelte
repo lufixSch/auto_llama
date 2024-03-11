@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Roles } from '$lib/chats';
+	import { Chat, Roles } from '$lib/chats';
 	import ChatBubble from '$lib/components/chat_bubble/actions.svelte';
 	import ChatInput from '$lib/components/chat_input.svelte';
 	import APIInterface from '$lib/api';
@@ -10,15 +10,13 @@
 	import StreamChatBubble from '$lib/components/chat_bubble/stream.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { generateId } from '$lib/utils/id';
 
 	export let data: PageData;
-	let chat = data.chat;
-	let branch: number = 0;
-	let messages = chat.getBranch(branch);
 	let stream: Stream<OpenAI.Chat.Completions.ChatCompletionChunk> | undefined;
 	let branchPath: number[] = [];
 	let shouldRegenerate: boolean = false;
+
+	$: chat = data.chat;
 
 	/** Trigger llm completion on load if redirected from /chat */
 	$: if ($page.url.searchParams.has('new')) {
@@ -118,7 +116,7 @@
 	}
 </script>
 
-<section class="flex flex-col p-4 h-full">
+<section class="flex flex-col p-4 h-full w-full">
 	<div class="h-full flex flex-col justify-end my-4 overflow-y-hidden">
 		<div class="flex flex-col-reverse space-y-4 space-y-reverse overflow-y-auto overflow-x-hidden">
 			{#if stream}

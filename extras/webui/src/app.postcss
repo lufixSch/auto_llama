@@ -64,12 +64,9 @@
 	}
 
 	textarea,
-	input {
-		@apply w-full rounded-md border-none px-3 py-2 text-sm box-border;
-		@apply file:border-0 file:bg-transparent file:text-sm file:font-medium;
-		@apply focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 group-hover/input:shadow-none;
-		@apply focus-visible:ring-[1px] focus-visible:ring-amber-600 dark:focus-visible:ring-amber-500;
-		@apply placeholder:text-gray-400 dark:placeholder:text-gray-600 bg-zinc-200 dark:bg-zinc-800;
+	input[type='text'] {
+		@apply focus-visible:outline-none disabled:cursor-not-allowed m-0;
+		@apply focus-visible:ring-0 border-none;
 	}
 }
 

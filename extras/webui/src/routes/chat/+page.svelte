@@ -16,7 +16,7 @@
 	}
 </script>
 
-<section class="flex flex-col p-4 h-full">
+<section class="flex flex-col p-4 h-full w-full">
 	<div class="h-full"></div>
 	<ChatInput on:inputEvent={handleNewMessage} required={true}></ChatInput>
 </section>

@@ -1,7 +1,6 @@
 import { Chat } from '$lib/chats.js';
 
 export const prerender = false;
-export const ssr = false;
 
 export async function load({ fetch, params }) {
 	const res = await fetch(`/api/chat/${params.id}`);

@@ -26,7 +26,7 @@
 	}}
 >
 	<textarea
-		class=""
+		class="focus-visible:ring-[1px] focus-visible:ring-amber-600 dark:focus-visible:ring-amber-500 placeholder:text-gray-400 dark:placeholder:text-gray-600 bg-zinc-200 dark:bg-zinc-800 w-full rounded-md border-none px-3 py-2 text-sm box-border"
 		rows={Math.min(message.split('\n').length, 10)}
 		bind:value={message}
 		on:input={(e) => {
