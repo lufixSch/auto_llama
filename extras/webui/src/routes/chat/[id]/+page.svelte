@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Chat, Roles } from '$lib/chats';
+	import { Roles } from '$lib/chats';
 	import ChatBubble from '$lib/components/chat_bubble/actions.svelte';
 	import ChatInput from '$lib/components/chat_input.svelte';
 	import APIInterface from '$lib/api';
@@ -23,14 +23,12 @@
 	$: messages = chat.getBranch(branch);
 	$: branchPath = chat.getBranchPath(branch);
 
-	onMount(() => {
-		/** Trigger llm completion on load if redirected from /chat */
-		if ($page.url.searchParams.has('new')) {
-			llm.chatStream(chat, branch).then((s) => (stream = s));
-			$page.url.searchParams.delete('new');
-			goto('?' + $page.url.searchParams.toString());
-		}
-	});
+	/** Trigger llm completion on load if redirected from /chat */
+	$: if ($page.url.searchParams.has('new')) {
+		llm.chatStream(chat, branch).then((s) => (stream = s));
+		$page.url.searchParams.delete('new');
+		goto('?' + $page.url.searchParams.toString());
+	}
 
 	/** Handle a new message from the user */
 	async function handleNewMessage(event: CustomEvent) {
@@ -119,24 +117,24 @@
 	}
 </script>
 
-<section class="flex flex-col p-4 h-full w-full">
-	<div class="h-full flex flex-col justify-end my-4 overflow-y-hidden">
-		<div class="flex flex-col-reverse space-y-4 space-y-reverse overflow-y-auto overflow-x-hidden">
-			{#if stream}
-				<StreamChatBubble {stream} on:inputEvent={handleStreamComplete} />
-			{/if}
-			{#each messages.slice().reverse() as m}
-				<ChatBubble
-					message={m.message}
-					{branchPath}
-					on:branch={() => handleBranching(m.id)}
-					on:delete={() => handleDelete(m.id)}
-					on:switch={(e) => {
-						switchBranch(e.detail);
-					}}
-				/>
-			{/each}
-		</div>
+<section class="flex flex-col justify-end p-2 w-full">
+	<div
+		class="rounded-md flex flex-col-reverse h-fit mb-2 space-y-2 space-y-reverse md:space-y-4 md:space-y-reverse md:mb-4 overflow-y-auto overflow-x-hidden"
+	>
+		{#if stream}
+			<StreamChatBubble {stream} on:inputEvent={handleStreamComplete} />
+		{/if}
+		{#each messages.slice().reverse() as m}
+			<ChatBubble
+				message={m.message}
+				{branchPath}
+				on:branch={() => handleBranching(m.id)}
+				on:delete={() => handleDelete(m.id)}
+				on:switch={(e) => {
+					switchBranch(e.detail);
+				}}
+			/>
+		{/each}
 	</div>
 	<ChatInput
 		on:inputEvent={handleNewMessage}

@@ -19,7 +19,7 @@
 </script>
 
 <form
-	class="flex space-y-2 sm:space-y-0 sm:space-x-2 flex-col sm:flex-row sm:items-end"
+	class="h-fit flex space-y-2 sm:space-y-0 sm:space-x-2 flex-col sm:flex-row sm:items-end"
 	on:submit|preventDefault={(e) => {
 		submit('inputEvent', message);
 		message = '';
@@ -48,7 +48,7 @@
 		<button class="w-full" type="button" on:click={handleSpecialAction}>
 			{#if isGenerating}
 				<div
-					class="w-full flex justify-center rounded-[6px] transition duration-200 hover:bg-amber-600 dark:hover:bg-amber-500 active:bg-amber-600 dark:active:bg-amber-500"
+					class="w-full flex justify-center rounded-lg transition duration-200 hover:bg-amber-600 dark:hover:bg-amber-500 active:bg-amber-600 dark:active:bg-amber-500"
 				>
 					<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"
 						><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path
@@ -58,7 +58,7 @@
 				</div>
 			{:else}
 				<div
-					class="flex justify-center rounded-[6px] transition duration-200 hover:bg-amber-600 dark:hover:bg-amber-500 active:bg-amber-600 dark:active:bg-amber-500"
+					class="flex justify-center rounded-lg transition duration-200 hover:bg-amber-600 dark:hover:bg-amber-500 active:bg-amber-600 dark:active:bg-amber-500"
 				>
 					<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
 						><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path

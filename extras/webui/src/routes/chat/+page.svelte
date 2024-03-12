@@ -3,13 +3,14 @@
 	import APIInterface from '$lib/api';
 	import ChatInput from '$lib/components/chat_input.svelte';
 	import llm from '$lib/llm';
+	import { trim } from '$lib/utils/str';
 
 	async function handleNewMessage(event: CustomEvent) {
 		const res = await llm.generateDescription(event.detail);
 
 		const { id, index } = await APIInterface.createChat(
 			'none',
-			res.choices[0].message.content || 'New Chat',
+			trim(res.choices[0].message.content || 'New Chat', '"'),
 			event.detail
 		);
 		requestAnimationFrame(() => goto(`/chat/${id}?new`));
