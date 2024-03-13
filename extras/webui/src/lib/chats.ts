@@ -1,4 +1,4 @@
-import { generateId } from './utils/id';
+import { generateId } from '$lib/utils/id';
 
 export enum Roles {
 	system = 'system',

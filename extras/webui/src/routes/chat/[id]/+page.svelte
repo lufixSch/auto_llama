@@ -117,7 +117,7 @@
 	}
 </script>
 
-<section class="flex flex-col justify-end p-2 w-full">
+<section class="flex flex-col h-[calc(100%-44px)] justify-end p-2 w-full">
 	<div
 		class="rounded-md flex flex-col-reverse h-fit mb-2 space-y-2 space-y-reverse md:space-y-4 md:space-y-reverse md:mb-4 overflow-y-auto overflow-x-hidden"
 	>

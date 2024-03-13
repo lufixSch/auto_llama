@@ -68,6 +68,17 @@
 		@apply focus-visible:outline-none disabled:cursor-not-allowed m-0;
 		@apply focus-visible:ring-0 border-none;
 	}
+
+	pre {
+		@apply rounded-md p-2 mx-1 my-2 bg-zinc-200 dark:bg-zinc-800;
+		@apply overflow-x-scroll;
+	}
+
+	blockquote {
+		@apply m-2 px-2 py-1;
+		@apply border-l-4 border-amber-400 dark:border-amber-600;
+		@apply bg-zinc-200 dark:bg-zinc-800;
+	}
 }
 
 @tailwind components;
