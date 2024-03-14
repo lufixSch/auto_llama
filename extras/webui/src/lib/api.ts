@@ -1,4 +1,5 @@
 import { Chat, type ChatIndex } from '$lib/chats';
+import { Character, type CharacterIndex } from './characters';
 
 const apiBase = '/api';
 
@@ -72,5 +73,30 @@ export default class APIInterface {
 		if (!res.ok) {
 			throw new Error('Failed to update chat index');
 		}
+	}
+
+	static async createCharacter(
+		character: Character
+	): Promise<{ id: string; index: CharacterIndex }> {
+		const res = await fetch(`${apiBase}/character`, {
+			method: 'POST',
+			body: JSON.stringify(character)
+		});
+
+		if (!res.ok) {
+			throw new Error('Failed to create character');
+		}
+
+		return await res.json();
+	}
+
+	static async getCharacter(id: string) {
+		const res = await fetch(`${apiBase}/character/${id}`);
+
+		if (!res.ok) {
+			throw new Error(`Failed to get character ${id}: ${res.statusText}`);
+		}
+
+		return Character.fromJson(await res.json());
 	}
 }

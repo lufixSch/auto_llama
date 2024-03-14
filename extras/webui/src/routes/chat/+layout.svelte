@@ -70,7 +70,7 @@
 			</a>
 		</div>
 	</menu>
-	<div class="flex flex-col h-full">
+	<div class="flex flex-col h-full w-full">
 		<div
 			class="flex pt-2 px-2 h-11 bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 border-b-[0px]"
 		>

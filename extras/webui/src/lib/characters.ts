@@ -17,4 +17,8 @@ export class Character {
 			user: 'user'
 		}
 	) {}
+
+	static fromJson(data: Character) {
+		return new Character(data.name, data.systemPrompt, data.greeting, data.chatType, data.names);
+	}
 }

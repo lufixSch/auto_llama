@@ -3,6 +3,13 @@ import { json } from '@sveltejs/kit';
 import { getBasePath, getIndex, getPath, overwriteIndex } from '$lib/server/character';
 import { Character, ChatType } from '$lib/characters';
 import { generateId } from '$lib/utils/id';
+import { building } from '$app/environment';
+
+if (!building) {
+	if (!fs.existsSync(getBasePath())) {
+		fs.mkdirSync(getBasePath());
+	}
+}
 
 /** List all existing characters */
 export function GET() {

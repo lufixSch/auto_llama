@@ -3,6 +3,13 @@ import { json } from '@sveltejs/kit';
 import { getBasePath, getIndex, getPath, overwriteIndex } from '$lib/server/chat.js';
 import { Chat, Roles } from '$lib/chats.js';
 import { generateId } from '$lib/utils/id';
+import { building } from '$app/environment';
+
+if (!building) {
+	if (!fs.existsSync(getBasePath())) {
+		fs.mkdirSync(getBasePath());
+	}
+}
 
 /** List all existing chats */
 export function GET() {

@@ -41,5 +41,9 @@ export async function PUT({ request, params }) {
 	const character: Character = await request.json();
 	overwriteCharacter(id, character);
 
+	const index = getIndex();
+	index[id] = character.name;
+	overwriteIndex(index);
+
 	return json({ message: 'Character updated' });
 }
