@@ -2,12 +2,9 @@
 	import { goto } from '$app/navigation';
 	import { navigating, page } from '$app/stores';
 	import APIInterface from '$lib/api';
-	import type { ChatIndex } from '$lib/chats';
 	import ChatList from '$lib/components/chat_list.svelte';
-	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { cn } from '$lib/utils/cn';
-	import TextButton from '$lib/components/buttons/text_button.svelte';
 	import IconButton from '$lib/components/buttons/icon_button.svelte';
 
 	export let data: PageData;
