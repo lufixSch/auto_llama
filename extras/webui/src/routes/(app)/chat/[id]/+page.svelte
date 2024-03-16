@@ -7,12 +7,14 @@
 	import type { PageData } from './$types';
 	import llm, { type LLmResponse } from '$lib/llm';
 	import StreamChatBubble from '$lib/components/chat_bubble/stream.svelte';
-	import { page } from '$app/stores';
+	import { navigating, page } from '$app/stores';
 	import { goto, invalidate } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	export let data: PageData;
 	let stream: LLmResponse | undefined;
 	let branch: number = 0;
+	let shouldWriteNew = false;
 	let messages: { id: string; message: Message }[] = [];
 	let branchPath: number[] = [];
 	let shouldRegenerate: boolean = false;
@@ -20,19 +22,25 @@
 	$: chat = data.chat;
 	$: character = data.character;
 
-	$: if ($page.url.pathname.includes(data.id)) {
-		// Check if url includes the right id to ensure this is not called when data already changed but URL didn't (I have no idea why this happens)
-		branch = Number($page.url.searchParams.get('branch') || 0);
+	$: {
+		$page.url.searchParams.set('branch', branch.toString());
+		goto($page.url.href, { keepFocus: true });
 		messages = chat.getBranch(branch);
 		branchPath = chat.getBranchPath(branch);
 	}
 
 	/** Trigger llm completion on load if redirected from /chat */
-	$: if ($page.url.searchParams.has('new')) {
+	$: if (shouldWriteNew) {
 		$page.url.searchParams.delete('new');
-		goto('?' + $page.url.searchParams.toString());
-		stream = llm.response(chat, branch, data.character);
+		goto($page.url.href, { keepFocus: true });
+		shouldWriteNew = false;
+		stream = llm.response(chat, branch, character);
 	}
+
+	onMount(() => {
+		branch = Number($page.url.searchParams.get('branch') || 0);
+		shouldWriteNew = $page.url.searchParams.has('new');
+	});
 
 	/** Handle a new message from the user */
 	async function handleNewMessage(event: CustomEvent) {
@@ -102,22 +110,17 @@
 		const branchId = chat.createBranch(branch, id);
 		APIInterface.new().overwriteChat(data.id, chat);
 
-		$page.url.searchParams.set('branch', branchId.toString());
-
 		if (chat.messages[id].role === Roles.user || generate) {
 			// Automatically generate new assistant response if branch message is from user
-			$page.url.searchParams.set('new', 'true');
+			shouldWriteNew = true;
 		}
 
-		await goto($page.url.href);
-		messages = messages;
+		branch = branchId;
 	}
 
 	/** Switch to a different branch */
 	async function switchBranch(branchId: number) {
-		$page.url.searchParams.set('branch', branchId.toString());
-		await goto($page.url.href);
-		messages = messages;
+		branch = branchId;
 	}
 </script>
 
