@@ -1,11 +1,10 @@
 <script lang="ts">
-	import type OpenAI from 'openai';
-	import type { Stream } from 'openai/streaming.mjs';
 	import ChatBubble from '$lib/components/chat_bubble/base.svelte';
 	import { Roles } from '$lib/chats';
 	import { createEventDispatcher } from 'svelte';
+	import type { LLmResponse } from '$lib/llm';
 
-	export let stream: Stream<OpenAI.Chat.Completions.ChatCompletionChunk>;
+	export let stream: LLmResponse;
 	let streamContent = '';
 
 	const streamComplete = createEventDispatcher();
@@ -16,7 +15,7 @@
 
 	async function updateStream() {
 		for await (const chunk of stream!) {
-			streamContent += chunk.choices[0].delta.content;
+			streamContent += chunk.delta;
 		}
 
 		streamComplete('inputEvent', streamContent);

@@ -5,6 +5,6 @@
 	export let data: PageData;
 </script>
 
-<div class="flex justify-center">
+<div class="flex flex-col h-page overflow-y-hidden">
 	<CharacterForm id={data.id} character={data.character} />
 </div>

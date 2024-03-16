@@ -9,8 +9,6 @@ export const prerender = true;
 
 export function load() {
 	const content = fs.readFileSync('README.md', 'utf-8');
-	console.log('Render');
-
 	return {
 		content: md.render(content)
 	};

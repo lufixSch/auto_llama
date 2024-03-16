@@ -12,13 +12,19 @@
 	$: isValid = character.name.length > 0;
 
 	async function onHandleSubmit() {
-		const { id, index } = await APIInterface.createCharacter(character);
+		if (id) {
+			await APIInterface.new().overwriteCharacter(id, character);
+		} else {
+			const { id: newId, index } = await APIInterface.new().createCharacter(character);
+			id = newId;
+		}
+
 		onSave('save', { id, character });
 	}
 
 	async function onHandleReset() {
 		if (id) {
-			character = await APIInterface.getCharacter(id);
+			character = await APIInterface.new().getCharacter(id);
 		}
 	}
 
@@ -28,7 +34,7 @@
 </script>
 
 <form
-	class="space-y-2 sm:space-y-4 overflow-y-scroll p-4 md:p-8 max-w-lg"
+	class="space-y-2 sm:space-y-4 overflow-y-scroll h-fit p-4 lg:p-8 w-full"
 	on:submit|preventDefault={onHandleSubmit}
 >
 	<input
@@ -49,25 +55,36 @@
 	>
 		Name is required!
 	</span>
-	<textarea name="system-prompt" placeholder="System prompt" bind:value={character.systemPrompt}
+	<textarea
+		name="system-prompt"
+		placeholder="System prompt"
+		rows={Math.max(4, character.systemPrompt.split('\n').length)}
+		bind:value={character.systemPrompt}
 	></textarea>
-	<textarea name="greeting" placeholder="Greeting" bind:value={character.greeting}></textarea>
-	<div
-		class="flex items-center sm:justify-evenly flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0"
-	>
-		<div class="flex items-center flex-row space-x-2 w-full">
-			<label for="system-name" class="w-24 text-right"> System: </label>
-			<input id="system-name" type="text" bind:value={character.names.system} />
+	<textarea
+		name="greeting"
+		placeholder="Greeting"
+		rows={Math.max(2, character.greeting.split('\n').length)}
+		bind:value={character.greeting}
+	></textarea>
+	{#if character.chatType === ChatType.chat}
+		<div
+			class="flex items-center sm:justify-evenly flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0"
+		>
+			<div class="flex items-center flex-row space-x-2 w-full">
+				<label for="system-name" class="w-24 text-right"> System: </label>
+				<input id="system-name" type="text" bind:value={character.names.system} />
+			</div>
+			<div class="flex items-center flex-row space-x-2 w-full">
+				<label for="assistant-name" class="w-24 text-right"> Assistant: </label>
+				<input id="assistant-name" type="text" bind:value={character.names.assistant} />
+			</div>
+			<div class="flex items-center flex-row space-x-2 w-full">
+				<label for="user-name" class="w-24 text-right"> User: </label>
+				<input id="user-name" type="text" bind:value={character.names.user} />
+			</div>
 		</div>
-		<div class="flex items-center flex-row space-x-2 w-full">
-			<label for="assistant-name" class="w-24 text-right"> Assistant: </label>
-			<input id="assistant-name" type="text" bind:value={character.names.assistant} />
-		</div>
-		<div class="flex items-center flex-row space-x-2 w-full">
-			<label for="user-name" class="w-24 text-right"> User: </label>
-			<input id="user-name" type="text" bind:value={character.names.user} />
-		</div>
-	</div>
+	{/if}
 	<fieldset
 		class="flex items-center sm:justify-evenly flex-col sm:flex-row space-y-2 py-2"
 		on:change={handleTypeChange}

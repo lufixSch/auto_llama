@@ -2,7 +2,11 @@
 export default {
 	content: ['./src/**/*.{html,js,svelte,ts}'],
 	theme: {
-		extend: {}
+		extend: {
+			height: {
+				page: 'calc(100% - 2.75rem)'
+			}
+		}
 	},
 	plugins: [require('@tailwindcss/forms')]
 };

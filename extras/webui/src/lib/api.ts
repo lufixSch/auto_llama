@@ -2,10 +2,20 @@ import { Chat, type ChatIndex } from '$lib/chats';
 import { Character, type CharacterIndex } from './characters';
 
 const apiBase = '/api';
-
+type FetchType = typeof fetch;
 export default class APIInterface {
-	static async getChat(id: string) {
-		const res = await fetch(`${apiBase}/chat/${id}`);
+	public fetch = fetch;
+
+	constructor(fetcher: FetchType | null = null) {
+		if (fetcher) this.fetch = fetcher;
+	}
+
+	static new() {
+		return new APIInterface();
+	}
+
+	async getChat(id: string) {
+		const res = await this.fetch(`${apiBase}/chat/${id}`);
 
 		if (!res.ok) {
 			throw new Error(`Failed to get chat ${id}: ${res.statusText}`);
@@ -14,12 +24,12 @@ export default class APIInterface {
 		return Chat.fromJson(await res.json());
 	}
 
-	static async createChat(
+	async createChat(
 		character: string,
 		description: string,
 		firstMessage?: string
 	): Promise<{ id: string; index: { [key: string]: string } }> {
-		const res = await fetch(`${apiBase}/chat`, {
+		const res = await this.fetch(`${apiBase}/chat`, {
 			method: 'POST',
 			body: JSON.stringify({ description, character, firstMessage })
 		});
@@ -31,8 +41,8 @@ export default class APIInterface {
 		return await res.json();
 	}
 
-	static async overwriteChat(id: string, chat: Chat) {
-		const res = await fetch(`${apiBase}/chat/${id}`, {
+	async overwriteChat(id: string, chat: Chat) {
+		const res = await this.fetch(`${apiBase}/chat/${id}`, {
 			method: 'PUT',
 			body: JSON.stringify(chat)
 		});
@@ -44,8 +54,8 @@ export default class APIInterface {
 		return await res.json();
 	}
 
-	static async deleteChat(id: string) {
-		const res = await fetch(`${apiBase}/chat/${id}`, {
+	async deleteChat(id: string) {
+		const res = await this.fetch(`${apiBase}/chat/${id}`, {
 			method: 'DELETE'
 		});
 
@@ -54,8 +64,8 @@ export default class APIInterface {
 		}
 	}
 
-	static async getChatIndex() {
-		const res = await fetch(`${apiBase}/chat`);
+	async getChatIndex() {
+		const res = await this.fetch(`${apiBase}/chat`);
 
 		if (!res.ok) {
 			throw new Error('Failed to get chats');
@@ -64,8 +74,8 @@ export default class APIInterface {
 		return (await res.json()) as ChatIndex;
 	}
 
-	static async overwriteChatIndex(index: ChatIndex) {
-		const res = await fetch(`${apiBase}/chat`, {
+	async overwriteChatIndex(index: ChatIndex) {
+		const res = await this.fetch(`${apiBase}/chat`, {
 			method: 'PUT',
 			body: JSON.stringify(index)
 		});
@@ -75,10 +85,8 @@ export default class APIInterface {
 		}
 	}
 
-	static async createCharacter(
-		character: Character
-	): Promise<{ id: string; index: CharacterIndex }> {
-		const res = await fetch(`${apiBase}/character`, {
+	async createCharacter(character: Character): Promise<{ id: string; index: CharacterIndex }> {
+		const res = await this.fetch(`${apiBase}/character`, {
 			method: 'POST',
 			body: JSON.stringify(character)
 		});
@@ -90,13 +98,44 @@ export default class APIInterface {
 		return await res.json();
 	}
 
-	static async getCharacter(id: string) {
-		const res = await fetch(`${apiBase}/character/${id}`);
+	async overwriteCharacter(id: string, character: Character) {
+		const res = await this.fetch(`${apiBase}/character/${id}`, {
+			method: 'PUT',
+			body: JSON.stringify(character)
+		});
+
+		if (!res.ok) {
+			throw new Error('Failed to update character');
+		}
+	}
+
+	async deleteCharacter(id: string) {
+		const res = await this.fetch(`${apiBase}/character/${id}`, {
+			method: 'DELETE'
+		});
+
+		if (!res.ok) {
+			throw new Error('Failed to delete character');
+		}
+	}
+
+	async getCharacter(id: string) {
+		const res = await this.fetch(`${apiBase}/character/${id}`);
 
 		if (!res.ok) {
 			throw new Error(`Failed to get character ${id}: ${res.statusText}`);
 		}
 
 		return Character.fromJson(await res.json());
+	}
+
+	async getCharacterIndex() {
+		const res = await this.fetch(`${apiBase}/character`);
+
+		if (!res.ok) {
+			throw new Error('Failed to get characters');
+		}
+
+		return (await res.json()) as CharacterIndex;
 	}
 }

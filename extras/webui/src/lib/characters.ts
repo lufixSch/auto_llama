@@ -21,4 +21,8 @@ export class Character {
 	static fromJson(data: Character) {
 		return new Character(data.name, data.systemPrompt, data.greeting, data.chatType, data.names);
 	}
+
+	static empty() {
+		return new Character('', '', '');
+	}
 }

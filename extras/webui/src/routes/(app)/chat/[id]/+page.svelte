@@ -1,23 +1,22 @@
 <script lang="ts">
 	import { Roles } from '$lib/chats';
 	import ChatBubble from '$lib/components/chat_bubble/actions.svelte';
+	import BaseBubble from '$lib/components/chat_bubble/base.svelte';
 	import ChatInput from '$lib/components/chat_input.svelte';
 	import APIInterface from '$lib/api';
 	import type { PageData } from './$types';
-	import llm from '$lib/llm';
-	import type { Stream } from 'openai/streaming.mjs';
-	import type OpenAI from 'openai';
+	import llm, { type LLmResponse } from '$lib/llm';
 	import StreamChatBubble from '$lib/components/chat_bubble/stream.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
 
 	export let data: PageData;
-	let stream: Stream<OpenAI.Chat.Completions.ChatCompletionChunk> | undefined;
+	let stream: LLmResponse | undefined;
 	let branchPath: number[] = [];
 	let shouldRegenerate: boolean = false;
 
 	$: chat = data.chat;
+	$: character = data.character;
 
 	$: branch = Number($page.url.searchParams.get('branch') || 0);
 	$: messages = chat.getBranch(branch);
@@ -25,7 +24,7 @@
 
 	/** Trigger llm completion on load if redirected from /chat */
 	$: if ($page.url.searchParams.has('new')) {
-		llm.chatStream(chat, branch).then((s) => (stream = s));
+		stream = llm.response(chat, branch, data.character);
 		$page.url.searchParams.delete('new');
 		goto('?' + $page.url.searchParams.toString());
 	}
@@ -33,7 +32,7 @@
 	/** Handle a new message from the user */
 	async function handleNewMessage(event: CustomEvent) {
 		if (stream) {
-			stream.controller.abort();
+			stream.return();
 			stream = undefined;
 		}
 
@@ -42,8 +41,8 @@
 			chat = chat;
 		}
 
-		APIInterface.overwriteChat(data.id, chat);
-		stream = await llm.chatStream(chat, branch);
+		APIInterface.new().overwriteChat(data.id, chat);
+		stream = llm.response(chat, branch, data.character);
 	}
 
 	/** Handle when the stream from the model completed*/
@@ -54,7 +53,7 @@
 		}
 
 		chat.newMessage(Roles.assistant, event.detail, branch);
-		APIInterface.overwriteChat(data.id, chat);
+		APIInterface.new().overwriteChat(data.id, chat);
 
 		stream = undefined;
 		chat = chat;
@@ -64,7 +63,7 @@
 	async function handleRegeneration() {
 		if (stream) {
 			shouldRegenerate = true;
-			stream.controller.abort();
+			stream.return();
 			stream = undefined;
 		} else {
 			if (messages.length > 1 && messages[messages.length - 1].message.role === Roles.assistant) {
@@ -75,13 +74,13 @@
 		}
 
 		// Otherwise, just add a new message
-		stream = await llm.chatStream(chat, branch);
+		stream = llm.response(chat, branch, data.character);
 	}
 
 	/** Handle completion stop request*/
 	async function handleStop() {
 		if (stream) {
-			stream.controller.abort();
+			stream.return();
 			stream = undefined;
 		}
 	}
@@ -89,14 +88,14 @@
 	/** Handle message deletion*/
 	async function handleDelete(id: string) {
 		chat.deleteMessage(id);
-		APIInterface.overwriteChat(data.id, chat);
+		APIInterface.new().overwriteChat(data.id, chat);
 		chat = chat;
 	}
 
 	/** Handle message branching */
 	async function handleBranching(id: string, generate = false) {
 		const branchId = chat.createBranch(branch, id);
-		APIInterface.overwriteChat(data.id, chat);
+		APIInterface.new().overwriteChat(data.id, chat);
 
 		$page.url.searchParams.set('branch', branchId.toString());
 
@@ -117,7 +116,7 @@
 	}
 </script>
 
-<section class="flex flex-col h-[calc(100%-44px)] justify-end p-2 w-full">
+<section class="flex flex-col h-page justify-end p-2 w-full">
 	<div
 		class="rounded-md flex flex-col-reverse h-fit mb-2 space-y-2 space-y-reverse md:space-y-4 md:space-y-reverse md:mb-4 overflow-y-auto overflow-x-hidden"
 	>
@@ -135,6 +134,9 @@
 				}}
 			/>
 		{/each}
+		{#if character.greeting}
+			<BaseBubble role={Roles.assistant} content={character.greeting} />
+		{/if}
 	</div>
 	<ChatInput
 		on:inputEvent={handleNewMessage}

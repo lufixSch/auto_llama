@@ -14,7 +14,7 @@
 	async function handleNewMessage(event: CustomEvent) {
 		const res = await llm.generateDescription(event.detail);
 
-		const { id, index } = await APIInterface.createChat(
+		const { id, index } = await APIInterface.new().createChat(
 			selectedCharacter,
 			trim(res.choices[0].message.content || 'New Chat', '"'),
 			event.detail
@@ -23,8 +23,8 @@
 	}
 </script>
 
-<section class="flex flex-col p-4 h-full w-full">
-	<div class="h-full flex pt-[80%] space-x-2 items-center">
+<section class="flex flex-col p-4 h-page w-full">
+	<div class="h-full flex space-x-2 items-end pb-4">
 		<CharSelector characters={data.characters} bind:selectedCharacter />
 		<IconButton on:click={() => goto('/character')}
 			><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"

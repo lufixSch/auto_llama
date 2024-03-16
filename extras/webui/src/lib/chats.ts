@@ -1,4 +1,5 @@
 import { generateId } from '$lib/utils/id';
+import type { Character } from './characters';
 
 export enum Roles {
 	system = 'system',
@@ -80,6 +81,34 @@ export class Chat {
 		);
 		delete this.messages[id];
 		return msg;
+	}
+
+	/** Format chat messages for generating a response in 'instruct' mode */
+	formatInstruct(branch: number, char: Character) {
+		const msg = this.getBranch(branch).map(({ message }) => ({
+			role: message.role,
+			content: message.content
+		}));
+
+		if (char.greeting) {
+			msg.unshift({ role: Roles.system, content: char.greeting });
+		}
+
+		if (char.systemPrompt) {
+			msg.unshift({ role: Roles.system, content: char.systemPrompt });
+		}
+
+		return msg;
+	}
+
+	/** Format chat messages for generating a response in 'chat' mode */
+	formatChat(branch: number, char: Character) {
+		const msg = this.formatInstruct(branch, char);
+
+		return msg.reduce(
+			(chat, message) => `${chat}${char.names[message.role]}: ${message.content}\n`,
+			''
+		);
 	}
 
 	static fromJson(json: Chat): Chat {
