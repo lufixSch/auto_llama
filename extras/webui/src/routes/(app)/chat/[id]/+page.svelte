@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Roles } from '$lib/chats';
+	import { Roles, type Message } from '$lib/chats';
 	import ChatBubble from '$lib/components/chat_bubble/actions.svelte';
 	import BaseBubble from '$lib/components/chat_bubble/base.svelte';
 	import ChatInput from '$lib/components/chat_input.svelte';
@@ -8,25 +8,30 @@
 	import llm, { type LLmResponse } from '$lib/llm';
 	import StreamChatBubble from '$lib/components/chat_bubble/stream.svelte';
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
 
 	export let data: PageData;
 	let stream: LLmResponse | undefined;
+	let branch: number = 0;
+	let messages: { id: string; message: Message }[] = [];
 	let branchPath: number[] = [];
 	let shouldRegenerate: boolean = false;
 
 	$: chat = data.chat;
 	$: character = data.character;
 
-	$: branch = Number($page.url.searchParams.get('branch') || 0);
-	$: messages = chat.getBranch(branch);
-	$: branchPath = chat.getBranchPath(branch);
+	$: if ($page.url.pathname.includes(data.id)) {
+		// Check if url includes the right id to ensure this is not called when data already changed but URL didn't (I have no idea why this happens)
+		branch = Number($page.url.searchParams.get('branch') || 0);
+		messages = chat.getBranch(branch);
+		branchPath = chat.getBranchPath(branch);
+	}
 
 	/** Trigger llm completion on load if redirected from /chat */
 	$: if ($page.url.searchParams.has('new')) {
-		stream = llm.response(chat, branch, data.character);
 		$page.url.searchParams.delete('new');
 		goto('?' + $page.url.searchParams.toString());
+		stream = llm.response(chat, branch, data.character);
 	}
 
 	/** Handle a new message from the user */
