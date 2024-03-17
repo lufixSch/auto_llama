@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Roles, type Message } from '$lib/chats';
 	import { cn } from '$lib/utils/cn';
+	import { swipe } from 'svelte-gestures';
 
 	import markdownit from 'markdown-it';
 	import markdownitLatex from 'markdown-it-katex';
@@ -8,10 +9,13 @@
 
 	export let message: Message;
 	export let branchPath: number[];
+	let textBlock: HTMLElement;
+	let editable: boolean = false;
 
 	let onDelete = createEventDispatcher();
 	let onBranch = createEventDispatcher();
 	let onSwitchBranch = createEventDispatcher();
+	let onEdit = createEventDispatcher();
 
 	let openActions = false;
 
@@ -24,6 +28,19 @@
 		(start) => start === branchPath.find((i) => message.branchStart.includes(i))
 	);
 	$: pathIndex = _index == -1 ? 1 : _index + 2;
+
+	function handleStartEdit() {
+		textBlock.contentEditable = 'true';
+		editable = true;
+		textBlock.focus();
+	}
+
+	function handleStopEdit() {
+		textBlock.contentEditable = 'false';
+		editable = false;
+		message.content = textBlock.innerText;
+		onEdit('edit', message);
+	}
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -35,15 +52,24 @@
 	})}
 >
 	<div
-		class={cn('w-full md:w-5/6 py-2 px-4 rounded-lg', {
-			'bg-amber-500 dark:bg-amber-600': message.role === Roles.user,
-			'bg-zinc-200 dark:bg-zinc-700': message.role === Roles.assistant
+		bind:this={textBlock}
+		on:click={handleStartEdit}
+		on:focusout={handleStopEdit}
+		class={cn('w-full md:w-5/6 py-2 px-4 rounded-lg outline-none', {
+			'bg-amber-500 dark:bg-amber-600 ': message.role === Roles.user,
+			'bg-zinc-200 dark:bg-zinc-700 ': message.role === Roles.assistant
 		})}
-		on:click={(e) => {
-			openActions = !openActions;
+		use:swipe={{ touchAction: 'pan-y' }}
+		on:swipe={(e) => {
+			if (e.detail.direction == 'left') openActions = true;
+			else if (e.detail.direction == 'right') openActions = false;
 		}}
 	>
-		{@html formattedContent}
+		{#if editable}
+			{message.content}
+		{:else}
+			{@html formattedContent}
+		{/if}
 	</div>
 	<div class={cn('actions hidden self-start flex-col', { flex: openActions })}>
 		<div class="flex">

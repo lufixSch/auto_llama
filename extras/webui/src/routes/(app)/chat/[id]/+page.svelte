@@ -118,6 +118,12 @@
 		branch = branchId;
 	}
 
+	/** Handle message editing */
+	async function handleEdit(id: string, message: Message) {
+		chat.messages[id].content = message.content;
+		APIInterface.new().overwriteChat(data.id, chat);
+	}
+
 	/** Switch to a different branch */
 	async function switchBranch(branchId: number) {
 		branch = branchId;
@@ -140,6 +146,7 @@
 				on:switch={(e) => {
 					switchBranch(e.detail);
 				}}
+				on:edit={(e) => handleEdit(m.id, e.detail)}
 			/>
 		{/each}
 		{#if character.greeting}

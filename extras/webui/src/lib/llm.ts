@@ -95,10 +95,11 @@ export class LLMInterface {
 					content:
 						'You are a helpful AI that generates titles for chats. Keep the title short and to the point. Respond only with the title. Do not include the chat itself in the response. You will receive a single message as input.'
 				},
-				{ role: 'user', content: `Describe the following chat: ${message}` }
+				{ role: 'user', content: `Write a title for the following chat: ${message}` }
 			],
 			model: 'gpt-3.5-turbo',
-			max_tokens: 100
+			max_tokens: 50,
+			stop: ['\n']
 		});
 	}
 }

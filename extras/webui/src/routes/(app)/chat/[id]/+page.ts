@@ -2,6 +2,7 @@ import APIInterface from '$lib/api.js';
 import { Character } from '$lib/characters.js';
 
 export const prerender = false;
+export const ssr = false;
 
 export async function load({ fetch, params }) {
 	const apiInterface = new APIInterface(fetch);
