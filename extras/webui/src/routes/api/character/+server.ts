@@ -13,8 +13,7 @@ if (!building) {
 
 /** List all existing characters */
 export function GET() {
-	const characterIndex = JSON.parse(fs.readFileSync(`${getBasePath()}/index.json`, 'utf-8'));
-	return json(characterIndex);
+	return json(getIndex());
 }
 
 /** Update the character index */

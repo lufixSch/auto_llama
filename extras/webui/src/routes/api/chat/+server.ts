@@ -13,8 +13,7 @@ if (!building) {
 
 /** List all existing chats */
 export function GET() {
-	const chatIndex = JSON.parse(fs.readFileSync(`${getBasePath()}/index.json`, 'utf-8'));
-	return json(chatIndex);
+	return json(getIndex());
 }
 
 /** Update the chat index */
