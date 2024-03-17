@@ -1,0 +1,25 @@
+FROM node:lts-alpine as base
+
+ENV DATA_PATH="data"
+ENV PUBLIC_OPEN_AI_ENDPOINT="http://192.168.180.38:5000/v1"
+ENV PUBLIC_OPEN_AI_KEY="sk-11111111111111111111111111"
+
+WORKDIR /app
+
+
+FROM base as install
+
+COPY ./package.json ./package.json
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+
+FROM base as final
+
+COPY --from=install /app/build /app/package.json ./
+RUN npm install --omit=dev
+
+ENTRYPOINT ["node", "."]
+EXPOSE 3000
