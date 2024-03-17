@@ -7,7 +7,7 @@ import { building } from '$app/environment';
 
 if (!building) {
 	if (!fs.existsSync(getBasePath())) {
-		fs.mkdirSync(getBasePath());
+		fs.mkdirSync(getBasePath(), { recursive: true });
 	}
 }
 

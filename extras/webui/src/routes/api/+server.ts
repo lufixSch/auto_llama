@@ -6,7 +6,7 @@ import { DATA_PATH } from '$env/static/private';
 
 if (!building) {
 	if (!fs.existsSync(DATA_PATH)) {
-		fs.mkdirSync(DATA_PATH);
+		fs.mkdirSync(DATA_PATH, { recursive: true });
 	}
 }
 
