@@ -1,13 +1,13 @@
 import fs from 'fs';
-import { DATA_PATH } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import type { Character } from '$lib/characters';
 
 export function getBasePath() {
-	return DATA_PATH + '/characters';
+	return env.DATA_PATH + '/characters';
 }
 
 export function getPath(id: string) {
-	return DATA_PATH + '/characters/char-' + id + '.json';
+	return env.DATA_PATH + '/characters/char-' + id + '.json';
 }
 
 export function readCharacter(id: string) {

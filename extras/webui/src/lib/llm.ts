@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { PUBLIC_OPEN_AI_ENDPOINT, PUBLIC_OPEN_AI_KEY } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 import type { Chat } from './chats';
 import { ChatType, type Character } from './characters';
 
@@ -43,8 +43,6 @@ export class LLMInterface {
 		if (character.chatType === ChatType.instruct) {
 			const messages = chat.formatInstruct(branch, character);
 
-			console.log(messages);
-
 			const stream = await this.client.chat.completions.create({
 				messages,
 				model: 'gpt-3.5-turbo',
@@ -61,8 +59,6 @@ export class LLMInterface {
 		} else {
 			let messages = chat.formatChat(branch, character);
 			messages += `${character.names.assistant}:`;
-
-			console.log(messages);
 
 			const stream = await this.client.completions.create({
 				prompt: messages,
@@ -104,5 +100,5 @@ export class LLMInterface {
 	}
 }
 
-const llm = new LLMInterface(PUBLIC_OPEN_AI_ENDPOINT, PUBLIC_OPEN_AI_KEY);
+const llm = new LLMInterface(env.PUBLIC_OPEN_AI_ENDPOINT, env.PUBLIC_OPEN_AI_KEY);
 export default llm;

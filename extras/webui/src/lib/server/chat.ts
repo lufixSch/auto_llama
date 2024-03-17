@@ -1,13 +1,13 @@
 import fs from 'fs';
-import { DATA_PATH } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import type { Chat } from '$lib/chats';
 
 export function getBasePath() {
-	return DATA_PATH + '/chats';
+	return env.DATA_PATH + '/chats';
 }
 
 export function getPath(id: string) {
-	return DATA_PATH + '/chats/chat-' + id + '.json';
+	return env.DATA_PATH + '/chats/chat-' + id + '.json';
 }
 
 export function readChat(id: string) {

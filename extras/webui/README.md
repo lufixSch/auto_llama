@@ -18,12 +18,30 @@ PUBLIC_OPEN_AI_KEY="sk-11111111111111111111111111"
 
 > **⚠️ WARNING: The OpenAI API key will be exposed to everyone loading the webpage!**
 
-You can run the WebUI with the following commands:
+You then install the WebUI with the following commands:
 
-```
+```bash
 npm install
-npm run build
-npm run preview
+npm run webui-install
 ```
 
-> For a complete production build follow the instructions [here](https://kit.svelte.dev/docs/adapter-node)
+Next you can run the WebUI with:
+
+```bash
+npm run webui
+```
+
+You can access the app at [localhost:3000](http://127.0.0.1:3000)
+
+### Docker
+
+This project also provides a docker container to run the WebUI. You can build and run it with the following commands:
+
+```bash
+docker build -t auto-llama-webui .
+docker run --publish 3000:3000 --volume <data-directory>:/app/data
+```
+
+> `<data-directory>` should be the absolute path to the folder where you want your chats and characters to be saved.
+
+If you want to run the container in the background add `--detatch` to the `docker run` command.

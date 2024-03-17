@@ -2,11 +2,11 @@ import fs from 'fs';
 import { json } from '@sveltejs/kit';
 import * as pkg from '../../../package.json';
 import { building } from '$app/environment';
-import { DATA_PATH } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 if (!building) {
-	if (!fs.existsSync(DATA_PATH)) {
-		fs.mkdirSync(DATA_PATH, { recursive: true });
+	if (!fs.existsSync(env.DATA_PATH)) {
+		fs.mkdirSync(env.DATA_PATH, { recursive: true });
 	}
 }
 
