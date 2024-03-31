@@ -1,16 +1,13 @@
-import { Character } from '$lib/characters.js';
+import APIInterface from '$lib/api.js';
 
 export const prerender = false;
 
 export async function load({ fetch, params }) {
-	const res = await fetch(`/api/character/${params.id}`);
-	if (!res.ok) {
-		throw new Error('Chat not found');
-	}
+	const api = new APIInterface(fetch);
 
 	try {
 		return {
-			character: Character.fromJson((await res.json()) as Character),
+			character: await api.getCharacter(params.id),
 			id: params.id
 		};
 	} catch {

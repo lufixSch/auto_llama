@@ -4,7 +4,7 @@ import { Character } from '$lib/characters.js';
 export const prerender = false;
 export const ssr = false;
 
-export async function load({ fetch, params }) {
+export async function load({ fetch, params, url }) {
 	const apiInterface = new APIInterface(fetch);
 	const chat = await apiInterface.getChat(params.id);
 	const character =
@@ -14,7 +14,9 @@ export async function load({ fetch, params }) {
 		return {
 			chat,
 			character,
-			id: params.id
+			id: params.id,
+			branch: Number(url.searchParams.get('branch') || 0),
+			new: url.searchParams.has('new')
 		};
 	} catch {
 		throw new Error('Unable to load Chat!');

@@ -7,14 +7,13 @@
 	import type { PageData } from './$types';
 	import llm, { type LLmResponse } from '$lib/llm';
 	import StreamChatBubble from '$lib/components/chat_bubble/stream.svelte';
-	import { navigating, page } from '$app/stores';
-	import { goto, invalidate } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 	let stream: LLmResponse | undefined;
-	let branch: number = 0;
-	let shouldWriteNew = false;
+	let branch: number = data.branch;
+	let shouldWriteNew = data.new;
 	let messages: { id: string; message: Message }[] = [];
 	let branchPath: number[] = [];
 	let shouldRegenerate: boolean = false;
@@ -36,11 +35,6 @@
 		shouldWriteNew = false;
 		stream = llm.response(chat, branch, character);
 	}
-
-	onMount(() => {
-		branch = Number($page.url.searchParams.get('branch') || 0);
-		shouldWriteNew = $page.url.searchParams.has('new');
-	});
 
 	/** Handle a new message from the user */
 	async function handleNewMessage(event: CustomEvent) {

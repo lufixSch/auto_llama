@@ -1,16 +1,13 @@
-import type { CharacterIndex } from '$lib/characters.js';
+import APIInterface from '$lib/api.js';
 
 export const prerender = false;
 
 export async function load({ fetch }) {
-	const res = await fetch(`/api/character`);
-	if (!res.ok) {
-		throw new Error('Character index not found!');
-	}
+	const api = new APIInterface(fetch);
 
 	try {
 		return {
-			characters: (await res.json()) as CharacterIndex
+			characters: await api.getCharacterIndex()
 		};
 	} catch {
 		throw new Error('Unable to load Chat!');
