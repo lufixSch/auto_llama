@@ -8,21 +8,22 @@ ENV SECRET="secret"
 
 WORKDIR /app
 
+RUN npm i -g pnpm
+RUN mkdir node_modules
 
 FROM base as install
 
-COPY ./package.json ./package.json
-COPY ./package-lock.json ./package-lock.json
-RUN npm install
+COPY ./package.json pnpm-lock.yaml ./
+RUN pnpm install
 
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 
 FROM base as final
 
 COPY --from=install /app/build /app/package.json ./
-RUN npm install --omit=dev
+RUN pnpm install --prod
 
 ENTRYPOINT ["node", "."]
 EXPOSE 3000
