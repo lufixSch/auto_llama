@@ -8,7 +8,7 @@ ENV SECRET="secret"
 
 WORKDIR /app
 
-RUN npm i -g pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 RUN mkdir node_modules
 
 FROM base as install
