@@ -1,4 +1,4 @@
-FROM node:buster-slim as base
+FROM node:20-buster-slim as base
 
 ENV DATA_PATH="data"
 ENV PUBLIC_OPEN_AI_ENDPOINT="http://127.0.0.1:5000/v1"
@@ -12,6 +12,7 @@ WORKDIR /app
 FROM base as install
 
 COPY ./package.json ./package.json
+COPY ./package-lock.json ./package-lock.json
 RUN npm install
 
 COPY . .
