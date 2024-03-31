@@ -1,4 +1,4 @@
-FROM node:lts-alpine as base
+FROM node:buster-slim as base
 
 ENV DATA_PATH="data"
 ENV PUBLIC_OPEN_AI_ENDPOINT="http://127.0.0.1:5000/v1"
