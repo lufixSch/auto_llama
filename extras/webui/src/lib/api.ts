@@ -118,7 +118,7 @@ export default class APIInterface {
 	}
 
 	async deleteCharacter(id: string) {
-		const res = await this.fetch(`character/${id}`, {
+		const res = await this.fetch(`/character/${id}`, {
 			method: 'DELETE'
 		});
 
