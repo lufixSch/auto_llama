@@ -118,7 +118,7 @@
 			</IconButton>
 			<div class="w-full"></div>
 			{#if data.currentChar}
-				<h6 class="m-0 w-full">
+				<h6 class="m-0 w-full text-center">
 					<a href="/character/{data.currentChar.id}">{data.currentChar.name}</a>
 				</h6>
 			{/if}

@@ -67,24 +67,22 @@
 		rows={Math.max(2, character.greeting.split('\n').length)}
 		bind:value={character.greeting}
 	></textarea>
-	{#if character.chatType === ChatType.chat}
-		<div
-			class="flex items-center sm:justify-evenly flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0"
-		>
-			<div class="flex items-center flex-row space-x-2 w-full">
-				<label for="system-name" class="w-24 text-right"> System: </label>
-				<input id="system-name" type="text" bind:value={character.names.system} />
-			</div>
-			<div class="flex items-center flex-row space-x-2 w-full">
-				<label for="assistant-name" class="w-24 text-right"> Assistant: </label>
-				<input id="assistant-name" type="text" bind:value={character.names.assistant} />
-			</div>
-			<div class="flex items-center flex-row space-x-2 w-full">
-				<label for="user-name" class="w-24 text-right"> User: </label>
-				<input id="user-name" type="text" bind:value={character.names.user} />
-			</div>
+	<div
+		class="flex items-center sm:justify-evenly flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0"
+	>
+		<div class="flex items-center flex-row space-x-2 w-full">
+			<label for="system-name" class="w-24 text-right"> System: </label>
+			<input id="system-name" type="text" bind:value={character.names.system} />
 		</div>
-	{/if}
+		<div class="flex items-center flex-row space-x-2 w-full">
+			<label for="assistant-name" class="w-24 text-right"> Assistant: </label>
+			<input id="assistant-name" type="text" bind:value={character.names.assistant} />
+		</div>
+		<div class="flex items-center flex-row space-x-2 w-full">
+			<label for="user-name" class="w-24 text-right"> User: </label>
+			<input id="user-name" type="text" bind:value={character.names.user} />
+		</div>
+	</div>
 	<fieldset
 		class="flex items-center sm:justify-evenly flex-col sm:flex-row space-y-2 py-2"
 		on:change={handleTypeChange}

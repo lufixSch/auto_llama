@@ -1,3 +1,5 @@
+# Doesn't work at the moment (keeps freezing on node related commands)
+
 name: Build WebUI
 
 on:
@@ -41,4 +43,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/arm/v7
+          platforms: linux/amd64, linux/arm/v7

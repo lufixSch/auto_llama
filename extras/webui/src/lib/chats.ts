@@ -87,15 +87,16 @@ export class Chat {
 	formatInstruct(branch: number, char: Character) {
 		const msg = this.getBranch(branch).map(({ message }) => ({
 			role: message.role,
-			content: message.content
+			content: message.content,
+			name: char.names[message.role]
 		}));
 
 		if (char.greeting) {
-			msg.unshift({ role: Roles.system, content: char.greeting });
+			msg.unshift({ role: Roles.assistant, content: char.greeting, name: char.names.assistant });
 		}
 
 		if (char.systemPrompt) {
-			msg.unshift({ role: Roles.system, content: char.systemPrompt });
+			msg.unshift({ role: Roles.system, content: char.systemPrompt, name: char.names.system });
 		}
 
 		return msg;

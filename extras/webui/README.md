@@ -41,7 +41,7 @@ This project also provides a docker container to run the WebUI. You can build an
 
 ```bash
 docker build -t auto-llama-webui .
-docker run --publish 3000:3000 --volume <data-directory>:/app/data --env-file .env --env ORIGIN=<origin>
+docker run --publish 3000:3000 --volume <data-directory>:/app/data --env-file .env --env ORIGIN=<origin> auto-llama-webui
 ```
 
 > `<data-directory>` should be the absolute path to the folder where you want your chats and characters to be saved.
