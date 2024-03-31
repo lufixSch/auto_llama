@@ -1,4 +1,4 @@
-import { SECRET } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 export async function handle({ event, resolve }) {
 	if (!event.url.pathname.startsWith('/api')) {
@@ -12,7 +12,7 @@ export async function handle({ event, resolve }) {
 		return new Response('Unauthorized', { status: 401 });
 	}
 	const token = authHeader.substring('Bearer '.length);
-	if (token !== SECRET) {
+	if (token !== env.SECRET) {
 		return new Response('Unauthorized', { status: 401 });
 	}
 
