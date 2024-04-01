@@ -83,18 +83,18 @@ def openai_chat_completion(req: Request, args: OpenAIChatCompletion, llm: LLMInt
     stream = llm.chat_stream(chat, stopping_strings=stop, max_new_tokens=args.max_tokens)
 
     async def create_stream_response(stream):
-        async with streaming_semaphore:
-            for el in stream:
-                if await req.is_disconnected():
-                    break
+        # async with streaming_semaphore:
+        for el in stream:
+            if await req.is_disconnected():
+                break
 
-                cmpl_response.choices = [
-                    (
-                        OpenAIChatStreamChoice(
-                            index=0, delta=OpenAIChatStreamChoice.Message(content=el, role=OpenAIMessage.Role.ASSISTANT)
-                        )
+            cmpl_response.choices = [
+                (
+                    OpenAIChatStreamChoice(
+                        index=0, delta=OpenAIChatStreamChoice.Message(content=el, role=OpenAIMessage.Role.ASSISTANT)
                     )
-                ]
-                yield {"data": cmpl_response.model_dump_json()}
+                )
+            ]
+            yield {"data": cmpl_response.model_dump_json()}
 
     return EventSourceResponse(create_stream_response(stream))

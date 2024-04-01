@@ -1,13 +1,11 @@
 from typing import Annotated
 from fastapi import Depends
-from auto_llama.llm import LocalOpenAILLM
 from auto_llama import LLMInterface as AutoLLaMaLLM
-
-local_llm = LocalOpenAILLM(base_url="http://127.0.0.1:5001/v1")
+from auto_llama_api import auto_llama_config
 
 
 def get_llm():
-    return local_llm
+    return auto_llama_config.llm
 
 
 LLMInterface = Annotated[AutoLLaMaLLM, Depends(get_llm)]

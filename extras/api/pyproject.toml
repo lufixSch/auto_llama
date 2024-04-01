@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "auto-llama-api"
@@ -28,5 +28,5 @@ dependencies = [
 [project.scripts]
 auto-llama-api = "auto_llama_api:main"
 
-[tool.setuptools.package-dir]
-"auto_llama_api" = "src"
+[tool.hatch.build]
+packages=['auto_llama_api']
