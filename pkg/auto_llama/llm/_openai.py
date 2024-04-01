@@ -54,9 +54,27 @@ class LocalOpenAILLM(LLMInterface):
         finally:
             res.response.close()
 
-    def chat(self, chat: Chat) -> Chat:
+    def chat(self, chat: Chat, stopping_strings: list[str] = [], max_new_tokens: int = None) -> Chat:
+        self.config["stop"] = [*stopping_strings, *self.config.get("stop", [])]
+        self.config["max_tokens"] = max_new_tokens or self.config.get("max_tokens", 200)
+
         opain_chat_history = [{"role": chat_msg.role, "content": chat_msg.message} for chat_msg in chat.history]
         res = self.client.chat.completions.create(messages=opain_chat_history, model="NONE", **self.config)
 
         chat.append("assistant", res.choices[0].message.content)
         return chat
+
+    def chat_stream(
+        self, chat: Chat, stopping_strings: list[str] = ..., max_new_tokens: int = None
+    ) -> Generator[str, None, None]:
+        self.config["stop"] = [*stopping_strings, *self.config.get("stop", [])]
+        self.config["max_tokens"] = max_new_tokens or self.config.get("max_tokens", 200)
+
+        opain_chat_history = [{"role": chat_msg.role, "content": chat_msg.message} for chat_msg in chat.history]
+        res = self.client.chat.completions.create(messages=opain_chat_history, model="NONE", stream=True, **self.config)
+
+        try:
+            for chunk in res:
+                yield chunk.choices[0].delta.content or ""
+        finally:
+            res.response.close()
