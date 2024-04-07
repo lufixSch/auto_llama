@@ -1,24 +1,25 @@
 """OpenAI API completion routes"""
 
 import asyncio
+from datetime import UTC, datetime
+from uuid import uuid4
+
+from auto_llama_api import auto_llama_config
+from auto_llama_api.lib import LLMInterface
+from auto_llama_api.models import (
+    OpenAIChatChoice,
+    OpenAIChatCompletion,
+    OpenAIChatCompletionResponse,
+    OpenAIChatStreamChoice,
+    OpenAICompletion,
+    OpenAICompletionChoice,
+    OpenAICompletionResponse,
+    OpenAICompletionResponseBase,
+    OpenAIMessage,
+)
 from fastapi import APIRouter
 from fastapi.requests import Request
 from sse_starlette import EventSourceResponse
-from uuid import uuid4
-from datetime import datetime, UTC
-
-from auto_llama_api.models import (
-    OpenAICompletion,
-    OpenAICompletionResponseBase,
-    OpenAICompletionResponse,
-    OpenAICompletionChoice,
-    OpenAIChatCompletion,
-    OpenAIChatCompletionResponse,
-    OpenAIChatChoice,
-    OpenAIChatStreamChoice,
-    OpenAIMessage,
-)
-from auto_llama_api.lib import LLMInterface
 
 from auto_llama import Chat
 
@@ -69,6 +70,42 @@ def openai_chat_completion(req: Request, args: OpenAIChatCompletion, llm: LLMInt
     )
 
     chat = Chat.from_history(history=[msg.to_chat() for msg in args.messages])
+
+    results = auto_llama_config.selector.run(chat)
+
+    context = ""
+    response = ""
+
+    # Interpret agent results
+    for out in results.items():
+        if out.position is out.POSITION.CONTEXT:
+            context += "\n" + out.to_string()
+        if out.position is out.POSITION.CHAT:
+            chat.last.message += "\n" + out.to_string()
+        if out.position is out.POSITION.RESPONSE:
+            response += "\n" + out.to_string()
+
+    # Generate response from agent results instead of llm response
+    if response:
+        msg = chat.append("assistant", response)
+
+        cmpl_response.choices.append(
+            OpenAIChatChoice(
+                index=0, message=OpenAIChatChoice.Message(role=OpenAIMessage.Role(msg.role), content=msg.message)
+            )
+        )
+
+        if not args.stream:
+            return cmpl_response
+
+        async def create_stream_response():
+            yield {"data": cmpl_response.model_dump_json()}
+
+        return EventSourceResponse(create_stream_response())
+
+    remembered = auto_llama_config.memory.remember(chat.last_from("user"))
+    context += "\n" + "\n".join([fact.get_formatted() for fact in remembered])
+    chat.format_system_message(context)
 
     if not args.stream:
         response = llm.chat(chat, stopping_strings=stop, max_new_tokens=args.max_tokens).last

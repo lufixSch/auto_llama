@@ -85,16 +85,12 @@ all = [
   "auto-llama[extras, agent, llm, memory, selector]"
 ]
 
-[project.scripts]
-auto-llama = "auto_llama_cli:chat_main"
-auto-llama-rag = "auto_llama_cli:rag_main"
-
 
 [tool.hatch.build]
 packages = [
   "pkg/auto_llama/",
-  "pkg/auto_llama_extras/",
-  "pkg/auto_llama_cli/"
+  "pkg/auto_llama_agents/",
+  "pkg/auto_llama_memory/"
 ]
 
 [tool.black]

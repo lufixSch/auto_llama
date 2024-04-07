@@ -1,5 +1,5 @@
-from typing import Literal, TypeAlias, Callable
 from datetime import datetime
+from typing import Callable, Literal, TypeAlias
 from uuid import uuid4
 
 ChatRoles: TypeAlias = Literal["system", "user", "assistant"]
@@ -39,7 +39,9 @@ class Chat:
         self._listeners = {}
         self._names = names
         self._has_system_message = bool(system_message)
-        self.append("system", system_message)
+        if self._has_system_message:
+            self.append("system", system_message)
+
         self._system_template = system_message
 
     @classmethod
@@ -50,6 +52,9 @@ class Chat:
         names: dict[ChatRoles, str] = {"system": "system", "user": "user", "assistant": "assistant"},
     ):
         """Initialize a new chat from a chat history"""
+
+        if not system_message and (len(history) > 0) and (history[0].role == "system"):
+            system_message = history.pop(0).message
 
         chat = cls(system_message, names)
         chat._history = [*chat.history, *history]

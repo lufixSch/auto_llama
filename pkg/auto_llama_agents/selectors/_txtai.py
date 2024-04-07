@@ -1,19 +1,20 @@
 """txtai based selector"""
 
-from typing import Literal
 from string import punctuation
+from typing import Literal
 
-from auto_llama import ModelLoader, exceptions, Chat
-from auto_llama_agents import AgentSelector, Agent, AgentResponse
+from auto_llama_agents import Agent, AgentResponse, AgentSelector
+
+from auto_llama import Chat, ModelLoader, exceptions
 
 HAS_DEPENDENCIES = True
 
 try:
-    import spacy
-    from spacy.tokens import Token
-    from spacy.language import Language
     import coreferee
+    import spacy
     from coreferee.data_model import ChainHolder
+    from spacy.language import Language
+    from spacy.tokens import Token
     from txtai.pipeline import Similarity
 except ImportError:
     HAS_DEPENDENCIES = False
@@ -148,10 +149,11 @@ class SimilarityAgentSelector(AgentSelector):
 
         self._tools = tools
         self._keyword_mapping = KeywordMapping(assistant=none_keywords, **keywords)
-        self._coref_converter = CorefResChatConverter()  # TODO Add msg_cnt as configurable parameter
+        # self._coref_converter = CorefResChatConverter()  # TODO Add msg_cnt as configurable parameter
 
     def run(self, chat: Chat) -> AgentResponse:
-        prompt = self._coref_converter(chat)
+        # prompt = self._coref_converter(chat)
+        prompt = chat.last_from("user")
         similarities = ModelLoader.get("txtai.similarity", Similarity)(prompt, self._keyword_mapping.keywords_flat)
 
         keyword = self._keyword_mapping.keywords_flat[similarities[0][0]]
