@@ -3,6 +3,22 @@ import { env } from '$env/dynamic/public';
 import type { Chat } from './chats';
 import { ChatType, type Character } from './characters';
 
+export interface LLMParams {
+	max_new_tokens: number;
+	frequency_penalty: number;
+	presence_penalty: number;
+	temperature: number;
+	top_p: number;
+}
+
+export const defaultLLMParams: LLMParams = {
+	max_new_tokens: 512,
+	temperature: 0.7,
+	top_p: 0.9,
+	frequency_penalty: 0.1,
+	presence_penalty: 0
+};
+
 export type LLmResponse = AsyncGenerator<{ delta: string; text: string }, void, unknown>;
 
 export class LLMInterface {

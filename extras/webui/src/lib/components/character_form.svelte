@@ -4,14 +4,20 @@
 	import { cn } from '$lib/utils/cn';
 	import APIInterface from '$lib/api';
 	import { createEventDispatcher } from 'svelte';
+	import LlmParamsForm from './llm_params_form.svelte';
 
 	export let id: string | undefined = undefined;
 	export let character: Character = new Character('', '', '');
 	let onSave = createEventDispatcher();
+	let llmParamsValid = true;
 
-	$: isValid = character.name.length > 0;
+	$: isValid = character.name.length > 0 && llmParamsValid;
 
 	async function onHandleSubmit() {
+		if (!isValid) {
+			return;
+		}
+
 		if (id) {
 			await APIInterface.new().overwriteCharacter(id, character);
 		} else {
@@ -84,7 +90,7 @@
 		</div>
 	</div>
 	<fieldset
-		class="flex items-center sm:justify-evenly flex-col sm:flex-row space-y-2 py-2"
+		class="flex items-center sm:justify-evenly flex-col sm:flex-row space-y-2 pt-2"
 		on:change={handleTypeChange}
 	>
 		<label for="type-instruct" class="flex items-center space-x-2 h-8">
@@ -108,7 +114,8 @@
 			<span>Chat</span>
 		</label>
 	</fieldset>
-	<div class="flex items-center sm:justify-evenly flex-col sm:flex-row space-y-2 sm:space-y-0">
+	<LlmParamsForm bind:params={character.params} bind:isValid={llmParamsValid}></LlmParamsForm>
+	<div class="flex items-center sm:justify-evenly flex-col sm:flex-row space-y-2 sm:space-y-0 pt-4">
 		<TextButton
 			className="w-full sm:w-1/4 sm:max-w-64"
 			type="submit"
