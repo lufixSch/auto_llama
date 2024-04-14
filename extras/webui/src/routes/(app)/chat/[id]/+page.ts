@@ -5,6 +5,8 @@ export const prerender = false;
 export const ssr = false;
 
 export async function load({ fetch, params, url }) {
+	console.log('Load');
+
 	const apiInterface = new APIInterface(fetch);
 	const chat = await apiInterface.getChat(params.id);
 	const character =
@@ -15,7 +17,7 @@ export async function load({ fetch, params, url }) {
 			chat,
 			character,
 			id: params.id,
-			branch: Number(url.searchParams.get('branch') || 0),
+			branch: Number(url.searchParams.get('branch') || chat.branches.length - 1),
 			new: url.searchParams.has('new')
 		};
 	} catch {

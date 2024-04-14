@@ -12,14 +12,14 @@
 
 	export let data: PageData;
 	let stream: LLmResponse | undefined;
-	let branch: number = data.branch;
-	let shouldWriteNew = data.new;
 	let messages: { id: string; message: Message }[] = [];
 	let branchPath: number[] = [];
 	let shouldRegenerate: boolean = false;
 
 	$: chat = data.chat;
 	$: character = data.character;
+	$: branch = data.branch;
+	$: shouldWriteNew = data.new;
 
 	$: {
 		$page.url.searchParams.set('branch', branch.toString());

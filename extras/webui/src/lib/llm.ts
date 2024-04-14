@@ -32,18 +32,7 @@ export class LLMInterface {
 		});
 	}
 
-	public async chat(chat: Chat, branch: number) {
-		const messages = chat.getBranch(branch).map((m) => {
-			return { role: m.message.role, content: m.message.content };
-		});
-
-		return await this.client.chat.completions.create({
-			messages,
-			model: 'gpt-3.5-turbo'
-		});
-	}
-
-	public async chatStream(chat: Chat, branch: number) {
+	public async chat(chat: Chat, branch: number, params: Partial<LLMParams> = {}) {
 		const messages = chat.getBranch(branch).map((m) => {
 			return { role: m.message.role, content: m.message.content };
 		});
@@ -51,7 +40,20 @@ export class LLMInterface {
 		return await this.client.chat.completions.create({
 			messages,
 			model: 'gpt-3.5-turbo',
-			stream: true
+			...params
+		});
+	}
+
+	public async chatStream(chat: Chat, branch: number, params: Partial<LLMParams>) {
+		const messages = chat.getBranch(branch).map((m) => {
+			return { role: m.message.role, content: m.message.content };
+		});
+
+		return await this.client.chat.completions.create({
+			messages,
+			model: 'gpt-3.5-turbo',
+			stream: true,
+			...params
 		});
 	}
 
@@ -62,7 +64,8 @@ export class LLMInterface {
 			const stream = await this.client.chat.completions.create({
 				messages,
 				model: 'gpt-3.5-turbo',
-				stream: true
+				stream: true,
+				...(character.params || defaultLLMParams)
 			});
 
 			let completeResponse = '';
@@ -85,7 +88,7 @@ export class LLMInterface {
 					`${character.names.assistant}:`,
 					`${character.names.system}:`
 				],
-				max_tokens: 512
+				...(character.params || defaultLLMParams)
 			});
 
 			let completeResponse = '';
@@ -99,7 +102,7 @@ export class LLMInterface {
 	}
 
 	/** Generate a description for a chat */
-	public async generateDescription(message: string) {
+	public async generateDescription(message: string, params: Partial<LLMParams> = defaultLLMParams) {
 		return await this.client.chat.completions.create({
 			messages: [
 				{
@@ -111,7 +114,8 @@ export class LLMInterface {
 			],
 			model: 'gpt-3.5-turbo',
 			max_tokens: 50,
-			stop: ['\n']
+			stop: ['\n'],
+			...params
 		});
 	}
 }
