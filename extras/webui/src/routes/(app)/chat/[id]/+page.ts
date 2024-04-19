@@ -5,8 +5,6 @@ export const prerender = false;
 export const ssr = false;
 
 export async function load({ fetch, params, url }) {
-	console.log('Load');
-
 	const apiInterface = new APIInterface(fetch);
 	const chat = await apiInterface.getChat(params.id);
 	const character =

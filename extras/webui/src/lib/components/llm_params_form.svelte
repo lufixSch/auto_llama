@@ -5,8 +5,6 @@
 	export let isValid: boolean = true;
 	const errors: { [key in keyof LLMParams]?: string | undefined } = {};
 
-	$: console.log(params);
-
 	function handleInput(ev: Event, prop: keyof LLMParams) {
 		const el = ev.target as HTMLInputElement;
 
@@ -19,7 +17,6 @@
 		isValid = Object.keys(params).every(
 			(prop) => !Object.hasOwn(errors, prop) || !errors[prop as keyof LLMParams]
 		);
-		console.log('isValid', isValid);
 	}
 </script>
 

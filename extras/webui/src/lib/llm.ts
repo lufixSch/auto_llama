@@ -69,12 +69,15 @@ export class LLMInterface {
 			});
 
 			let completeResponse = '';
-			for await (const chunk of stream) {
-				completeResponse += chunk.choices[0].delta;
-				yield { delta: chunk.choices[0].delta.content as string, text: completeResponse };
-			}
 
-			stream.controller.abort();
+			try {
+				for await (const chunk of stream) {
+					completeResponse += chunk.choices[0].delta;
+					yield { delta: chunk.choices[0].delta.content as string, text: completeResponse };
+				}
+			} finally {
+				stream.controller.abort();
+			}
 		} else {
 			let messages = chat.formatChat(branch, character);
 			messages += `${character.names.assistant}:`;
@@ -92,12 +95,15 @@ export class LLMInterface {
 			});
 
 			let completeResponse = '';
-			for await (const chunk of stream) {
-				completeResponse += chunk.choices[0].text;
-				yield { delta: chunk.choices[0].text, text: completeResponse };
-			}
 
-			stream.controller.abort();
+			try {
+				for await (const chunk of stream) {
+					completeResponse += chunk.choices[0].text;
+					yield { delta: chunk.choices[0].text, text: completeResponse };
+				}
+			} finally {
+				stream.controller.abort();
+			}
 		}
 	}
 
