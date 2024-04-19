@@ -49,6 +49,7 @@
 		"markdown-it": "^14.0.0",
 		"markdown-it-katex": "^2.0.3",
 		"openai": "^4.28.4",
-		"svelte-gestures": "^4.0.0"
+		"svelte-gestures": "^4.0.0",
+		"turndown": "^7.1.3"
 	}
 }

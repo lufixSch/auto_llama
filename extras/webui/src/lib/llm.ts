@@ -68,11 +68,13 @@ export class LLMInterface {
 	public async *response(chat: Chat, branch: number, character: Character, config: Config) {
 		if (character.chatType === ChatType.instruct) {
 			const messages = chat.formatInstruct(branch, character, config);
+			console.log(messages);
 
 			const stream = await this.getClient(config).chat.completions.create({
 				messages,
 				model: 'gpt-3.5-turbo',
 				stream: true,
+				max_tokens: character.params.max_new_tokens || defaultLLMParams.max_new_tokens,
 				...(character.params || defaultLLMParams)
 			});
 
@@ -97,10 +99,11 @@ export class LLMInterface {
 				model: 'gpt-3.5-turbo',
 				stream: true,
 				stop: [
-					`${character.names.user}:`,
-					`${character.names.assistant}:`,
-					`${character.names.system}:`
+					`${character.names.user}: `,
+					`${character.names.assistant}: `,
+					`${character.names.system}: `
 				],
+				max_tokens: character.params.max_new_tokens || defaultLLMParams.max_new_tokens,
 				...(character.params || defaultLLMParams)
 			});
 

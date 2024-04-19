@@ -86,11 +86,28 @@ export class Chat {
 
 	/** Format chat messages for generating a response in 'instruct' mode */
 	formatInstruct(branch: number, char: Character, conf: Config) {
-		const msg = this.getBranch(branch).map(({ message }) => ({
-			role: message.role,
-			content: message.content,
-			name: char.names[message.role]
-		}));
+		const msg = this.getBranch(branch).reduce<{ role: Roles; content: string; name: string }[]>(
+			(messages, { message }) => {
+				// Insert empty user message between two assistant messages.
+				// Some backends may otherwise only consider the last message
+				if (
+					messages.length > 0 &&
+					messages[messages.length - 1].role === Roles.assistant &&
+					message.role === Roles.assistant
+				) {
+					messages.push({ role: Roles.user, content: '', name: char.names.user });
+				}
+
+				messages.push({
+					role: message.role,
+					content: message.content,
+					name: char.names[message.role]
+				});
+
+				return messages;
+			},
+			[]
+		);
 
 		if (char.greeting) {
 			msg.unshift({ role: Roles.assistant, content: char.greeting, name: char.names.assistant });

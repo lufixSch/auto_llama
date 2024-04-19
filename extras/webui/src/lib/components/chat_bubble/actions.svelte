@@ -21,7 +21,7 @@
 
 	const md = markdownit();
 	md.use(markdownitLatex);
-	let formattedContent = md.render(message.content);
+	// let formattedContent = md.render(message.content);
 
 	$: formattedContent = md.render(message.content);
 	$: _index = message.branchStart.findIndex(
@@ -30,15 +30,14 @@
 	$: pathIndex = _index == -1 ? 1 : _index + 2;
 
 	function handleStartEdit() {
-		textBlock.contentEditable = 'true';
+		console.log(message.content);
 		editable = true;
-		textBlock.focus();
+		requestAnimationFrame(() => textBlock.focus());
 	}
 
 	function handleStopEdit() {
-		textBlock.contentEditable = 'false';
 		editable = false;
-		message.content = textBlock.innerText;
+		formattedContent = md.render(message.content);
 		onEdit('edit', message);
 	}
 </script>
@@ -52,10 +51,10 @@
 	})}
 >
 	<div
-		bind:this={textBlock}
 		on:click={handleStartEdit}
 		on:focusout={handleStopEdit}
-		class={cn('w-full md:w-5/6 py-2 px-4 rounded-lg outline-none', {
+		on:blur={handleStopEdit}
+		class={cn('w-full md:w-5/6 py-2 px-4 rounded-lg', {
 			'bg-amber-500 dark:bg-amber-600 ': message.role === Roles.user,
 			'bg-zinc-200 dark:bg-zinc-700 ': message.role === Roles.assistant
 		})}
@@ -66,9 +65,14 @@
 		}}
 	>
 		{#if editable}
-			{message.content}
+			<p
+				bind:this={textBlock}
+				class="outline-none"
+				bind:innerText={message.content}
+				contenteditable
+			></p>
 		{:else}
-			{@html formattedContent}
+			<div>{@html formattedContent}</div>
 		{/if}
 	</div>
 	<div class={cn('actions hidden self-start flex-col', { flex: openActions })}>
