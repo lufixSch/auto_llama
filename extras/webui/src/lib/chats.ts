@@ -121,6 +121,11 @@ export class Chat {
 			});
 		}
 
+		// Add empty user message at the end, if the last message is from the assistant
+		if (msg[msg.length - 1].role == Roles.assistant) {
+			msg.push({ role: Roles.user, content: '', name: char.names.user });
+		}
+
 		return msg;
 	}
 
