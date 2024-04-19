@@ -50,6 +50,14 @@
 	async function handleEditDescription(e: CustomEvent) {
 		await APIInterface.new().overwriteChatIndex(e.detail);
 	}
+
+	/** Handle config change */
+	function onConfigChange(e: any) {
+		APIInterface.new().overwriteConfig({
+			...data.config,
+			isUserInstruct: Boolean(e.target.checked)
+		});
+	}
 </script>
 
 <div class="flex flex-auto h-full">
@@ -96,6 +104,19 @@
 			</div>
 		</div>
 		<div class="p-8 text-right">
+			<div
+				class="flex items-center flex-row space-x-2 w-full pb-2 justify-end"
+				title="If true, the instruction prompt will be send as user message"
+			>
+				<label for="is-user-instruct">User instruction</label>
+				<input
+					name="is-user-instruct"
+					type="checkbox"
+					class="focus:ring-[1px] checked:bg-amber-600 dark:checked:bg-amber-500 focus:ring-amber-600 checked:focus:bg-amber-600 dark:checked:focus:bg-amber-500 checked:hover:bg-amber-600 dark:checked:hover:bg-amber-500 dark:focus:ring-amber-500 hover:bg-amber-600 dark:hover:bg-amber-500 bg-zinc-200 dark:bg-zinc-800 w-4 h-4 border-none cursor-pointer"
+					on:change={onConfigChange}
+					bind:checked={data.config.isUserInstruct}
+				/>
+			</div>
 			{#if data.location === 'chat'}
 				<a class="text-zinc-500 dark:text-zinc-300 hover:no-underline" href="/character"
 					>Characters</a

@@ -1,5 +1,6 @@
 import { generateId } from '$lib/utils/id';
 import type { Character } from './characters';
+import type { Config } from './config';
 
 export enum Roles {
 	system = 'system',
@@ -84,7 +85,7 @@ export class Chat {
 	}
 
 	/** Format chat messages for generating a response in 'instruct' mode */
-	formatInstruct(branch: number, char: Character) {
+	formatInstruct(branch: number, char: Character, conf: Config) {
 		const msg = this.getBranch(branch).map(({ message }) => ({
 			role: message.role,
 			content: message.content,
@@ -95,16 +96,20 @@ export class Chat {
 			msg.unshift({ role: Roles.assistant, content: char.greeting, name: char.names.assistant });
 		}
 
-		if (char.systemPrompt) {
-			msg.unshift({ role: Roles.system, content: char.systemPrompt, name: char.names.system });
+		if (char.instructPrompt) {
+			msg.unshift({
+				role: conf.isUserInstruct ? Roles.user : Roles.system,
+				content: char.instructPrompt,
+				name: char.names.system
+			});
 		}
 
 		return msg;
 	}
 
 	/** Format chat messages for generating a response in 'chat' mode */
-	formatChat(branch: number, char: Character) {
-		const msg = this.formatInstruct(branch, char);
+	formatChat(branch: number, char: Character, conf: Config) {
+		const msg = this.formatInstruct(branch, char, conf);
 
 		return msg.reduce(
 			(chat, message) => `${chat}${char.names[message.role]}: ${message.content}\n`,

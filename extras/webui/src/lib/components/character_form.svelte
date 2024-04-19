@@ -63,9 +63,9 @@
 	</span>
 	<textarea
 		name="system-prompt"
-		placeholder="System prompt"
-		rows={Math.max(4, character.systemPrompt.split('\n').length)}
-		bind:value={character.systemPrompt}
+		placeholder="Instruction"
+		rows={Math.max(4, character.instructPrompt.split('\n').length)}
+		bind:value={character.instructPrompt}
 	></textarea>
 	<textarea
 		name="greeting"
@@ -137,8 +137,13 @@
 		@apply placeholder:text-gray-400 dark:placeholder:text-gray-600 bg-zinc-200 dark:bg-zinc-800 w-full rounded-md border-none text-sm box-border;
 	}
 
-	input[type='radio'] {
+	input[type='radio'],
+	input[type='checkbox'] {
 		@apply focus:ring-[1px]  checked:bg-amber-600 dark:checked:bg-amber-500 focus:ring-amber-600 dark:focus:ring-amber-500 hover:bg-amber-600 dark:hover:bg-amber-500;
-		@apply bg-zinc-200 dark:bg-zinc-800 w-4 h-4 border-none rounded-full cursor-pointer;
+		@apply bg-zinc-200 dark:bg-zinc-800 w-4 h-4 border-none cursor-pointer;
+	}
+
+	input[type='radio'] {
+		@apply rounded-full;
 	}
 </style>

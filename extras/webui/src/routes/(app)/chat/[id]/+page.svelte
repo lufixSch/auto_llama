@@ -29,7 +29,7 @@
 		shouldWriteNew = false;
 		$page.url.searchParams.delete('new');
 		goto($page.url.href, { keepFocus: true });
-		stream = llm.response(data.chat, data.branch, data.character);
+		stream = llm.response(data.chat, data.branch, data.character, data.config);
 	}
 
 	/** Handle a new message from the user */
@@ -45,7 +45,7 @@
 		}
 
 		APIInterface.new().overwriteChat(data.id, data.chat);
-		stream = llm.response(data.chat, data.branch, data.character);
+		stream = llm.response(data.chat, data.branch, data.character, data.config);
 	}
 
 	/** Handle when the stream from the model completed*/
@@ -76,7 +76,7 @@
 		}
 
 		// Otherwise, just add a new message
-		stream = llm.response(data.chat, data.branch, data.character);
+		stream = llm.response(data.chat, data.branch, data.character, data.config);
 	}
 
 	/** Handle completion stop request*/

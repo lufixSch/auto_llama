@@ -10,7 +10,7 @@ export type CharacterIndex = { [key: string]: string };
 export class Character {
 	constructor(
 		public name: string,
-		public systemPrompt: string,
+		public instructPrompt: string,
 		public greeting: string,
 		public chatType: ChatType = ChatType.instruct,
 		public names: { system: string; assistant: string; user: string } = {
@@ -21,10 +21,14 @@ export class Character {
 		public params: LLMParams = defaultLLMParams
 	) {}
 
-	static fromJson(data: Character) {
+	static fromJson(data: Character & { systemPrompt: string }) {
+		if (data.systemPrompt) {
+			data.instructPrompt = data.systemPrompt;
+		}
+
 		return new Character(
 			data.name,
-			data.systemPrompt,
+			data.instructPrompt,
 			data.greeting,
 			data.chatType,
 			data.names,

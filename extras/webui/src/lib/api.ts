@@ -1,6 +1,7 @@
 import { Chat, type ChatIndex } from '$lib/chats';
 import auth from './auth';
 import { Character, type CharacterIndex } from './characters';
+import type { Config } from './config';
 
 const apiBase = '/api';
 type FetchType = typeof fetch;
@@ -155,5 +156,26 @@ export default class APIInterface {
 		}
 
 		return true;
+	}
+
+	async getConfig() {
+		const res = await this.fetch(`/config`);
+
+		if (!res.ok) {
+			throw new Error('Failed to get config');
+		}
+
+		return (await res.json()) as Config;
+	}
+
+	async overwriteConfig(config: Config) {
+		const res = await this.fetch(`/config`, {
+			method: 'PUT',
+			body: JSON.stringify(config)
+		});
+
+		if (!res.ok) {
+			throw new Error('Failed to update config');
+		}
 	}
 }

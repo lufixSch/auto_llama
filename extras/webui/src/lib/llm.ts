@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
-import { env } from '$env/dynamic/public';
 import type { Chat } from './chats';
 import { ChatType, type Character } from './characters';
+import type { Config } from './config';
 
 export interface LLMParams {
 	max_new_tokens: number;
@@ -22,34 +22,42 @@ export const defaultLLMParams: LLMParams = {
 export type LLmResponse = AsyncGenerator<{ delta: string; text: string }, void, unknown>;
 
 export class LLMInterface {
-	public client: OpenAI;
+	// public client: OpenAI;
 
-	constructor(apiEndpoint: string, apiKey: string) {
-		this.client = new OpenAI({
-			baseURL: apiEndpoint,
-			apiKey: apiKey,
+	// constructor(apiEndpoint: string, apiKey: string) {
+	// 	this.client = new OpenAI({
+	// 		baseURL: apiEndpoint,
+	// 		apiKey: apiKey,
+	// 		dangerouslyAllowBrowser: true
+	// 	});
+	// }
+
+	public getClient(config: Config) {
+		return new OpenAI({
+			baseURL: config.OpenAIEndpoint,
+			apiKey: config.OpenAIKey,
 			dangerouslyAllowBrowser: true
 		});
 	}
 
-	public async chat(chat: Chat, branch: number, params: Partial<LLMParams> = {}) {
+	public async chat(chat: Chat, branch: number, params: Partial<LLMParams> = {}, config: Config) {
 		const messages = chat.getBranch(branch).map((m) => {
 			return { role: m.message.role, content: m.message.content };
 		});
 
-		return await this.client.chat.completions.create({
+		return await this.getClient(config).chat.completions.create({
 			messages,
 			model: 'gpt-3.5-turbo',
 			...params
 		});
 	}
 
-	public async chatStream(chat: Chat, branch: number, params: Partial<LLMParams>) {
+	public async chatStream(chat: Chat, branch: number, params: Partial<LLMParams>, config: Config) {
 		const messages = chat.getBranch(branch).map((m) => {
 			return { role: m.message.role, content: m.message.content };
 		});
 
-		return await this.client.chat.completions.create({
+		return await this.getClient(config).chat.completions.create({
 			messages,
 			model: 'gpt-3.5-turbo',
 			stream: true,
@@ -57,11 +65,11 @@ export class LLMInterface {
 		});
 	}
 
-	public async *response(chat: Chat, branch: number, character: Character) {
+	public async *response(chat: Chat, branch: number, character: Character, config: Config) {
 		if (character.chatType === ChatType.instruct) {
-			const messages = chat.formatInstruct(branch, character);
+			const messages = chat.formatInstruct(branch, character, config);
 
-			const stream = await this.client.chat.completions.create({
+			const stream = await this.getClient(config).chat.completions.create({
 				messages,
 				model: 'gpt-3.5-turbo',
 				stream: true,
@@ -79,10 +87,12 @@ export class LLMInterface {
 				stream.controller.abort();
 			}
 		} else {
-			let messages = chat.formatChat(branch, character);
+			let messages = chat.formatChat(branch, character, config);
 			messages += `${character.names.assistant}:`;
 
-			const stream = await this.client.completions.create({
+			console.log(messages);
+
+			const stream = await this.getClient(config).completions.create({
 				prompt: messages,
 				model: 'gpt-3.5-turbo',
 				stream: true,
@@ -108,11 +118,15 @@ export class LLMInterface {
 	}
 
 	/** Generate a description for a chat */
-	public async generateDescription(message: string, params: Partial<LLMParams> = defaultLLMParams) {
-		return await this.client.chat.completions.create({
+	public async generateDescription(
+		message: string,
+		config: Config,
+		params: Partial<LLMParams> = defaultLLMParams
+	) {
+		return await this.getClient(config).chat.completions.create({
 			messages: [
 				{
-					role: 'system',
+					role: config.isUserInstruct ? 'user' : 'system',
 					content:
 						'You are a helpful AI that generates titles for chats. Keep the title short and to the point. Respond only with the title. Do not include the chat itself in the response. You will receive a single message as input.'
 				},
@@ -126,5 +140,5 @@ export class LLMInterface {
 	}
 }
 
-const llm = new LLMInterface(env.PUBLIC_OPEN_AI_ENDPOINT, env.PUBLIC_OPEN_AI_KEY);
+const llm = new LLMInterface();
 export default llm;
