@@ -6,3 +6,9 @@ class Version(BaseSchema):
 
     version: str
     message: str
+
+
+class ListResponse(BaseSchema):
+    """A list of items"""
+
+    items: list[str]

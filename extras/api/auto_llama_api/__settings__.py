@@ -13,7 +13,8 @@ class AutoLLaMaConfig(Config):
 
     selector: AgentSelector
     agents: dict[str, Agent]
-    memory: Memory
+    memory: dict[str, Memory]
+    default_memory: str | None
     llm: LLMInterface
 
 

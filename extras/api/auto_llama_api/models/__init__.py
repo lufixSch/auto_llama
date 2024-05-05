@@ -1,5 +1,5 @@
 from .base import BaseSchema
-from .generic import Version
+from .generic import Version, ListResponse
 from .openai import (
     OpenAIChatChoice,
     OpenAIChatCompletion,
@@ -16,3 +16,4 @@ from .openai import (
     OpenAITool,
     OpenAIToolCall,
 )
+from .agent import AgentInfo, AgentsInfo, AgentResponse, AgentResponses

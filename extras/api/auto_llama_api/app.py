@@ -1,15 +1,14 @@
 import os
-from pathlib import Path
 from argparse import ArgumentParser
 from importlib.metadata import version
+from pathlib import Path
 
 import uvicorn
+from auto_llama_api.models import Version
+from auto_llama_api.routes import agentRouter, memoryRouter, openaiRouter
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from auto_llama_api.models import Version
-from auto_llama_api.routes import openaiRouter
 
 BASE_PATH = Path(__file__).parent.absolute()
 TITLE = "AutoLLama API"
@@ -24,9 +23,11 @@ app.add_middleware(
 )
 
 app.include_router(openaiRouter)
+app.include_router(memoryRouter)
+app.include_router(agentRouter)
 
 
-@app.get("/", response_model=Version, tags=["Welcome"])
+@app.get("/", response_model=Version, tags=["AutoLLaMa", "Welcome"])
 async def root():
     """Base route with status message"""
 

@@ -90,7 +90,7 @@ class MultiSearchAgent(Agent):
     """Search multiple sources for information"""
 
     description = "Search multiple sources for information"
-    parameters = {"query": "The information to search for"}
+    parameters = {"input": "The information to search for"}
 
     def __init__(self, sources: list[SearchAgent], verbose=False) -> None:
         if not HAS_DEPENDENCIES:

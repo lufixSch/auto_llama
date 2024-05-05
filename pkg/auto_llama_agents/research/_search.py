@@ -52,7 +52,7 @@ class SearchAgent(Agent):
     prompt_template: SearchPromptTemplate = None
 
     description = "Search for information"
-    parameters = {"query": "The query to search for."}
+    parameters = {"input": "The query to search for."}
 
     def __init__(self, memory: Memory = None, max_results: int = 1, verbose=False) -> None:
         if not HAS_DEPENDENCIES:
