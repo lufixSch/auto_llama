@@ -30,7 +30,6 @@
 	$: pathIndex = _index == -1 ? 1 : _index + 2;
 
 	function handleStartEdit() {
-		console.log(message.content);
 		editable = true;
 		requestAnimationFrame(() => textBlock.focus());
 	}

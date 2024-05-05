@@ -91,8 +91,6 @@ export class LLMInterface {
 			let messages = chat.formatChat(branch, character, config);
 			messages += `${character.names.assistant}:`;
 
-			console.log(messages);
-
 			const stream = await this.getClient(config).completions.create({
 				prompt: messages,
 				model: 'gpt-3.5-turbo',
