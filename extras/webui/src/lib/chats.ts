@@ -1,5 +1,6 @@
 import { generateId } from '$lib/utils/id';
 import type { Character } from './characters';
+import type { Config } from './config';
 
 export enum Roles {
 	system = 'system',
@@ -84,27 +85,53 @@ export class Chat {
 	}
 
 	/** Format chat messages for generating a response in 'instruct' mode */
-	formatInstruct(branch: number, char: Character) {
-		const msg = this.getBranch(branch).map(({ message }) => ({
-			role: message.role,
-			content: message.content,
-			name: char.names[message.role]
-		}));
+	formatInstruct(branch: number, char: Character, conf: Config) {
+		const msg = this.getBranch(branch).reduce<{ role: Roles; content: string; name: string }[]>(
+			(messages, { message }) => {
+				// Insert empty user message between two assistant messages.
+				// Some backends may otherwise only consider the last message
+				if (
+					messages.length > 0 &&
+					messages[messages.length - 1].role === Roles.assistant &&
+					message.role === Roles.assistant
+				) {
+					messages.push({ role: Roles.user, content: '', name: char.names.user });
+				}
+
+				messages.push({
+					role: message.role,
+					content: message.content,
+					name: char.names[message.role]
+				});
+
+				return messages;
+			},
+			[]
+		);
 
 		if (char.greeting) {
 			msg.unshift({ role: Roles.assistant, content: char.greeting, name: char.names.assistant });
 		}
 
-		if (char.systemPrompt) {
-			msg.unshift({ role: Roles.system, content: char.systemPrompt, name: char.names.system });
+		if (char.instructPrompt) {
+			msg.unshift({
+				role: conf.isUserInstruct ? Roles.user : Roles.system,
+				content: char.instructPrompt,
+				name: char.names.system
+			});
+		}
+
+		// Add empty user message at the end, if the last message is from the assistant
+		if (msg[msg.length - 1].role == Roles.assistant) {
+			msg.push({ role: Roles.user, content: '', name: char.names.user });
 		}
 
 		return msg;
 	}
 
 	/** Format chat messages for generating a response in 'chat' mode */
-	formatChat(branch: number, char: Character) {
-		const msg = this.formatInstruct(branch, char);
+	formatChat(branch: number, char: Character, conf: Config) {
+		const msg = this.formatInstruct(branch, char, conf);
 
 		return msg.reduce(
 			(chat, message) => `${chat}${char.names[message.role]}: ${message.content}\n`,

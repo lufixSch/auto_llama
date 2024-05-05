@@ -15,7 +15,7 @@ export async function load({ fetch, params, url }) {
 			chat,
 			character,
 			id: params.id,
-			branch: Number(url.searchParams.get('branch') || 0),
+			branch: Number(url.searchParams.get('branch') || chat.branches.length - 1),
 			new: url.searchParams.has('new')
 		};
 	} catch {

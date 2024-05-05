@@ -84,7 +84,7 @@
 				)}
 			>
 				<a
-					href={`/chat/${id}`}
+					href={`/chat/${id}/`}
 					class="w-full block text-inherit hover:text-inherit hover:no-underline font-normal truncate h-9 leading-5 p-2 pr-0"
 					title={chats[id]}>{chats[id]}</a
 				>

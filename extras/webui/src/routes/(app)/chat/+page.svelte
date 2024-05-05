@@ -12,7 +12,7 @@
 	let selectedCharacter: string = 'none';
 
 	async function handleNewMessage(event: CustomEvent) {
-		const res = await llm.generateDescription(event.detail);
+		const res = await llm.generateDescription(event.detail, data.config);
 
 		const { id, index } = await APIInterface.new().createChat(
 			selectedCharacter,

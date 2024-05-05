@@ -12,28 +12,24 @@
 
 	export let data: PageData;
 	let stream: LLmResponse | undefined;
-	let branch: number = data.branch;
-	let shouldWriteNew = data.new;
 	let messages: { id: string; message: Message }[] = [];
 	let branchPath: number[] = [];
-	let shouldRegenerate: boolean = false;
-
-	$: chat = data.chat;
-	$: character = data.character;
+	let shouldRegenerate = false;
+	let shouldWriteNew = data.new;
 
 	$: {
-		$page.url.searchParams.set('branch', branch.toString());
+		$page.url.searchParams.set('branch', data.branch.toString());
 		goto($page.url.href, { keepFocus: true });
-		messages = chat.getBranch(branch);
-		branchPath = chat.getBranchPath(branch);
+		messages = data.chat.getBranch(data.branch);
+		branchPath = data.chat.getBranchPath(data.branch);
 	}
 
 	/** Trigger llm completion on load if redirected from /chat */
 	$: if (shouldWriteNew) {
+		shouldWriteNew = false;
 		$page.url.searchParams.delete('new');
 		goto($page.url.href, { keepFocus: true });
-		shouldWriteNew = false;
-		stream = llm.response(chat, branch, character);
+		stream = llm.response(data.chat, data.branch, data.character, data.config);
 	}
 
 	/** Handle a new message from the user */
@@ -44,12 +40,12 @@
 		}
 
 		if (event.detail.trim() != '') {
-			chat.newMessage(Roles.user, event.detail, branch);
-			chat = chat;
+			data.chat.newMessage(Roles.user, event.detail, data.branch);
+			data.chat = data.chat;
 		}
 
-		APIInterface.new().overwriteChat(data.id, chat);
-		stream = llm.response(chat, branch, data.character);
+		APIInterface.new().overwriteChat(data.id, data.chat);
+		stream = llm.response(data.chat, data.branch, data.character, data.config);
 	}
 
 	/** Handle when the stream from the model completed*/
@@ -59,11 +55,10 @@
 			return;
 		}
 
-		chat.newMessage(Roles.assistant, event.detail, branch);
-		APIInterface.new().overwriteChat(data.id, chat);
-
+		data.chat.newMessage(Roles.assistant, event.detail, data.branch);
+		APIInterface.new().overwriteChat(data.id, data.chat);
 		stream = undefined;
-		chat = chat;
+		data.chat = data.chat;
 	}
 
 	/** Handle regeneration request */
@@ -81,7 +76,7 @@
 		}
 
 		// Otherwise, just add a new message
-		stream = llm.response(chat, branch, data.character);
+		stream = llm.response(data.chat, data.branch, data.character, data.config);
 	}
 
 	/** Handle completion stop request*/
@@ -94,33 +89,33 @@
 
 	/** Handle message deletion*/
 	async function handleDelete(id: string) {
-		chat.deleteMessage(id);
-		APIInterface.new().overwriteChat(data.id, chat);
-		chat = chat;
+		data.chat.deleteMessage(id);
+		APIInterface.new().overwriteChat(data.id, data.chat);
+		data.chat = data.chat;
 	}
 
 	/** Handle message branching */
 	async function handleBranching(id: string, generate = false) {
-		const branchId = chat.createBranch(branch, id);
-		APIInterface.new().overwriteChat(data.id, chat);
+		const branchId = data.chat.createBranch(data.branch, id);
+		APIInterface.new().overwriteChat(data.id, data.chat);
 
-		if (chat.messages[id].role === Roles.user || generate) {
+		if (data.chat.messages[id].role === Roles.user || generate) {
 			// Automatically generate new assistant response if branch message is from user
 			shouldWriteNew = true;
 		}
 
-		branch = branchId;
+		data.branch = branchId;
 	}
 
 	/** Handle message editing */
 	async function handleEdit(id: string, message: Message) {
-		chat.messages[id].content = message.content;
-		APIInterface.new().overwriteChat(data.id, chat);
+		data.chat.messages[id].content = message.content;
+		APIInterface.new().overwriteChat(data.id, data.chat);
 	}
 
 	/** Switch to a different branch */
 	async function switchBranch(branchId: number) {
-		branch = branchId;
+		data.branch = branchId;
 	}
 </script>
 
@@ -143,8 +138,8 @@
 				on:edit={(e) => handleEdit(m.id, e.detail)}
 			/>
 		{/each}
-		{#if character.greeting}
-			<BaseBubble role={Roles.assistant} content={character.greeting} />
+		{#if data.character.greeting}
+			<BaseBubble role={Roles.assistant} content={data.character.greeting} />
 		{/if}
 	</div>
 	<ChatInput
