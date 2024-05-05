@@ -1,8 +1,9 @@
-from auto_llama import LLMInterface, PromptTemplate, exceptions, logger
-from auto_llama.react import ReActRunner, ReActStep
-from auto_llama.data import Article
-from auto_llama_agents import AgentResponse, AgentResponseItem, Agent
+from auto_llama_agents import Agent, AgentResponse, AgentResponseItem
 from auto_llama_memory import Memory
+
+from auto_llama import LLMInterface, PromptTemplate, exceptions, logger
+from auto_llama.data import Article
+from auto_llama.react import ReActRunner, ReActStep
 
 HAS_DEPENDENCIES = True
 
@@ -26,6 +27,9 @@ class ResearchPromptTemplate(PromptTemplate):
 
 class ResearchAgent(Agent):
     """Thoroughly research a topic using different sources and and a COT process"""
+
+    description = "Research a complex topic using multiple sources"
+    parameters = {"objective": "The research goal/objective"}
 
     def __init__(
         self,
@@ -84,6 +88,9 @@ class ResearchAgent(Agent):
 
 class MultiSearchAgent(Agent):
     """Search multiple sources for information"""
+
+    description = "Search multiple sources for information"
+    parameters = {"query": "The information to search for"}
 
     def __init__(self, sources: list[SearchAgent], verbose=False) -> None:
         if not HAS_DEPENDENCIES:

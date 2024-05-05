@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from auto_llama_api import auto_llama_config
-from auto_llama_api.lib import LLMInterface
+from auto_llama_api.lib import LLMInterface, resolve_agents
 from auto_llama_api.models import (
     OpenAIChatChoice,
     OpenAIChatCompletion,
@@ -70,8 +70,12 @@ def openai_chat_completion(req: Request, args: OpenAIChatCompletion, llm: LLMInt
     )
 
     chat = Chat.from_history(history=[msg.to_chat() for msg in args.messages])
+    available_agents = resolve_agents(args.tools, auto_llama_config.agents)
 
-    results = auto_llama_config.selector.run(chat)
+    if available_agents != {}:
+        results = auto_llama_config.selector.run(chat, available_agents)
+    else:
+        results = {}
 
     context = ""
     response = ""
@@ -80,10 +84,12 @@ def openai_chat_completion(req: Request, args: OpenAIChatCompletion, llm: LLMInt
     for out in results.items():
         if out.position is out.POSITION.CONTEXT:
             context += "\n" + out.to_string()
-        if out.position is out.POSITION.CHAT:
+        elif out.position is out.POSITION.CHAT:
             chat.last.message += "\n" + out.to_string()
-        if out.position is out.POSITION.RESPONSE:
+        elif out.position is out.POSITION.RESPONSE:
             response += "\n" + out.to_string()
+        elif out.position is out.POSITION.SYSTEM:
+            chat.append("system", out.to_string())
 
     # Generate response from agent results instead of llm response
     if response:
@@ -105,7 +111,7 @@ def openai_chat_completion(req: Request, args: OpenAIChatCompletion, llm: LLMInt
 
     remembered = auto_llama_config.memory.remember(chat.last_from("user"))
     context += "\n" + "\n".join([fact.get_formatted() for fact in remembered])
-    chat.format_system_message(context)
+    chat.format_system_message(context=context)
 
     if not args.stream:
         response = llm.chat(chat, stopping_strings=stop, max_new_tokens=args.max_tokens).last

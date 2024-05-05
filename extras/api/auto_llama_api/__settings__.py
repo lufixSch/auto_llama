@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any
 
-from auto_llama_agents import AgentSelector
+from auto_llama_agents import Agent, AgentSelector
 from auto_llama_memory import Memory
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -12,6 +12,7 @@ class AutoLLaMaConfig(Config):
     """Config for auto_llama"""
 
     selector: AgentSelector
+    agents: dict[str, Agent]
     memory: Memory
     llm: LLMInterface
 
