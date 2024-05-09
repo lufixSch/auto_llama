@@ -1,23 +1,24 @@
 import os
 from datetime import datetime
 
-from auto_llama import exceptions, Chat, ChatMessage
-from auto_llama.data import Content
-from auto_llama_memory import Memory, ConversationMemory
+from auto_llama_memory import ConversationMemory, Memory
 
+from auto_llama import Chat, ChatMessage, exceptions
+from auto_llama.data import Content
 
 HAS_DEPENDENCIES = True
 
 try:
     from txtai import Embeddings
     from txtai.embeddings import errors as txtai_errors
+
     from auto_llama import text as nlp
     from auto_llama.text import TextChunker
 
-    from .data import metadata_from_content, db_fragments_to_content
-
     # Check dependencies
     from auto_llama.text._chunking import HAS_DEPENDENCIES
+
+    from .data import db_fragments_to_content, metadata_from_content
 except ImportError:
     HAS_DEPENDENCIES = False
 except exceptions.ExtrasDependenciesMissing:

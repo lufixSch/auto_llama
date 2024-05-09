@@ -1,5 +1,5 @@
-from typing import Literal, TypeAlias, Callable
 from datetime import datetime
+from typing import Callable, Literal, TypeAlias
 from uuid import uuid4
 
 ChatRoles: TypeAlias = Literal["system", "user", "assistant"]
@@ -14,7 +14,8 @@ class ChatMessage:
         self.date = date or datetime.now()
 
     def to_string(self, name: str = None):
-        return f"{self.date.isoformat()} - {name or self.role}: {self.message}"
+        # return f"{self.date.isoformat()} - {name or self.role}: {self.message}"
+        return f"{name or self.role}: {self.message}"
 
 
 class Chat:
@@ -39,7 +40,9 @@ class Chat:
         self._listeners = {}
         self._names = names
         self._has_system_message = bool(system_message)
-        self.append("system", system_message)
+        if self._has_system_message:
+            self.append("system", system_message)
+
         self._system_template = system_message
 
     @classmethod
@@ -51,9 +54,18 @@ class Chat:
     ):
         """Initialize a new chat from a chat history"""
 
+        if not system_message and (len(history) > 0) and (history[0].role == "system"):
+            system_message = history.pop(0).message
+
         chat = cls(system_message, names)
         chat._history = [*chat.history, *history]
         return chat
+
+    @property
+    def size(self):
+        """Number of messages in the chat. Excluding the system message"""
+
+        return len(self._history) - (1 if self._has_system_message else 0)
 
     @property
     def prompt(self) -> str:
@@ -131,7 +143,7 @@ class Chat:
             if (chat_msg.role in include_roles) and (chat_msg.role not in exclude_roles) and filter_cb(chat_msg)
         ]
 
-    def format_system_message(self, context: str, old_chat: dict[str, ChatMessage]):
+    def format_system_message(self, context: str = "", tools: str = "", old_chat: dict[str, ChatMessage] = {}):
         """Format system message and overwrite current system message (e.g. chat.history[0])"""
 
         if not self._has_system_message:
@@ -140,6 +152,7 @@ class Chat:
         system_message = self._system_template.format(
             assistant=self.name("assistant"),
             name=self.name("user"),
+            tools=tools,
             context=context,
             old_chat="\n".join([chat.to_string(name) for name, chat in old_chat.items()]),
         )

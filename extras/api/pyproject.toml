@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "auto-llama-api"
+version = "0.0.1"
+description = "API for auto-llama"
+readme = "README.md"
+license = { file = "LICENSE" }
+keywords = [ "AI", "LLM", "Llama", "FastAPI"]
+authors = [
+  { name = "LufixSch" }
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "fastapi",
+  "uvicorn[standard]",
+  "pydantic-settings",
+  "sse-starlette"
+]
+
+[project.scripts]
+auto-llama-api = "auto_llama_api:main"
+
+[tool.hatch.build]
+packages=['auto_llama_api']

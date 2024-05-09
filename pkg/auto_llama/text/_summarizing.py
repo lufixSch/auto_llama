@@ -35,7 +35,7 @@ class Summarizer:
 
         return self._word_freq(self._doc)
 
-    def _word_freq(self, doc: Language) -> Counter:
+    def _word_freq(self, doc: "Language") -> Counter:
         """
         Return a Counter object with the normalized frequency of each word in the text.
 

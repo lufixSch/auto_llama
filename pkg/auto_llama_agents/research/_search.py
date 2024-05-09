@@ -1,12 +1,12 @@
 from abc import abstractmethod
-from typing import Literal
 from itertools import islice
+from typing import Literal
 
-from auto_llama import PromptTemplate, LLMInterface, exceptions, logger
-from auto_llama.data import Article
 from auto_llama_agents import Agent, AgentResponse, AgentResponseItem
 from auto_llama_memory import Memory
 
+from auto_llama import LLMInterface, PromptTemplate, exceptions, logger
+from auto_llama.data import Article
 
 AGENT_NAME = "SearchAgent"
 HAS_DEPENDENCIES = True
@@ -14,9 +14,10 @@ HAS_EXTRAS_DEPENDENCIES = True
 
 # Agent specific dependencies
 try:
-    import wikipedia
     import arxiv
+    import wikipedia
     from duckduckgo_search import DDGS
+
     from auto_llama import text
 except ImportError:
     HAS_DEPENDENCIES = False
@@ -49,6 +50,9 @@ class SearchAgent(Agent):
     query_generator: Literal["none", "llm", "nlp"] = "none"
     llm: LLMInterface = None
     prompt_template: SearchPromptTemplate = None
+
+    description = "Search for information"
+    parameters = {"input": "The query to search for."}
 
     def __init__(self, memory: Memory = None, max_results: int = 1, verbose=False) -> None:
         if not HAS_DEPENDENCIES:
@@ -152,6 +156,8 @@ class SearchAgent(Agent):
 class WikipediaSearchAgent(SearchAgent):
     """Search Wikipedia for Information"""
 
+    description = "Search Wikipedia for information"
+
     def _search(self, query: str) -> AgentResponse:
         articles = wikipedia.search(query)[: self.max_results]
 
@@ -179,6 +185,8 @@ class WikipediaSearchAgent(SearchAgent):
 
 class DuckDuckGoSearchAgent(SearchAgent):
     """Search DuckDuckGo for Information"""
+
+    description = "Search the web using Google"
 
     def _search(self, query: str) -> AgentResponse:
         with DDGS() as ddgs:

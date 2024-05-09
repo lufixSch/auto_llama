@@ -3,9 +3,8 @@
 Includes selectors, which decide which agent to use depending on the conversation.
 """
 
-from ._agent import Agent, AgentResponse, AgentResponseItem
+from ._agent import Agent, AgentResponse, AgentResponseItem, AgentInfo
 from ._selector import AgentSelector
-from .selectors import SimilarityAgentSelector
 from .code import CodeAgent, CodeExecAgent
 from .research import (
     SearchAgent,

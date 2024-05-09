@@ -1,4 +1,4 @@
-from auto_llama_agents import AgentSelector, Agent
+from auto_llama_agents import Agent, AgentSelector
 
 
 class CommandAgentSelector(AgentSelector):
@@ -14,10 +14,16 @@ class CommandAgentSelector(AgentSelector):
         self._tools = tools
         self._commands = commands
 
-    def _run(self, prompt: str) -> Agent:
+    def run(self, chat, available_agents):
+        prompt = chat.last_from("user")
+        agent = self._run(prompt, self._filter_agents(available_agents.keys(), self._tools))
+
+        return agent.run(prompt)
+
+    def _run(self, prompt: str, available_agents: dict[str, Agent]) -> Agent:
         for tool, c in self._commands.items():
             if prompt.startswith(c):
-                return self._tools[tool]
+                return available_agents[tool]
 
         return None
 
@@ -35,9 +41,15 @@ class KeywordAgentSelector(AgentSelector):
         self._tools = tools
         self._keywords = keywords
 
-    def _run(self, prompt: str) -> Agent:
+    def run(self, chat, available_agents):
+        prompt = chat.last_from("user")
+        agent = self._run(prompt, self._filter_agents(available_agents.keys(), self._tools))
+
+        return agent.run(prompt)
+
+    def _run(self, prompt: str, available_agents: dict[str, Agent]) -> Agent:
         for tool, keyword in self._keywords.items():
             if keyword.lower() in prompt.lower():
-                return self._tools[tool]
+                return available_agents[tool]
 
         return None

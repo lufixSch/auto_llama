@@ -1,9 +1,34 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import Enum
 
 from auto_llama_memory import Memory
-from auto_llama.data import Content, Article, Image, ImageSource
+
 from auto_llama import logger
+from auto_llama.data import Article, Content, Image, ImageSource
+
+
+@dataclass
+class AgentInfo:
+    """Information about an Agent"""
+
+    name: str
+    description: str
+    parameters: dict[str, str]
+
+    @classmethod
+    def with_agent(
+        cls,
+        agent: "Agent",
+        name: str,
+        description: str | None = None,
+        parameters: dict[str, str] | None = None,
+    ):
+        return cls(
+            name=name,
+            description=description or agent.description,
+            parameters=parameters or agent.parameters,
+        )
 
 
 class AgentResponseItem:
@@ -34,6 +59,9 @@ class AgentResponseItem:
 
         CHAT = "chat"
         """ Add the response to the user chat message"""
+
+        SYSTEM = "system"
+        """ Add the response as a system message"""
 
     def __init__(self, position: POSITION, value: Content | str) -> None:
         self.position = position
@@ -122,6 +150,11 @@ class Agent(ABC):
     """Agent baseclass"""
 
     memory: Memory = None
+    description: str = ""
+    """Fallback usage description of the agent"""
+
+    parameters: dict[str, str] = {}
+    """Default parameter definition for the agent"""
 
     def __init__(self, verbose=False, *args, **kwargs) -> None:
         self._verbose = verbose
