@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from auto_llama_api import settings
 from auto_llama_api.lib import FileLoaders, UploadedFile
-from auto_llama_api.models import FileInfo, FileLoadOptions
+from auto_llama_api.models import Article, FileInfo, FileLoadOptions
 from fastapi import APIRouter, Depends, Form, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
@@ -25,8 +25,8 @@ def json_form_checker(data: str = Form(...)):
         )
 
 
-@contextRouter.post("/", response_model=FileInfo)
-async def upload_file(
+@contextRouter.post("/parse_file", response_model=Article)
+async def parse_file(
     file: UploadedFile,
     loaders: FileLoaders,
     options: FileLoadOptions = Depends(json_form_checker),
@@ -60,8 +60,8 @@ async def upload_file(
         summary = summarizer.summarize(max_len)
         content.text = summary
 
-    file_id = uuid4().hex
-    path = Path(settings.DATA_PATH) / f"{file_id}.json"
-    content.save(path)
+    # file_id = uuid4().hex
+    # path = Path(settings.DATA_PATH) / f"{file_id}.json"
+    # content.save(path)
 
-    return FileInfo(id=file_id, title=content.title)
+    return Article(title=content.title, text=content.text, source=content.src)

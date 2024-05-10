@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { PUBLIC_IS_AUTO_LLAMA } from '$env/static/public';
+	import AutoLLaMaAPI from '$lib/auto_llama';
 
 	export let isGenerating: boolean = false;
 	export let required: boolean = false;
@@ -8,12 +10,22 @@
 
 	let message: string = '';
 	const submit = createEventDispatcher();
+	const auto_llama = AutoLLaMaAPI.new();
 
 	function handleSpecialAction() {
 		if (isGenerating) {
 			onStop('stop');
 		} else {
 			onRegenerate('regenerate');
+		}
+	}
+
+	function onSelectFile(ev: Event) {
+		const files = (ev.target as HTMLInputElement).files;
+
+		const file = files?.[0];
+		if (file) {
+			auto_llama.parseFile(file, {}, { OpenAIEndpoint: 'http://localhost:8000' }).then(console.log);
 		}
 	}
 </script>
@@ -69,4 +81,9 @@
 			{/if}
 		</button>
 	</div>
+	{#if PUBLIC_IS_AUTO_LLAMA}
+		<div>
+			<input type="file" on:change={onSelectFile} />
+		</div>
+	{/if}
 </form>

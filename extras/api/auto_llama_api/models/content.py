@@ -14,3 +14,9 @@ class FileLoadOptions(BaseModel):
 class FileInfo(BaseModel):
     id: str
     title: str
+
+
+class Article(BaseModel):
+    title: str
+    text: str
+    source: str
