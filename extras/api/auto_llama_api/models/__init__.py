@@ -17,3 +17,4 @@ from .openai import (
     OpenAIToolCall,
 )
 from .agent import AgentInfo, AgentsInfo, AgentResponse, AgentResponses
+from .content import FileLoadOptions, FileInfo

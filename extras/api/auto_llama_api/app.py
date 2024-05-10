@@ -5,7 +5,7 @@ from pathlib import Path
 
 import uvicorn
 from auto_llama_api.models import Version
-from auto_llama_api.routes import agentRouter, memoryRouter, openaiRouter
+from auto_llama_api.routes import agentRouter, contextRouter, memoryRouter, openaiRouter
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,6 +25,7 @@ app.add_middleware(
 app.include_router(openaiRouter)
 app.include_router(memoryRouter)
 app.include_router(agentRouter)
+app.include_router(contextRouter)
 
 
 @app.get("/", response_model=Version, tags=["AutoLLaMa", "Welcome"])

@@ -3,9 +3,10 @@ from typing import Annotated, Callable
 from auto_llama_agents import Agent as AutoLLamaAgent
 from auto_llama_api import auto_llama_config
 from auto_llama_memory import Memory
-from fastapi import Depends
+from fastapi import Depends, UploadFile
 
 from auto_llama import LLMInterface as AutoLLaMaLLM
+from auto_llama.text import FileLike, FileLoader
 
 _active_memory = auto_llama_config.default_memory
 
@@ -54,3 +55,17 @@ def get_agent(agent_name: str):
 
 
 Agent = Annotated[AutoLLamaAgent, Depends(get_agent)]
+
+
+def get_file_loaders():
+    return auto_llama_config.file_loaders
+
+
+FileLoaders = Annotated[list[FileLoader], Depends(get_file_loaders)]
+
+
+def get_file_like(file: UploadFile):
+    return FileLike(file.filename, file.file)
+
+
+UploadedFile = Annotated[FileLike, Depends(get_file_like)]

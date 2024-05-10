@@ -1,6 +1,7 @@
-from abc import ABC, abstractmethod
 import os
-
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import BinaryIO, TextIO
 from urllib.parse import urlparse
 
 from auto_llama import exceptions
@@ -10,15 +11,23 @@ HAS_DEPENDENCIES = True
 
 # Module specific dependencies
 try:
-    import wikipedia
     import arxiv
-    from bs4 import BeautifulSoup
     import requests
+    import wikipedia
+    from bs4 import BeautifulSoup
     from pypdf import PdfReader
 
     from ._util import merge_symbols
 except (ImportError, exceptions.ExtrasDependenciesMissing):
     HAS_DEPENDENCIES = False
+
+
+@dataclass
+class FileLike:
+    """File representation with a file name and a file-like object"""
+
+    name: str
+    stream: BinaryIO | TextIO
 
 
 class TextLoader(ABC):
@@ -132,7 +141,19 @@ class RedditLoader(WebTextLoader):
         return url.scheme not in ("file", "") and url.netloc and ("reddit" in url.netloc)
 
 
-class PDFLoader(TextLoader):
+class FileLoader(TextLoader):
+    """Load text documents from file like objects or file paths"""
+
+    @abstractmethod
+    def __call__(self, source: str | FileLike) -> Article:
+        """Execute loader with a file like object or file path"""
+
+    @abstractmethod
+    def is_valid(self, source: str | FileLike) -> bool:
+        """Check if the source is valid for this loader"""
+
+
+class PDFLoader(FileLoader):
     """Load text documents from PDFs"""
 
     _ligatures_map = {
@@ -188,10 +209,15 @@ class PDFLoader(TextLoader):
 
         return text
 
-    def __call__(self, source: str) -> Article:
-        reader = PdfReader(source)
+    def __call__(self, source) -> Article:
+        if isinstance(source, str):
+            reader = PdfReader(source)
+        else:
+            reader = PdfReader(source.stream)
+            source = source.name
 
         title = ".".join(os.path.basename(source).split(".")[:-1])
+
         parts: list[str] = []
         content = ""
 
@@ -212,24 +238,33 @@ class PDFLoader(TextLoader):
 
         return Article(content, title, source)
 
-    def is_valid(self, source: str) -> bool:
-        return os.path.exists(source) and os.path.isfile(source) and source.lower().endswith(".pdf")
+    def is_valid(self, source) -> bool:
+        if isinstance(source, str):
+            return os.path.exists(source) and os.path.isfile(source) and source.lower().endswith(".pdf")
+
+        return isinstance(source, FileLike) and source.name.lower().endswith(".pdf")
 
 
-class PlainTextLoader(TextLoader):
+class PlainTextLoader(FileLoader):
     """Load text from a plain text file"""
 
     def __init__(self, file_types: list[str] = ["txt", "md"]):
         super().__init__()
         self._file_types = file_types
 
-    def __call__(self, source: str) -> Article:
+    def __call__(self, source) -> Article:
+        if isinstance(source, str):
+            with open(source, "r") as f:
+                content = f.read()
+        else:
+            content = source.stream.read()
+            source = source.name
+
         title = ".".join(os.path.basename(source).split(".")[:-1])
-
-        with open(source, "r") as f:
-            content = f.read()
-
         return Article(content, title, source)
 
-    def is_valid(self, source: str) -> bool:
-        return os.path.basename(source).split(".")[-1] in self._file_types
+    def is_valid(self, source) -> bool:
+        if isinstance(source, str):
+            return os.path.basename(source).split(".")[-1] in self._file_types
+
+        return isinstance(source, FileLike) and source.name.lower().split(".")[-1] in self._file_types

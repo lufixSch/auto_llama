@@ -1,9 +1,8 @@
-from string import punctuation
 from collections import Counter
 from heapq import nlargest
+from string import punctuation
 
-from auto_llama import exceptions, ModelLoader
-
+from auto_llama import ModelLoader, exceptions
 
 HAS_DEPENDENCIES = True
 
@@ -34,6 +33,17 @@ class Summarizer:
         """
 
         return self._word_freq(self._doc)
+
+    def len(self) -> int:
+        """
+        Return the length of the text in number of sentences
+        """
+
+        cnt = 0
+        for _ in self._doc.sents:
+            cnt += 1
+
+        return cnt
 
     def _word_freq(self, doc: "Language") -> Counter:
         """
