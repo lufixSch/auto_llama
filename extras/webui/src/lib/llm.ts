@@ -34,7 +34,7 @@ export class LLMInterface {
 
 	public getClient(config: Config) {
 		return new OpenAI({
-			baseURL: config.OpenAIEndpoint,
+			baseURL: config.OpenAIEndpoint + '/v1',
 			apiKey: config.OpenAIKey,
 			dangerouslyAllowBrowser: true
 		});

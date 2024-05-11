@@ -5,35 +5,32 @@
 
 	export let isGenerating: boolean = false;
 	export let required: boolean = false;
-	const onRegenerate = createEventDispatcher();
-	const onStop = createEventDispatcher();
+	export let message: string = '';
 
-	let message: string = '';
-	const submit = createEventDispatcher();
-	const auto_llama = AutoLLaMaAPI.new();
+	const dispatchEvent = createEventDispatcher();
+
+	let fileInput: HTMLInputElement | null = null;
 
 	function handleSpecialAction() {
 		if (isGenerating) {
-			onStop('stop');
+			dispatchEvent('stop');
 		} else {
-			onRegenerate('regenerate');
+			dispatchEvent('regenerate');
 		}
 	}
 
 	function onSelectFile(ev: Event) {
 		const files = (ev.target as HTMLInputElement).files;
-
 		const file = files?.[0];
-		if (file) {
-			auto_llama.parseFile(file, {}, { OpenAIEndpoint: 'http://localhost:8000' }).then(console.log);
-		}
+
+		dispatchEvent('fileSelected', file);
 	}
 </script>
 
 <form
 	class="h-fit flex space-y-2 sm:space-y-0 sm:space-x-2 flex-col sm:flex-row sm:items-end"
 	on:submit|preventDefault={(e) => {
-		submit('inputEvent', message);
+		dispatchEvent('inputEvent', message);
 		message = '';
 	}}
 >
@@ -80,10 +77,19 @@
 				</div>
 			{/if}
 		</button>
+		{#if PUBLIC_IS_AUTO_LLAMA}
+			<input bind:this={fileInput} class="hidden" type="file" on:change={onSelectFile} />
+			<button class="w-full" on:click={() => fileInput?.click()} type="button">
+				<div
+					class="flex justify-center rounded-lg transition duration-200 hover:bg-amber-600 dark:hover:bg-amber-500 active:bg-amber-600 dark:active:bg-amber-500"
+				>
+					<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"
+						><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path
+							d="M364.2 83.8c-24.4-24.4-64-24.4-88.4 0l-184 184c-42.1 42.1-42.1 110.3 0 152.4s110.3 42.1 152.4 0l152-152c10.9-10.9 28.7-10.9 39.6 0s10.9 28.7 0 39.6l-152 152c-64 64-167.6 64-231.6 0s-64-167.6 0-231.6l184-184c46.3-46.3 121.3-46.3 167.6 0s46.3 121.3 0 167.6l-176 176c-28.6 28.6-75 28.6-103.6 0s-28.6-75 0-103.6l144-144c10.9-10.9 28.7-10.9 39.6 0s10.9 28.7 0 39.6l-144 144c-6.7 6.7-6.7 17.7 0 24.4s17.7 6.7 24.4 0l176-176c24.4-24.4 24.4-64 0-88.4z"
+						/></svg
+					>
+				</div>
+			</button>
+		{/if}
 	</div>
-	{#if PUBLIC_IS_AUTO_LLAMA}
-		<div>
-			<input type="file" on:change={onSelectFile} />
-		</div>
-	{/if}
 </form>

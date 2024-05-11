@@ -1,15 +1,22 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import APIInterface from '$lib/api';
+	import AutoLLaMaAPI from '$lib/auto_llama';
+	import type { Article } from '$lib/auto_llama_sdk';
 	import IconButton from '$lib/components/buttons/icon_button.svelte';
 	import CharSelector from '$lib/components/char_selector.svelte';
 	import ChatInput from '$lib/components/chat_input.svelte';
+	import FileList from '$lib/components/file_list.svelte';
 	import llm from '$lib/llm';
 	import { trim } from '$lib/utils/str';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 	let selectedCharacter: string = 'none';
+	let context: Article[] = [];
+	let message: string = '';
+
+	const auto_llama = AutoLLaMaAPI.new();
 
 	async function handleNewMessage(event: CustomEvent) {
 		const res = await llm.generateDescription(event.detail, data.config);
@@ -20,6 +27,15 @@
 			event.detail
 		);
 		requestAnimationFrame(() => goto(`/chat/${id}?new`));
+	}
+
+	async function handleFileSelected(ev: CustomEvent<File>) {
+		const file = ev.detail;
+		if (!file) return;
+
+		const article = await auto_llama.parseFile(file, {}, data.config);
+		context = [...context, article];
+		message += `\n[${article.source}]{}`;
 	}
 </script>
 
@@ -34,5 +50,14 @@
 			></IconButton
 		>
 	</div>
-	<ChatInput on:inputEvent={handleNewMessage} required={true}></ChatInput>
+	<FileList
+		files={context}
+		on:remove={(ev) => (context = context.filter((_, i) => i !== ev.detail))}
+	></FileList>
+	<ChatInput
+		bind:message
+		on:inputEvent={handleNewMessage}
+		on:fileSelected={handleFileSelected}
+		required={true}
+	></ChatInput>
 </section>

@@ -10,15 +10,17 @@ Before starting the WebUI the first time, you need to add a `.env` file to this 
 
 ```env
 DATA_PATH=./data
-PUBLIC_OPEN_AI_ENDPOINT=http://localhost:5000/v1
-PUBLIC_OPEN_AI_KEY=sk-11111111111111111111111111
+OPEN_AI_ENDPOINT=http://localhost:5000
+OPEN_AI_KEY=sk-11111111111111111111111111
 SECRET=your-secret-key
+IS_AUTO_LLAMA=1
 ```
 
 - `DATA_PATH` defines where the UI will store data like chats and other information.
 - `SECRET` is a password with which you can login to the UI.
+- `IS_AUTO_LLAMA` tells the UI whether the API has the AutoLLaMa functionality.
 
-> **⚠️ WARNING: The OpenAI API key will be exposed to everyone loading the webpage!**
+> **⚠️ WARNING: The OpenAI API key will be exposed to everyone loading the webpage!** > **Note:** Provide the `OPEN_AI_ENDPOINT` without the `/v1` postfixed. This will be handled internally.
 
 You then install the WebUI with the following commands:
 
