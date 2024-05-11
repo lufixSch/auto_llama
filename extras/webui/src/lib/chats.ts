@@ -1,4 +1,5 @@
 import { generateId } from '$lib/utils/id';
+import type { Article } from './auto_llama_sdk';
 import type { Character } from './characters';
 import type { Config } from './config';
 
@@ -20,6 +21,8 @@ export interface Message {
 export class Chat {
 	messages: { [key: string]: Message } = {};
 	branches: { source: number | null; messages: string[] }[] = [{ source: null, messages: [] }];
+	files: { [key: string]: Article } = {};
+	private _file_match = /!\[(.*?)\]\{.*?\}/g;
 
 	constructor(public character: string) {}
 
@@ -98,9 +101,11 @@ export class Chat {
 					messages.push({ role: Roles.user, content: '', name: char.names.user });
 				}
 
+				const content = this.insertFileContent(message.content);
+
 				messages.push({
 					role: message.role,
-					content: message.content,
+					content: content,
 					name: char.names[message.role]
 				});
 
@@ -126,6 +131,7 @@ export class Chat {
 			msg.push({ role: Roles.user, content: '', name: char.names.user });
 		}
 
+		console.log(msg);
 		return msg;
 	}
 
@@ -139,10 +145,47 @@ export class Chat {
 		);
 	}
 
+	/** Add new files to the chat */
+	addFile(...files: Article[]) {
+		files.forEach((file, i) => {
+			this.files[`${i}/${file.source}`] = file;
+		});
+	}
+
+	/** Remove file from the chat */
+	removeFile(idx: number) {
+		Object.keys(this.files).forEach((key) => {
+			if (key.startsWith(`${idx}/`)) {
+				delete this.files[key];
+				return;
+			}
+		});
+	}
+
+	/* Find file references in chat and replace content */
+	insertFileContent(message: string) {
+		const matches = message.match(this._file_match);
+
+		let res = message;
+		matches?.forEach((match) => {
+			const id = match.slice(2, match.indexOf(']'));
+			console.log(id, this.files);
+			res = res.replace(match, `![${id}]{${this.files[id].text}}`);
+		});
+
+		return res;
+	}
+
+	/* Return file reference for a given file */
+	static emptyFileReference(id: string) {
+		return `![${id}]{}`;
+	}
+
 	static fromJson(json: Chat): Chat {
 		const chat = new Chat(json.character);
 		chat.messages = json['messages'];
 		chat.branches = json['branches'];
+		chat.files = json['files'];
 		return chat;
 	}
 }

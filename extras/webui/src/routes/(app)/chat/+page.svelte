@@ -3,6 +3,7 @@
 	import APIInterface from '$lib/api';
 	import AutoLLaMaAPI from '$lib/auto_llama';
 	import type { Article } from '$lib/auto_llama_sdk';
+	import { Chat, Roles } from '$lib/chats';
 	import IconButton from '$lib/components/buttons/icon_button.svelte';
 	import CharSelector from '$lib/components/char_selector.svelte';
 	import ChatInput from '$lib/components/chat_input.svelte';
@@ -21,11 +22,17 @@
 	async function handleNewMessage(event: CustomEvent) {
 		const res = await llm.generateDescription(event.detail, data.config);
 
-		const { id, index } = await APIInterface.new().createChat(
+		const api = APIInterface.new();
+		const { id, index } = await api.createChat(
 			selectedCharacter,
-			trim(res.choices[0].message.content || 'New Chat', '"'),
-			event.detail
+			trim(res.choices[0].message.content || 'New Chat', '"')
 		);
+
+		const chat = new Chat(selectedCharacter);
+		chat.newMessage(Roles.user, event.detail, 0);
+		chat.addFile(...context);
+		await api.overwriteChat(id, chat);
+
 		requestAnimationFrame(() => goto(`/chat/${id}?new`));
 	}
 
@@ -35,7 +42,14 @@
 
 		const article = await auto_llama.parseFile(file, {}, data.config);
 		context = [...context, article];
-		message += `\n[${article.source}]{}`;
+		message += '\n' + Chat.emptyFileReference(`${context.length - 1}/${article.source}`);
+	}
+
+	async function handleRemoveFile(ev: CustomEvent<number>) {
+		const rm_file = context[ev.detail];
+		context = context.filter((_, i) => i !== ev.detail);
+
+		message = message.replace(Chat.emptyFileReference(`${ev.detail}/${rm_file.source}`), '');
 	}
 </script>
 
@@ -50,10 +64,7 @@
 			></IconButton
 		>
 	</div>
-	<FileList
-		files={context}
-		on:remove={(ev) => (context = context.filter((_, i) => i !== ev.detail))}
-	></FileList>
+	<FileList files={context} on:remove={handleRemoveFile}></FileList>
 	<ChatInput
 		bind:message
 		on:inputEvent={handleNewMessage}

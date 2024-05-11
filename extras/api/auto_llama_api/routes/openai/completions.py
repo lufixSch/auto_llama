@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from auto_llama_api import auto_llama_config
-from auto_llama_api.lib import LLMInterface, resolve_agents
+from auto_llama_api.lib import ActiveMemory, LLMInterface, resolve_agents
 from auto_llama_api.models import (
     OpenAIChatChoice,
     OpenAIChatCompletion,
@@ -62,7 +62,7 @@ def openai_completion(req: Request, args: OpenAICompletion, llm: LLMInterface):
 
 
 @completionRouter.post("/chat/completions", response_model=OpenAIChatCompletionResponse)
-def openai_chat_completion(req: Request, args: OpenAIChatCompletion, llm: LLMInterface):
+def openai_chat_completion(req: Request, args: OpenAIChatCompletion, llm: LLMInterface, memory: ActiveMemory):
     res_id = f"chatcmpl-{uuid4().hex}"
     stop = args.stop if isinstance(args.stop, list) else [args.stop]
     cmpl_response = OpenAIChatCompletionResponse(
@@ -109,7 +109,7 @@ def openai_chat_completion(req: Request, args: OpenAIChatCompletion, llm: LLMInt
 
         return EventSourceResponse(create_stream_response())
 
-    remembered = auto_llama_config.memory.remember(chat.last_from("user"))
+    remembered = memory.remember(chat.last_from("user")) if memory else ""
     context += "\n" + "\n".join([fact.get_formatted() for fact in remembered])
     chat.format_system_message(context=context)
 
