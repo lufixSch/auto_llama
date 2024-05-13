@@ -20,17 +20,21 @@ export async function load({ fetch, params, url }) {
 		const chatIndex = await apiInterface.getChatIndex();
 
 		if (params.id) {
-			const chat = await apiInterface.getChat(params.id);
+			try {
+				const chat = await apiInterface.getChat(params.id);
 
-			if (chat.character != 'none') {
-				const character = await apiInterface.getCharacter(chat.character);
+				if (chat.character != 'none') {
+					const character = await apiInterface.getCharacter(chat.character);
 
-				return {
-					location,
-					chatIndex,
-					currentChar: { id: chat.character, name: character.name },
-					config
-				};
+					return {
+						location,
+						chatIndex,
+						currentChar: { id: chat.character, name: character.name },
+						config
+					};
+				}
+			} catch {
+				// Catch 'Chat not found' error to ensure the right error page
 			}
 		}
 

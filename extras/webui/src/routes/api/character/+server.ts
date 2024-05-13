@@ -26,7 +26,7 @@ export async function PUT({ request }) {
 export async function POST({ request }) {
 	const conf: {
 		name: string;
-		systemPrompt: string;
+		instructPrompt: string;
 		greeting?: string;
 		chatType?: ChatType;
 		names?: { system: string; assistant: string; user: string };
@@ -34,7 +34,7 @@ export async function POST({ request }) {
 
 	const character = new Character(
 		conf.name,
-		conf.systemPrompt,
+		conf.instructPrompt,
 		conf.greeting || '',
 		conf.chatType || ChatType.instruct,
 		conf.names || { system: 'system', assistant: 'assistant', user: 'user' }
