@@ -131,7 +131,6 @@ export class Chat {
 			msg.push({ role: Roles.user, content: '', name: char.names.user });
 		}
 
-		console.log(msg);
 		return msg;
 	}
 
@@ -169,7 +168,6 @@ export class Chat {
 		let res = message;
 		matches?.forEach((match) => {
 			const id = match.slice(2, match.indexOf(']'));
-			console.log(id, this.files);
 			res = res.replace(match, `![${id}]{${this.files[id].text}}`);
 		});
 
