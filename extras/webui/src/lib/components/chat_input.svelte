@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { PUBLIC_IS_AUTO_LLAMA } from '$env/static/public';
-	import AutoLLaMaAPI from '$lib/auto_llama';
 
 	export let isGenerating: boolean = false;
 	export let required: boolean = false;

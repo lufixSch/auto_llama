@@ -31,7 +31,8 @@ dependencies = [
   "coreferee",
   "txtai",
   "beautifulsoup4",
-  "pypdf"
+  "pypdf",
+  "marker-pdf"
 ]
 "extras.audio" = [
   "txtai[pipeline-audio]"

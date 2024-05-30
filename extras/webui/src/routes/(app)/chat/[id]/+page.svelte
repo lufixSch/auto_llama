@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Roles, type Message } from '$lib/chats';
+	import { Chat, Roles, type Message } from '$lib/chats';
 	import ChatBubble from '$lib/components/chat_bubble/actions.svelte';
 	import BaseBubble from '$lib/components/chat_bubble/base.svelte';
 	import ChatInput from '$lib/components/chat_input.svelte';
@@ -9,6 +9,7 @@
 	import StreamChatBubble from '$lib/components/chat_bubble/stream.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import AutoLLaMaAPI from '$lib/auto_llama';
 
 	export let data: PageData;
 	let stream: LLmResponse | undefined;
@@ -16,6 +17,9 @@
 	let branchPath: number[] = [];
 	let shouldRegenerate = false;
 	let shouldWriteNew = data.new;
+	let newMessage: string = '';
+
+	const auto_llama = AutoLLaMaAPI.new();
 
 	$: {
 		$page.url.searchParams.set('branch', data.branch.toString());
@@ -117,6 +121,19 @@
 	async function switchBranch(branchId: number) {
 		data.branch = branchId;
 	}
+
+	/** Add a new file to the message */
+	async function handleFileSelected(ev: CustomEvent<File>) {
+		const file = ev.detail;
+		if (!file) return;
+
+		const article = await auto_llama.parseFile(file, {}, data.config);
+		data.chat.addFile(article);
+
+		newMessage +=
+			'\n' +
+			Chat.emptyFileReference(`${Object.keys(data.chat.files).length - 1}/${article.source}`);
+	}
 </script>
 
 <section class="flex flex-col h-page justify-end p-2 w-full">
@@ -128,6 +145,7 @@
 		{/if}
 		{#each messages.slice().reverse() as m}
 			<ChatBubble
+				chat={data.chat}
 				message={m.message}
 				{branchPath}
 				on:branch={() => handleBranching(m.id)}
@@ -143,8 +161,10 @@
 		{/if}
 	</div>
 	<ChatInput
+		bind:message={newMessage}
 		on:inputEvent={handleNewMessage}
 		on:regenerate={handleRegeneration}
+		on:fileSelected={handleFileSelected}
 		on:stop={handleStop}
 		isGenerating={stream !== undefined}
 	></ChatInput>

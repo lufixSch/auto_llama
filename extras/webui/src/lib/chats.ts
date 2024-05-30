@@ -174,6 +174,19 @@ export class Chat {
 		return res;
 	}
 
+	/* replace file reference with text */
+	replaceFileReferences(message: string, replace: (id: string) => string) {
+		const matches = message.match(this._file_match);
+
+		let res = message;
+		matches?.forEach((match) => {
+			const id = match.slice(2, match.indexOf(']'));
+			res = res.replace(match, replace(id));
+		});
+
+		return res;
+	}
+
 	/* Return file reference for a given file */
 	static emptyFileReference(id: string) {
 		return `![${id}]{}`;

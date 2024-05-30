@@ -1,6 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from functools import partial
 from typing import BinaryIO, TextIO
 from urllib.parse import urlparse
 
@@ -12,10 +13,33 @@ HAS_DEPENDENCIES = True
 # Module specific dependencies
 try:
     import arxiv
+    import marker.cleaners.bullets as mk_bullets_cleaners
+    import marker.cleaners.code as mk_code_cleaners
+    import marker.cleaners.fontstyle as mk_font_cleaners
+    import marker.cleaners.headers as mk_head_cleaners
+    import marker.cleaners.headings as mk_headings_cleaners
+    import marker.cleaners.text as mk_text_cleaners
+    import marker.equations.equations as mk_equations
+    import marker.layout.layout as mk_layout
+    import marker.layout.order as mk_order
+    import marker.models as mk_models
+    import marker.ocr.detection as mk_ocr_detection
+    import marker.ocr.lang as mk_ocr_lang
+    import marker.ocr.recognition as mk_ocr_recognition
+    import marker.pdf.extract_text as mk_pdf_extract_text
+    import marker.postprocessors.editor as mk_editor
+    import marker.postprocessors.markdown as mk_post
+    import marker.tables.table as mk_table
+    import marker.utils as mk_utils
+    import pdftext.extraction as pdftext_ex
+    import pdftext.inference as pdftext_inference
+    import pdftext.pdf.chars as pdftext_chars
+    import pypdfium2 as pdfium
     import requests
     import wikipedia
     from bs4 import BeautifulSoup
-    from pypdf import PdfReader
+    from marker.settings import settings as mk_settings
+    from pdftext.settings import settings as pdftext_settings
 
     from ._util import merge_symbols
 except (ImportError, exceptions.ExtrasDependenciesMissing):
@@ -156,87 +180,190 @@ class FileLoader(TextLoader):
 class PDFLoader(FileLoader):
     """Load text documents from PDFs"""
 
-    _ligatures_map = {
-        "ﬀ": "ff",
-        "ﬁ": "fi",
-        "ﬂ": "fl",
-        "ﬃ": "ffi",
-        "ﬄ": "ffl",
-        "ﬅ": "ft",
-        "ﬆ": "st",
-        "Ꜳ": "AA",
-        "Æ": "AE",
-        "ꜳ": "aa",
-    }
-
     def __init__(self) -> None:
         super().__init__()
 
-    def remove_hyphens(self, text: str) -> str:
-        """
-        This fails for:
-        * Natural dashes: well-known, self-replication, use-cases, non-semantic,
-                        Post-processing, Window-wise, viewpoint-dependent
-        * Trailing math operands: 2 - 4
-        * Names: Lopez-Ferreras, VGG-19, CIFAR-100
-        """
+    def _make_doc(self):
+        return pdfium.PdfDocument(self.loader_input)
 
-        lines = [line.rstrip() for line in text.split("\n")]
+    # def get_text_blocks(self, doc: pdfium.PdfDocument, model):
+    #     def _get_page_range(pdf_path, model, page_range):
+    #         pdf_doc = self._make_doc()
+    #         text_chars = pdftext_chars.get_pdfium_chars(pdf_doc, page_range)
+    #         pages = pdftext_inference.inference(text_chars, model)
+    #         return page
 
-        # Find dashes
-        line_numbers = []
-        for line_no, line in enumerate(lines[:-1]):
-            if line.endswith("-"):
-                line_numbers.append(line_no)
+    #     toc = mk_pdf_extract_text.get_toc(doc)
 
-        # Replace
-        for line_no in line_numbers:
-            lines = self.dehyphenate(lines, line_no)
+    #     page_range = range(0, len(doc))
 
-        return "\n".join(lines)
+    #     char_blocks = dictionary_output(
+    #         fname, page_range=page_range, keep_chars=True, workers=mk_settings.PDFTEXT_CPU_WORKERS
+    #     )
+    #     char_blocks = _get_pages(pdf_path, model, page_range, workers=workers)
 
-    def dehyphenate(self, lines: list[str], line_no: int) -> list[str]:
-        next_line = lines[line_no + 1]
-        word_suffix = next_line.split(" ")[0]
+    #     workers = min(
+    #         mk_settings.PDFTEXT_CPU_WORKERS, len(page_range) // pdftext_settings.WORKER_PAGE_THRESHOLD
+    #     )  # It's inefficient to have too many workers, since we batch in inference
 
-        lines[line_no] = lines[line_no][:-1] + word_suffix
-        lines[line_no + 1] = lines[line_no + 1][len(word_suffix) :]
-        return lines
+    #     if workers is None or workers <= 1:
+    #         text_chars = pdftext_chars.get_pdfium_chars(doc, page_range)
+    #         return pdftext_inference.inference(text_chars, model)
 
-    def replace_ligatures(self, text: str) -> str:
-        for search, replace in self._ligatures_map.items():
-            text = text.replace(search, replace)
+    #     func = partial(_get_page_range, pdf_path, model)
+    #     page_range = list(page_range)
 
-        return text
+    #     pages_per_worker = math.ceil(len(page_range) / workers)
+    #     page_range_chunks = [page_range[i * pages_per_worker : (i + 1) * pages_per_worker] for i in range(workers)]
+
+    #     with ProcessPoolExecutor(max_workers=workers) as executor:
+    #         pages = list(executor.map(func, page_range_chunks))
+
+    #     ordered_pages = [page for sublist in pages for page in sublist]
+
+    #     for page in char_blocks:
+    #         page_width, page_height = page["width"], page["height"]
+    #         for block in page["blocks"]:
+    #             for k in list(block.keys()):
+    #                 if k not in ["lines", "bbox"]:
+    #                     del block[k]
+    #             block["bbox"] = pdftext_ex.unnormalize_bbox(block["bbox"], page_width, page_height)
+    #             for line in block["lines"]:
+    #                 for k in list(line.keys()):
+    #                     if k not in ["spans", "bbox"]:
+    #                         del line[k]
+    #                 line["bbox"] = pdftext_ex.unnormalize_bbox(line["bbox"], page_width, page_height)
+    #                 for span in line["spans"]:
+    #                     pdftext_ex._process_span(span, page_width, page_height, False)
+
+    #     marker_blocks = [
+    #         mk_pdf_extract_text.pdftext_format_to_blocks(page, pnum) for pnum, page in enumerate(char_blocks)
+    #     ]
+
+    #     return marker_blocks, toc
 
     def __call__(self, source) -> Article:
+        # Set language needed for OCR
+        langs = [mk_settings.DEFAULT_LANG]
+
+        langs = mk_ocr_lang.replace_langs_with_codes(langs)
+        mk_ocr_lang.validate_langs(langs)
+
+        # Find the filetype
+        # filetype = find_filetype(fname)
+
+        # Setup output metadata
+        # out_meta = {
+        # "languages": langs,
+        # "filetype": filetype,
+        # }
+
+        # if filetype == "other": # We can't process this file
+        # return "", {}, out_meta
+
+        # Get initial text blocks from the pdf
         if isinstance(source, str):
-            reader = PdfReader(source)
+            self.loader_input = source
         else:
-            reader = PdfReader(source.stream)
+            self.loader_input = source.stream
             source = source.name
 
+        doc = self._make_doc()
         title = ".".join(os.path.basename(source).split(".")[:-1])
+        pages, toc = mk_pdf_extract_text.get_text_blocks(doc, self.loader_input)
+        # out_meta.update({
+        # "toc": toc,
+        # "pages": len(pages),
+        # })
 
-        parts: list[str] = []
-        content = ""
+        # Trim pages from doc to align with start page
+        # if start_page:
+        # for page_idx in range(start_page):
+        # doc.del_page(0)
 
-        def visitor_body(text, cm, tm, font_dict, font_size):
-            y = cm[5]
-            if y > 50 and y < 720:
-                parts.append(text)
+        # Unpack models from list
+        texify_model, layout_model, order_model, edit_model, detection_model, ocr_model = mk_models.load_all_models(
+            langs
+        )
 
-        for page in reader.pages:
-            content += page.extract_text(visitor_text=visitor_body)
+        # Identify text lines on pages
+        mk_ocr_detection.surya_detection(doc, pages, detection_model, batch_multiplier=1)
+        mk_utils.flush_cuda_memory()
 
-        # text = "".join(parts)
-        # text = self.remove_hyphens(text)
-        # text = self.replace_ligatures(text)
+        # OCR pages as needed
+        pages, ocr_stats = mk_ocr_recognition.run_ocr(doc, pages, langs, ocr_model, batch_multiplier=1)
+        mk_utils.flush_cuda_memory()
 
-        content = self.remove_hyphens(content)
-        content = self.remove_hyphens(content)
+        # out_meta["ocr_stats"] = ocr_stats
+        if len([b for p in pages for b in p.blocks]) == 0:
+            raise ValueError(f"Could not parse any text from PDF: {source}")
 
-        return Article(content, title, source)
+        mk_layout.surya_layout(doc, pages, layout_model, batch_multiplier=1)
+        mk_utils.flush_cuda_memory()
+
+        # Find headers and footers
+        bad_span_ids = mk_head_cleaners.filter_header_footer(pages)
+        # out_meta["block_stats"] = {"header_footer": len(bad_span_ids)}
+
+        # Add block types in
+        mk_layout.annotate_block_types(pages)
+
+        # Dump debug data if flags are set
+        # dump_bbox_debug_data(doc, fname, pages)
+
+        # Find reading order for blocks
+        # Sort blocks by reading order
+        mk_order.surya_order(doc, pages, order_model, batch_multiplier=1)
+        mk_order.sort_blocks_in_reading_order(pages)
+        mk_utils.flush_cuda_memory()
+
+        # Fix code blocks
+        mk_code_cleaners.identify_code_blocks(pages)
+        # out_meta["block_stats"]["code"] = code_block_count
+        mk_code_cleaners.indent_blocks(pages)
+
+        # Fix table blocks
+        mk_table.format_tables(pages)
+        # out_meta["block_stats"]["table"] = table_count
+
+        for page in pages:
+            for block in page.blocks:
+                block.filter_spans(bad_span_ids)
+                block.filter_bad_span_types()
+
+        filtered, eq_stats = mk_equations.replace_equations(doc, pages, texify_model, batch_multiplier=1)
+        mk_utils.flush_cuda_memory()
+        # out_meta["block_stats"]["equations"] = eq_stats
+
+        # Extract images and figures
+        # if settings.EXTRACT_IMAGES:
+        # extract_images(doc, pages)
+
+        # Split out headers
+        mk_headings_cleaners.split_heading_blocks(pages)
+        mk_font_cleaners.find_bold_italic(pages)
+
+        # Copy to avoid changing original data
+        merged_lines = mk_post.merge_spans(filtered)
+        text_blocks = mk_post.merge_lines(merged_lines)
+        text_blocks = mk_head_cleaners.filter_common_titles(text_blocks)
+        full_text = mk_post.get_full_text(text_blocks)
+
+        # Handle empty blocks being joined
+        full_text = mk_text_cleaners.cleanup_text(full_text)
+
+        # Replace bullet characters with a -
+        full_text = mk_bullets_cleaners.replace_bullets(full_text)
+
+        # Postprocess text with editor model
+        full_text, edit_stats = mk_editor.edit_full_text(full_text, edit_model, batch_multiplier=1)
+        mk_utils.flush_cuda_memory()
+        # out_meta["postprocess_stats"] = {"edit": edit_stats}
+        # doc_images = images_to_dict(pages)
+
+        # return full_text, doc_images, out_meta
+
+        return Article(full_text, title, source)
 
     def is_valid(self, source) -> bool:
         if isinstance(source, str):

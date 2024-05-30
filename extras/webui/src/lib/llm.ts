@@ -73,7 +73,7 @@ export class LLMInterface {
 				messages,
 				model: 'gpt-3.5-turbo',
 				stream: true,
-				max_tokens: character.params.max_new_tokens || defaultLLMParams.max_new_tokens,
+				max_tokens: character.params.max_new_tokens || null,
 				...(character.params || defaultLLMParams)
 			});
 

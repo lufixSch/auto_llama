@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Roles, type Message } from '$lib/chats';
+	import { Chat, Roles, type Message } from '$lib/chats';
 	import { cn } from '$lib/utils/cn';
 	import { swipe } from 'svelte-gestures';
 
@@ -9,6 +9,8 @@
 
 	export let message: Message;
 	export let branchPath: number[];
+	export let chat: Chat;
+
 	let textBlock: HTMLElement;
 	let editable: boolean = false;
 
@@ -19,11 +21,24 @@
 
 	let openActions = false;
 
-	const md = markdownit();
+	const fileElement = `<div class="flex items-center rounded-full px-2 break-normal break-all">
+				<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"
+					><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path
+						d="M320 464c8.8 0 16-7.2 16-16V160H256c-17.7 0-32-14.3-32-32V48H64c-8.8 0-16 7.2-16 16V448c0 8.8 7.2 16 16 16H320zM0 64C0 28.7 28.7 0 64 0H229.5c17 0 33.3 6.7 45.3 18.7l90.5 90.5c12 12 18.7 28.3 18.7 45.3V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V64z"
+					/></svg
+				>
+				<p class="m-0 h-fit">{FILE_NAME}</p>
+			</div>`;
+
+	const md = markdownit({
+		html: true,
+		linkify: true,
+		breaks: true
+	});
 	md.use(markdownitLatex);
 	// let formattedContent = md.render(message.content);
 
-	$: formattedContent = md.render(message.content);
+	$: formattedContent = render(message.content);
 	$: _index = message.branchStart.findIndex(
 		(start) => start === branchPath.find((i) => message.branchStart.includes(i))
 	);
@@ -36,8 +51,13 @@
 
 	function handleStopEdit() {
 		editable = false;
-		formattedContent = md.render(message.content);
+		formattedContent = render(message.content);
 		onEdit('edit', message);
+	}
+
+	function render(content: string) {
+		content = chat.replaceFileReferences(content, (id) => fileElement.replace('{FILE_NAME}', id));
+		return md.render(content);
 	}
 </script>
 
